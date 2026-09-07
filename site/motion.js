@@ -166,7 +166,7 @@
       bx.setTransform(bd, 0, 0, bd, 0, 0);
     }
     bsize(); window.addEventListener('resize', bsize);
-    var COL = ['#e8b62c', '#f6d98a', '#ece6d8', '#d8543f', '#7fa8d8'];
+    var COL = ['#7ec8e3', '#b9e6f5', '#e9eef6', '#2f6fd0', '#c8d6e6'];
     function pop(cx, cy) {
       for (var i = 0; i < 92; i++) {
         var a = Math.random() * 6.2832, v = 2.4 + Math.random() * 9.5;
@@ -242,8 +242,8 @@
       var x = p.x + px * (0.25 + p.z), y = p.y + py * (0.25 + p.z);
       var tw = 0.72 + 0.28 * Math.sin(t0 * 2.1 + p.ph);
       c.beginPath(); c.arc(x, y, p.r, 0, 6.2832);
-      c.fillStyle = p.gold ? 'rgba(232,182,44,' + (p.a * tw * .85).toFixed(3) + ')'
-                           : 'rgba(236,230,216,' + (p.a * tw).toFixed(3) + ')';
+      c.fillStyle = p.gold ? 'rgba(126,200,227,' + (p.a * tw * .85).toFixed(3) + ')'
+                           : 'rgba(200,214,230,' + (p.a * tw).toFixed(3) + ')';
       c.fill();
     }
   }

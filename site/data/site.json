@@ -2,12 +2,24 @@
   "name": "Koshin Studio",
   "tagline": "ゲーム、アプリ、サイト、3D。ひとりで、ぜんぶ。",
   "social": [
-    { "label": "GitHub", "url": "https://github.com/murakamikoshin", "handle": "@murakamikoshin" }
+    {
+      "label": "GitHub",
+      "url": "https://github.com/murakamikoshin",
+      "handle": "@murakamikoshin"
+    }
   ],
   "ads": {
     "enabled": false,
     "client": "",
-    "slots": { "article": "", "footer": "" },
+    "slots": {
+      "article": "",
+      "footer": ""
+    },
     "note": "AdSense に通ったら enabled を true にして client と slots を埋める。枠の場所は build.mjs が入れる。"
+  },
+  "contact": {
+    "email": "",
+    "form": "",
+    "note": "email に載せたい宛先を入れると Contact に出ます。空なら「準備中」と出ます。form に Google フォーム等の URL を入れると、そちらへの導線も出ます。"
   }
 }

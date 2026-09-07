@@ -21,16 +21,24 @@
    書体は漢字を持つものまで並べる（端末に無いだけで字が出ない事故を防ぐ）
    ============================================================ */
 :root{
-  --ink0:#080d16; --ink1:#0f1725; --ink2:#16202f;
-  --line:rgba(232,222,200,.13);
-  --text:#ece6d8; --muted:#9d9483; --dim:#6f6a60;
-  --shu:#d8543f; --gold:#e8b62c; --ai:#7fa8d8;
+  /* 紳士：深い藍を土台に、色数を絞る。銀と紺で骨を作る
+     好奇心：水色を一点だけ、光る所に置く。目が向く先はここだけにする */
+  --ink0:#070c17; --ink1:#0d1526; --ink2:#152136;
+  --line:rgba(170,205,236,.14);
+  --text:#e9eef6; --muted:#93a4bb; --dim:#64748c;
+  --blue:#2f6fd0;            /* 主役。押す所 */
+  --blue-d:#1b4a95;          /* 影 */
+  --sky:#7ec8e3;             /* 差し色。光る所 */
+  --sky-l:#b9e6f5;
+  --silver:#c8d6e6;
   --mincho:"Koshin Mincho","Hiragino Mincho ProN","Hiragino Mincho Pro","Yu Mincho","YuMincho",
     "Noto Serif JP","Noto Serif CJK JP","Source Han Serif JP","MS PMincho",
     "Songti SC","SimSun",serif,"Hiragino Sans","Yu Gothic","Noto Sans JP","Meiryo",sans-serif;
   --gothic:"Helvetica Neue",Helvetica,Arial,"Hiragino Sans","Hiragino Kaku Gothic ProN",
     "Yu Gothic","Noto Sans JP","Noto Sans CJK JP","Meiryo",sans-serif;
   --ease:cubic-bezier(.16,.84,.34,1);
+  /* 前の名前も残しておく（既存の指定が壊れないように） */
+  --gold:var(--sky); --shu:var(--blue); --ai:var(--sky);
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
@@ -43,10 +51,10 @@ body{
 body::before{
   content:"";position:fixed;inset:-20%;z-index:-3;pointer-events:none;
   background:
-    radial-gradient(58% 42% at 22% 8%, rgba(58,96,158,.30), transparent 62%),
-    radial-gradient(48% 40% at 84% 22%, rgba(160,60,44,.16), transparent 66%),
-    radial-gradient(70% 60% at 50% 108%, rgba(232,182,44,.09), transparent 64%),
-    linear-gradient(180deg,#0a111d 0%,#080d16 55%,#070b12 100%);
+    radial-gradient(56% 44% at 20% 6%, rgba(47,111,208,.34), transparent 62%),
+    radial-gradient(46% 38% at 86% 20%, rgba(126,200,227,.16), transparent 66%),
+    radial-gradient(72% 62% at 50% 108%, rgba(27,74,149,.24), transparent 64%),
+    linear-gradient(180deg,#0a1122 0%,#070c17 55%,#050912 100%);
   animation:drift 46s ease-in-out infinite alternate;
 }
 @keyframes drift{from{transform:translate3d(-1.6%,-1%,0) scale(1.03)}
@@ -115,13 +123,13 @@ strong{color:#fff;font-weight:600}
   background:var(--shu);color:#fff;text-decoration:none;
   font-family:var(--mincho);font-size:17px;letter-spacing:.24em;text-indent:.24em;
   padding:16px 46px;border-radius:2px;
-  box-shadow:0 10px 30px -12px rgba(216,84,63,.9);
+  box-shadow:0 10px 32px -12px rgba(47,111,208,.95);
   transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
 .btn::after{content:"";position:absolute;inset:0;background:
   linear-gradient(105deg,transparent 38%,rgba(255,255,255,.35) 50%,transparent 62%);
   transform:translateX(-120%);transition:transform .75s var(--ease)}
 .btn:hover{color:#fff;transform:translateY(-2px);
-  box-shadow:0 16px 38px -12px rgba(216,84,63,1)}
+  box-shadow:0 18px 42px -12px rgba(47,111,208,1)}
 .btn:hover::after{transform:translateX(120%)}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line);
   box-shadow:none}
@@ -136,9 +144,9 @@ strong{color:#fff;font-weight:600}
   transition:transform .5s var(--ease),border-color .5s var(--ease)}
 .work::before{content:"";position:absolute;inset:0;opacity:0;
   background:radial-gradient(400px circle at var(--mx,50%) var(--my,50%),
-    rgba(232,182,44,.13),transparent 62%);
+    rgba(126,200,227,.16),transparent 62%);
   transition:opacity .5s var(--ease);pointer-events:none}
-.work:hover{transform:translateY(-4px);border-color:rgba(232,182,44,.42)}
+.work:hover{transform:translateY(-4px);border-color:rgba(126,200,227,.45)}
 .work:hover::before{opacity:1}
 .work img{border-radius:4px;transition:transform .7s var(--ease);
   box-shadow:0 14px 30px -14px #000}
@@ -194,10 +202,10 @@ footer.site a:hover{color:var(--gold)}
   display:inline-flex;align-items:baseline;gap:9px;
   transition:color .35s var(--ease),border-color .35s var(--ease),background .35s var(--ease)}
 .chip i{font-style:normal;font-size:11px;letter-spacing:.06em;color:var(--dim)}
-.chip:hover{color:var(--text);border-color:rgba(232,182,44,.5)}
-.chip.on{color:#0b1018;background:var(--gold);border-color:var(--gold);font-weight:600}
-.chip.on i{color:rgba(11,16,24,.62)}
-.tag.kind{color:var(--gold);border-color:rgba(232,182,44,.34)}
+.chip:hover{color:var(--text);border-color:rgba(126,200,227,.55)}
+.chip.on{color:#061020;background:var(--sky);border-color:var(--sky);font-weight:600}
+.chip.on i{color:rgba(6,16,32,.66)}
+.tag.kind{color:var(--gold);border-color:rgba(126,200,227,.4)}
 .works li[hidden]{display:none}
 
 /* ---- 記録の一覧 ---- */
@@ -218,7 +226,7 @@ footer.site a:hover{color:var(--gold)}
 .kind{border:1px solid var(--line);border-radius:6px;padding:22px 20px;
   background:linear-gradient(150deg,rgba(255,255,255,.05),rgba(255,255,255,.012));
   transition:border-color .5s var(--ease),transform .5s var(--ease)}
-.kind:hover{border-color:rgba(232,182,44,.4);transform:translateY(-3px)}
+.kind:hover{border-color:rgba(126,200,227,.45);transform:translateY(-3px)}
 .kind h3{font-family:var(--mincho);font-size:19px;letter-spacing:.14em;margin:0 0 10px;
   display:flex;align-items:baseline;gap:10px}
 .kind h3 i{font-style:normal;font-size:11.5px;letter-spacing:.14em;color:var(--gold)}
@@ -243,7 +251,7 @@ footer.site a:hover{color:var(--gold)}
   background:linear-gradient(150deg,rgba(255,255,255,.09),rgba(255,255,255,.025));
   border:1px solid var(--line);box-shadow:0 18px 44px -20px #000;
   transition:border-color .4s var(--ease),box-shadow .4s var(--ease)}
-.orb:hover{border-color:var(--gold);box-shadow:0 22px 54px -18px rgba(232,182,44,.55)}
+.orb:hover{border-color:var(--gold);box-shadow:0 22px 54px -18px rgba(126,200,227,.5)}
 .orb picture,.orb img{display:block;width:100%;height:120px;object-fit:cover}
 .orb-mark{display:grid;place-items:center;height:120px;
   font-family:Georgia,"Times New Roman",serif;font-size:26px;letter-spacing:.1em;
@@ -264,7 +272,7 @@ footer.site a:hover{color:var(--gold)}
 .logo-xl span{display:block;font-size:clamp(40px,9.2vw,102px);letter-spacing:.16em;
   text-indent:.16em}
 .logo-xl .l1{color:var(--text);text-shadow:0 0 60px rgba(10,16,26,.9)}
-.logo-xl .l2{background:linear-gradient(100deg,#f6d98a 8%,#e8b62c 42%,#b98a1c 70%,#f6d98a 96%);
+.logo-xl .l2{background:linear-gradient(100deg,#e6f2fa 6%,#7ec8e3 38%,#2f6fd0 66%,#b9e6f5 96%);
   -webkit-background-clip:text;background-clip:text;color:transparent}
 .hairline{width:0;height:1px;margin:22px auto 16px;
   background:linear-gradient(90deg,transparent,var(--gold),transparent)}
@@ -340,3 +348,48 @@ h2.sec span{font-family:var(--gothic);font-size:11px;letter-spacing:.24em;
 .ad-slot[hidden]{display:none}
 .ad-slot::before{content:"広告";display:block;font-size:10px;letter-spacing:.24em;
   color:var(--dim);margin-bottom:8px}
+
+/* ---- 帯の Contact ---- */
+.nav-cta{color:var(--gold)!important;border:1px solid rgba(126,200,227,.45);
+  border-radius:99px;padding:6px 15px;transition:background .35s var(--ease)}
+.nav-cta:hover{background:rgba(126,200,227,.15)}
+
+/* ---- 料金 ---- */
+.price{display:grid;gap:2px;margin:0 0 18px}
+.price-row{display:grid;grid-template-columns:1fr auto;gap:26px;align-items:center;
+  padding:24px 20px;border:1px solid transparent;border-bottom-color:var(--line);
+  border-radius:6px;transition:background .45s var(--ease),border-color .45s var(--ease)}
+.price-row:hover{background:rgba(255,255,255,.035);border-color:var(--line)}
+.price-row h3{margin:0 0 5px;font-family:var(--mincho);font-size:19px;letter-spacing:.1em}
+.price-row p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.85}
+.price-tag{text-align:right;white-space:nowrap}
+.price-tag b{display:block;font-family:Georgia,serif;font-size:34px;color:var(--gold);
+  font-weight:400;line-height:1}
+.price-tag b i{font-style:normal;font-size:14px;margin-left:3px;letter-spacing:.08em}
+.price-tag span{font-size:10.5px;letter-spacing:.1em;color:var(--dim)}
+@media(max-width:560px){.price-row{grid-template-columns:1fr;gap:12px}
+  .price-tag{text-align:left}}
+
+/* ---- 進め方 ---- */
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:2px}
+.steps li{display:grid;grid-template-columns:64px 1fr;gap:18px;align-items:start;
+  padding:20px 18px;border-radius:6px;transition:background .45s var(--ease)}
+.steps li:hover{background:rgba(255,255,255,.03)}
+.steps b{font-family:Georgia,serif;font-size:22px;color:var(--gold);opacity:.6;font-weight:400}
+.steps h3{margin:0 0 4px;font-size:16px;letter-spacing:.06em}
+.steps p{margin:0;font-size:13.5px;color:var(--muted)}
+
+/* ---- 連絡先 ---- */
+.contact-box{border:1px solid var(--line);border-radius:8px;padding:34px 26px;
+  background:linear-gradient(150deg,rgba(255,255,255,.055),rgba(255,255,255,.014));
+  display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin:0 0 16px}
+.ct-main{font-family:Georgia,serif;font-size:clamp(19px,4vw,28px);text-decoration:none;
+  color:var(--text);letter-spacing:.04em;display:block}
+.ct-main span{display:block;font-family:var(--gothic);font-size:11.5px;letter-spacing:.16em;
+  color:var(--gold);margin-top:8px}
+.ct-main:hover{color:var(--gold)}
+.ct-sub{font-size:13px;letter-spacing:.1em;color:var(--muted);text-decoration:none;
+  border:1px solid var(--line);border-radius:99px;padding:10px 20px}
+.ct-sub:hover{border-color:var(--gold);color:var(--gold)}
+.ct-soon{margin:0;color:var(--muted);font-size:14px}
+.ct-soon span{font-size:11.5px;color:var(--dim)}

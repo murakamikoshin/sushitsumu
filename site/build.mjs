@@ -97,7 +97,7 @@ const head = (title, desc, extra = '') => `<!doctype html>
 
 <header class="site"><div class="wrap">
   <a class="logo" href="/">Koshin Studio</a>
-  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/profile/">Profile</a></nav>
+  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/profile/">Profile</a><a class="nav-cta" href="/contact/">Contact</a></nav>
 </div></header>
 `;
 const socialHtml = (conf.social || []).map((x) =>
@@ -322,11 +322,22 @@ function ldFor(file, url) {
 for (const file of pages) {
   let html = readFileSync(file, 'utf8');
   /* 脚の SNS 欄と、広告の枠を差し替える（data/site.json が元） */
+  html = html.replace(/<nav><a href="\/works\/">Works<\/a><a href="\/notes\/">Notes<\/a><a href="\/profile\/">Profile<\/a>(<a[^>]*>Contact<\/a>)?<\/nav>/g,
+    '<nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/profile/">Profile</a><a class="nav-cta" href="/contact/">Contact</a></nav>');
   html = html.replace(/<div class="sns-row">[\s\S]*?<\/div>/g, `<div class="sns-row">${socialHtml}</div>`);
   if (!/class="sns-row"/.test(html)) {
     html = html.replace('<footer class="site"><div class="wrap">\n  <span>© 2026 Koshin Studio</span>',
       `<footer class="site"><div class="wrap">\n  <span>© 2026 Koshin Studio</span>\n  <div class="sns-row">${socialHtml}</div>`);
   }
+  /* 連絡先（data/site.json の contact） */
+  const ct = conf.contact || {};
+  const ctHtml = (ct.email || ct.form)
+    ? [ct.email ? `<a class="ct-main" href="mailto:${ct.email}?subject=${encodeURIComponent('制作のご相談')}">${esc(ct.email)}<span>メールで相談する</span></a>` : '',
+       ct.form ? `<a class="ct-sub" href="${ct.form}" target="_blank" rel="noopener">フォームから送る</a>` : ''].filter(Boolean).join('')
+    : `<p class="ct-soon">連絡先は準備中です。<br><span>data/site.json の contact.email を入れると、ここに出ます。</span></p>`;
+  html = html.replace(/<!--contact:start-->[\s\S]*?<!--contact:end-->/,
+    '<!--contact:start-->' + ctHtml + '<!--contact:end-->');
+
   const ads = conf.ads || {};
   html = html.replace(/<div class="ad-slot"[^>]*>[\s\S]*?<\/div>\s*<!--\/ad-->/g, (m) => {
     const kind = (m.match(/data-slot="([^"]+)"/) || [, 'article'])[1];
