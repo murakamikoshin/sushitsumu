@@ -969,97 +969,109 @@ function nigiri(c, w, h, fill, detail, edge) {
   c.stroke();
 }
 
-/* 軍艦巻き（海苔を巻いた円柱）
-   横から見れば俵形で、丸ではない。下から順に
-   「シャリ → 一周する海苔の帯 → 縁から盛り上がる具」と重ねる。 */
+/* 軍艦巻き
+   海苔は胴に「巻いてある」ので、横から見たときの外形は海苔そのもの。
+   シャリの上に黒い帯を載せる描き方だと、帯が別の物に見えて軍艦にならない。
+   海苔を外形にし、その内側の窪みへ具を盛る。シャリは底から少しだけ覗かせる。 */
 function gunkan(c, w, h, topping) {
-  var rimY = -h * 0.15;      // 海苔の上端（切り口）
-  var noriBot = h * 0.19;    // 海苔の下端
-  var riceTop = h * 0.08;
+  var r = Math.min(h * 0.20, w * 0.11);
+  var nt = Math.max(3.5, w * 0.055);   // 海苔の厚み（左右に縁として見える）
+  var noriBot = h * 0.26;              // 海苔の下端（ここから下はシャリ）
+  var rimY = -h * 0.06;                // 海苔の縁（具はここから上）
+  var crest = -h * 0.52;               // 具の盛り上がりの頂点
 
-  // シャリ（海苔の下から覗く）
-  var rg = c.createLinearGradient(0, riceTop, 0, h / 2);
+  // シャリ（底からわずかに覗く）
+  var rg = c.createLinearGradient(0, h * 0.2, 0, h / 2);
   rg.addColorStop(0, '#fdfbf5');
-  rg.addColorStop(0.5, '#f4f0e4');
   rg.addColorStop(1, '#dbd5c1');
   c.fillStyle = rg;
-  rr(c, -w * 0.47, riceTop, w * 0.94, h / 2 - riceTop, Math.min(h * 0.16, w * 0.1));
+  rr(c, -w * 0.45, h * 0.04, w * 0.90, h * 0.46, Math.min(h * 0.16, w * 0.1));
   c.fill();
-  c.strokeStyle = 'rgba(156,144,113,.55)';
+  c.strokeStyle = 'rgba(156,144,113,.6)';
   c.lineWidth = 1;
   c.stroke();
-  var gn = Math.max(3, Math.round(w / 17));
-  for (var i = 0; i < gn; i++) {
+  for (var i = 0; i < 4; i++) {
     c.save();
-    c.translate(-w * 0.34 + (w * 0.68) * ((i + 0.5) / gn), h * 0.37 + (i % 2 ? h * 0.05 : 0));
-    c.rotate((i - gn / 2) * 0.45);
-    c.fillStyle = 'rgba(255,255,255,.96)';
-    c.beginPath(); c.ellipse(0, 0, w * 0.042, h * 0.032, 0, 0, 6.2832); c.fill();
-    c.strokeStyle = 'rgba(176,166,138,.5)'; c.lineWidth = 0.6; c.stroke();
+    c.translate(-w * 0.24 + i * (w * 0.16), h * 0.45);
+    c.rotate((i - 1.5) * 0.4);
+    c.fillStyle = 'rgba(255,255,255,.95)';
+    c.beginPath(); c.ellipse(0, 0, w * 0.038, h * 0.028, 0, 0, 6.2832); c.fill();
     c.restore();
   }
 
-  // 海苔の帯（胴を一周する）
-  var nr = Math.min(9, w * 0.07);
+  // 海苔＝胴の外形
   var ng = c.createLinearGradient(-w / 2, 0, w / 2, 0);
-  ng.addColorStop(0, '#0e0c0a');
-  ng.addColorStop(0.16, '#2c261f');
-  ng.addColorStop(0.48, '#3b322a');
-  ng.addColorStop(0.84, '#221d18');
-  ng.addColorStop(1, '#0c0a09');
+  ng.addColorStop(0, '#0d120e');
+  ng.addColorStop(0.14, '#283326');
+  ng.addColorStop(0.44, '#36432f');
+  ng.addColorStop(0.82, '#1d261d');
+  ng.addColorStop(1, '#0b0f0b');
   c.fillStyle = ng;
-  rr(c, -w / 2, rimY, w, noriBot - rimY, nr);
+  rr(c, -w / 2, -h / 2, w, noriBot + h / 2, r);
   c.fill();
 
   c.save();
-  rr(c, -w / 2, rimY, w, noriBot - rimY, nr);
+  rr(c, -w / 2, -h / 2, w, noriBot + h / 2, r);
   c.clip();
   // 海苔の繊維
-  c.strokeStyle = 'rgba(255,255,255,.055)';
+  c.strokeStyle = 'rgba(255,255,255,.05)';
   c.lineWidth = 1.2;
   for (var v = -6; v <= 6; v++) {
     c.beginPath();
-    c.moveTo(v * w * 0.075, rimY);
-    c.lineTo(v * w * 0.088, noriBot);
+    c.moveTo(v * w * 0.075, -h / 2);
+    c.lineTo(v * w * 0.075, noriBot);
     c.stroke();
   }
   // 巻き終わりの継ぎ目
-  c.strokeStyle = 'rgba(255,255,255,.13)';
-  c.lineWidth = 1.6;
+  c.strokeStyle = 'rgba(255,255,255,.12)';
+  c.lineWidth = 1.8;
   c.beginPath();
-  c.moveTo(-w * 0.27, rimY);
-  c.lineTo(-w * 0.27, noriBot);
+  c.moveTo(-w * 0.28, -h / 2);
+  c.lineTo(-w * 0.28, noriBot);
   c.stroke();
-  // 上寄りのつや
-  var sg = c.createLinearGradient(0, rimY, 0, noriBot);
-  sg.addColorStop(0, 'rgba(255,255,255,.17)');
-  sg.addColorStop(0.45, 'rgba(255,255,255,0)');
-  c.fillStyle = sg;
-  c.fillRect(-w / 2, rimY, w, noriBot - rimY);
+  // 巻きの丸みを出すつや
+  var sh = c.createLinearGradient(-w / 2, 0, w / 2, 0);
+  sh.addColorStop(0, 'rgba(255,255,255,0)');
+  sh.addColorStop(0.3, 'rgba(255,255,255,.10)');
+  sh.addColorStop(0.55, 'rgba(255,255,255,.03)');
+  sh.addColorStop(1, 'rgba(0,0,0,.25)');
+  c.fillStyle = sh;
+  c.fillRect(-w / 2, -h / 2, w, noriBot + h / 2);
   c.restore();
 
-  c.strokeStyle = 'rgba(0,0,0,.5)';
-  c.lineWidth = 1.2;
-  rr(c, -w / 2, rimY, w, noriBot - rimY, nr);
-  c.stroke();
-
-  // 具（海苔の縁から盛り上げる）
+  // 具（海苔の縁から上へ浅く盛り上がる。深い窓にすると画面に見えてしまう）
   c.save();
   c.beginPath();
-  c.moveTo(-w * 0.46, rimY + 1);
-  c.quadraticCurveTo(-w * 0.47, -h * 0.5, 0, -h * 0.5);
-  c.quadraticCurveTo(w * 0.47, -h * 0.5, w * 0.46, rimY + 1);
+  c.moveTo(-w / 2 + nt, rimY);
+  c.quadraticCurveTo(-w / 2 + nt * 0.6, crest, 0, crest);
+  c.quadraticCurveTo(w / 2 - nt * 0.6, crest, w / 2 - nt, rimY);
   c.closePath();
   c.clip();
   topping(c, w, h);
   c.restore();
 
-  // 海苔の切り口（具の手前に見える細い縁）
-  c.strokeStyle = 'rgba(206,192,172,.45)';
-  c.lineWidth = 1.6;
+  // 具と海苔の境
+  c.strokeStyle = 'rgba(0,0,0,.45)';
+  c.lineWidth = 1.4;
   c.beginPath();
-  c.moveTo(-w / 2 + 1.5, rimY + 0.8);
-  c.lineTo(w / 2 - 1.5, rimY + 0.8);
+  c.moveTo(-w / 2 + nt * 0.6, rimY);
+  c.lineTo(w / 2 - nt * 0.6, rimY);
+  c.stroke();
+
+  // 海苔の切り口（具の左右に覗く縁）
+  c.strokeStyle = 'rgba(196,186,168,.35)';
+  c.lineWidth = 1.4;
+  c.beginPath();
+  c.moveTo(-w / 2 + nt * 0.5, rimY - h * 0.02);
+  c.lineTo(-w / 2 + nt * 0.5, -h * 0.34);
+  c.moveTo(w / 2 - nt * 0.5, rimY - h * 0.02);
+  c.lineTo(w / 2 - nt * 0.5, -h * 0.34);
+  c.stroke();
+
+  // 全体の縁
+  c.strokeStyle = 'rgba(0,0,0,.55)';
+  c.lineWidth = 1.4;
+  rr(c, -w / 2, -h / 2, w, noriBot + h / 2, r);
   c.stroke();
 }
 
@@ -1208,12 +1220,12 @@ function drawItem(c, level) {
       gunkan(c, w, h, function (cc, gw, gh) {
         cc.fillStyle = '#7e1517';
         cc.fillRect(-gw, -gh, gw * 2, gh * 2);
-        var pr = gh * 0.088;
-        var cols = 9, rows = 3;
+        var pr = gh * 0.095;
+        var cols = 8, rows = 3;
         for (var row = 0; row < rows; row++) {
           for (var col = 0; col < cols; col++) {
-            var px = -gw * 0.42 + col * (gw * 0.105) + (row % 2 ? gw * 0.052 : 0);
-            var py = -gh * 0.40 + row * (gh * 0.115);
+            var px = -gw * 0.44 + col * (gw * 0.125) + (row % 2 ? gw * 0.062 : 0);
+            var py = -gh * 0.42 + row * (gh * 0.145);
             var rgd = cc.createRadialGradient(px - pr * 0.35, py - pr * 0.42, pr * 0.1, px, py, pr);
             rgd.addColorStop(0, '#ffc078');
             rgd.addColorStop(0.5, '#f0611f');
@@ -1232,24 +1244,48 @@ function drawItem(c, level) {
     /* 7. ウニ軍艦 */
     case 6: {
       gunkan(c, w, h, function (cc, gw, gh) {
-        cc.fillStyle = '#c08a22';
+        // 弁の隙間に見える濃い部分
+        cc.fillStyle = '#8a5a10';
         cc.fillRect(-gw, -gh, gw * 2, gh * 2);
-        for (var u = 0; u < 8; u++) {
-          var t2u = u - 3.5;
-          var ux = t2u * gw * 0.112;
-          var uy = -gh * 0.28 + Math.abs(t2u) * gh * 0.028;
-          var ug = cc.createLinearGradient(0, -gh * 0.22, 0, gh * 0.22);
-          ug.addColorStop(0, '#ffe9ae');
-          ug.addColorStop(0.42, '#eaad3d');
-          ug.addColorStop(1, '#9d6612');
+        var lobes = 5;
+        for (var u = 0; u < lobes; u++) {
+          var t = u - (lobes - 1) / 2;                 // -2 .. 2
+          var lx = t * gw * 0.168;
+          var ly = -gh * 0.29 + Math.abs(t) * gh * 0.03 + (u % 2 ? gh * 0.018 : 0);
+          var lw = gw * 0.092;
+          var lh = gh * 0.205;
           cc.save();
-          cc.translate(ux, uy);
-          cc.rotate(t2u * 0.13);
-          cc.fillStyle = ug;
-          cc.beginPath(); cc.ellipse(0, 0, gw * 0.052, gh * 0.185, 0, 0, 6.2832); cc.fill();
-          cc.strokeStyle = 'rgba(102,60,6,.8)'; cc.lineWidth = 1.2; cc.stroke();
-          cc.fillStyle = 'rgba(255,255,255,.45)';
-          cc.beginPath(); cc.ellipse(-gw * 0.014, -gh * 0.07, gw * 0.016, gh * 0.065, 0, 0, 6.2832); cc.fill();
+          cc.translate(lx, ly);
+          cc.rotate(t * 0.12);
+          var g = cc.createLinearGradient(0, -lh, 0, lh);
+          g.addColorStop(0, '#ffe6a2');
+          g.addColorStop(0.33, '#f0b840');
+          g.addColorStop(0.72, '#cf8a1c');
+          g.addColorStop(1, '#96600f');
+          cc.fillStyle = g;
+          // 舌状（根元が広く、先が丸い）
+          cc.beginPath();
+          cc.moveTo(-lw * 0.85, lh);
+          cc.bezierCurveTo(-lw * 1.06, -lh * 0.28, -lw * 0.62, -lh, 0, -lh);
+          cc.bezierCurveTo(lw * 0.62, -lh, lw * 1.06, -lh * 0.28, lw * 0.85, lh);
+          cc.closePath();
+          cc.fill();
+          cc.strokeStyle = 'rgba(116,68,6,.65)';
+          cc.lineWidth = 1.1;
+          cc.stroke();
+          // うに特有の粒立ち（小さな窪み）
+          cc.fillStyle = 'rgba(146,88,8,.34)';
+          for (var d = 0; d < 5; d++) {
+            cc.beginPath();
+            cc.arc((d % 2 ? -1 : 1) * lw * 0.34, -lh * 0.58 + d * lh * 0.33,
+                   lw * 0.17, 0, 6.2832);
+            cc.fill();
+          }
+          // 先端の照り
+          cc.fillStyle = 'rgba(255,250,224,.5)';
+          cc.beginPath();
+          cc.ellipse(-lw * 0.16, -lh * 0.56, lw * 0.28, lh * 0.2, -0.2, 0, 6.2832);
+          cc.fill();
           cc.restore();
         }
       });
