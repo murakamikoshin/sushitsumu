@@ -3,3 +3,5 @@ store/.work/
 tools/sim/node_modules/
 tools/sim/lab*.html
 tools/sim/runs*.json
+site/assets/
+site/works/sushitsumu/play/

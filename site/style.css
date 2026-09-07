@@ -1,0 +1,209 @@
+/* ============================================================
+   Koshin Studio
+   藍の闇に、和紙の白。動きは静かに、粒は米のように。
+   書体は漢字を持つものまで並べる（端末に無いだけで字が出ない事故を防ぐ）
+   ============================================================ */
+:root{
+  --ink0:#080d16; --ink1:#0f1725; --ink2:#16202f;
+  --line:rgba(232,222,200,.13);
+  --text:#ece6d8; --muted:#9d9483; --dim:#6f6a60;
+  --shu:#d8543f; --gold:#e8b62c; --ai:#7fa8d8;
+  --mincho:"Hiragino Mincho ProN","Hiragino Mincho Pro","Yu Mincho","YuMincho",
+    "Noto Serif JP","Noto Serif CJK JP","Source Han Serif JP","MS PMincho",
+    "Songti SC","SimSun",serif,"Hiragino Sans","Yu Gothic","Noto Sans JP","Meiryo",sans-serif;
+  --gothic:"Helvetica Neue",Helvetica,Arial,"Hiragino Sans","Hiragino Kaku Gothic ProN",
+    "Yu Gothic","Noto Sans JP","Noto Sans CJK JP","Meiryo",sans-serif;
+  --ease:cubic-bezier(.16,.84,.34,1);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  margin:0;background:var(--ink0);color:var(--text);
+  font-family:var(--gothic);font-size:16px;line-height:1.95;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+/* 奥行き：ゆっくり回る光の帯 */
+body::before{
+  content:"";position:fixed;inset:-20%;z-index:-3;pointer-events:none;
+  background:
+    radial-gradient(58% 42% at 22% 8%, rgba(58,96,158,.30), transparent 62%),
+    radial-gradient(48% 40% at 84% 22%, rgba(160,60,44,.16), transparent 66%),
+    radial-gradient(70% 60% at 50% 108%, rgba(232,182,44,.09), transparent 64%),
+    linear-gradient(180deg,#0a111d 0%,#080d16 55%,#070b12 100%);
+  animation:drift 46s ease-in-out infinite alternate;
+}
+@keyframes drift{from{transform:translate3d(-1.6%,-1%,0) scale(1.03)}
+                 to{transform:translate3d(1.8%,1.4%,0) scale(1.09)}}
+/* 紙の粒子 */
+body::after{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+#motes{position:fixed;inset:0;z-index:-2;pointer-events:none}
+
+a{color:var(--ai);text-underline-offset:3px;text-decoration-thickness:1px;
+  transition:color .3s var(--ease)}
+a:hover{color:var(--gold)}
+img{max-width:100%;height:auto;display:block}
+.wrap{max-width:760px;margin:0 auto;padding:0 24px}
+
+/* ---- 帯 ---- */
+header.site{position:sticky;top:0;z-index:20;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:rgba(8,13,22,.62);border-bottom:1px solid var(--line)}
+header.site .wrap{display:flex;align-items:center;gap:20px;height:60px}
+header.site .logo{font-family:var(--mincho);font-size:16px;letter-spacing:.2em;
+  text-decoration:none;color:var(--text);white-space:nowrap;position:relative}
+header.site .logo::after{content:"";position:absolute;left:0;right:100%;bottom:-5px;
+  height:1px;background:var(--shu);transition:right .45s var(--ease)}
+header.site .logo:hover::after{right:0}
+header.site nav{margin-left:auto;display:flex;gap:22px;font-size:13px;letter-spacing:.06em}
+header.site nav a{text-decoration:none;color:var(--muted)}
+header.site nav a:hover{color:var(--gold)}
+
+/* ---- 表 ---- */
+.hero{min-height:82vh;display:flex;flex-direction:column;justify-content:center;
+  padding:70px 0 40px;position:relative}
+.hero .mark{font-family:var(--mincho);font-weight:600;line-height:1.12;margin:0;
+  font-size:clamp(40px,10.5vw,88px);letter-spacing:.04em}
+.hero .mark span{display:inline-block;opacity:0;transform:translateY(.5em) rotate(2deg);
+  animation:rise 1.05s var(--ease) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+.hero .kicker{font-family:var(--mincho);font-size:13px;letter-spacing:.5em;
+  color:var(--gold);margin:0 0 20px;opacity:0;animation:rise .9s var(--ease) .1s forwards}
+.hero .say{color:var(--muted);font-size:15.5px;letter-spacing:.09em;max-width:34em;
+  margin:26px 0 0;opacity:0;animation:rise 1s var(--ease) .75s forwards}
+.hero .scrollcue{margin-top:52px;font-size:11px;letter-spacing:.3em;color:var(--dim);
+  opacity:0;animation:rise 1s var(--ease) 1.05s forwards}
+.hero .scrollcue i{display:inline-block;width:1px;height:26px;background:var(--dim);
+  vertical-align:-9px;margin-right:12px;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scaleY(.35);opacity:.35;transform-origin:top}
+                 50%{transform:scaleY(1);opacity:1;transform-origin:top}}
+
+/* ---- 見出し ---- */
+main{padding-bottom:90px}
+h1{font-family:var(--mincho);font-weight:600;font-size:clamp(27px,5.6vw,38px);
+  letter-spacing:.1em;line-height:1.55;margin:0 0 8px}
+h2{font-family:var(--mincho);font-weight:600;font-size:20px;letter-spacing:.16em;
+  margin:66px 0 20px;color:var(--text);display:flex;align-items:center;gap:16px}
+h2::after{content:"";flex:1;height:1px;background:var(--line)}
+h3{font-size:15.5px;letter-spacing:.06em;margin:34px 0 8px;color:var(--text)}
+p{margin:0 0 19px}
+.lead{color:var(--muted);font-size:15px;letter-spacing:.07em;margin-bottom:36px}
+.rule{width:44px;height:2px;background:var(--shu);margin:22px 0 26px}
+strong{color:#fff;font-weight:600}
+
+/* ---- 押しどころ ---- */
+.btn{display:inline-block;position:relative;overflow:hidden;
+  background:var(--shu);color:#fff;text-decoration:none;
+  font-family:var(--mincho);font-size:17px;letter-spacing:.24em;text-indent:.24em;
+  padding:16px 46px;border-radius:2px;
+  box-shadow:0 10px 30px -12px rgba(216,84,63,.9);
+  transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
+.btn::after{content:"";position:absolute;inset:0;background:
+  linear-gradient(105deg,transparent 38%,rgba(255,255,255,.35) 50%,transparent 62%);
+  transform:translateX(-120%);transition:transform .75s var(--ease)}
+.btn:hover{color:#fff;transform:translateY(-2px);
+  box-shadow:0 16px 38px -12px rgba(216,84,63,1)}
+.btn:hover::after{transform:translateX(120%)}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line);
+  box-shadow:none}
+.btn.ghost:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ---- 作品 ---- */
+.works{list-style:none;padding:0;margin:0;display:grid;gap:20px}
+.work{display:grid;grid-template-columns:132px 1fr;gap:24px;align-items:center;
+  padding:22px;border:1px solid var(--line);border-radius:6px;
+  background:linear-gradient(150deg,rgba(255,255,255,.055),rgba(255,255,255,.015));
+  text-decoration:none;color:inherit;position:relative;overflow:hidden;
+  transition:transform .5s var(--ease),border-color .5s var(--ease)}
+.work::before{content:"";position:absolute;inset:0;opacity:0;
+  background:radial-gradient(400px circle at var(--mx,50%) var(--my,50%),
+    rgba(232,182,44,.13),transparent 62%);
+  transition:opacity .5s var(--ease);pointer-events:none}
+.work:hover{transform:translateY(-4px);border-color:rgba(232,182,44,.42)}
+.work:hover::before{opacity:1}
+.work img{border-radius:4px;transition:transform .7s var(--ease);
+  box-shadow:0 14px 30px -14px #000}
+.work:hover img{transform:scale(1.05)}
+.work h3{font-family:var(--mincho);font-size:20px;letter-spacing:.13em;margin:0 0 6px}
+.work p{font-size:13.5px;color:var(--muted);margin:0 0 12px;line-height:1.85}
+.tags{display:flex;flex-wrap:wrap;gap:7px}
+.tag{font-size:10.5px;letter-spacing:.1em;color:var(--dim);
+  border:1px solid var(--line);border-radius:99px;padding:3px 11px}
+@media(max-width:540px){.work{grid-template-columns:88px 1fr;gap:16px;padding:16px}}
+.soon{border:1px dashed var(--line);border-radius:6px;padding:30px 20px;
+  text-align:center;color:var(--dim);font-size:13px;letter-spacing:.24em}
+
+/* ---- 文書 ---- */
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 22px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left}
+th{color:var(--dim);font-size:12px;letter-spacing:.1em;font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:hover td{background:rgba(255,255,255,.028)}
+pre{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:5px;
+  padding:18px 20px;overflow-x:auto;font-size:13px;line-height:1.75;margin:0 0 22px;
+  color:#d6cfc0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+blockquote{margin:26px 0;padding:4px 0 4px 22px;border-left:2px solid var(--shu);
+  color:var(--text);font-family:var(--mincho);font-size:17px;letter-spacing:.06em}
+.note{font-size:13px;color:var(--dim);letter-spacing:.03em}
+ul{padding-left:1.3em}li{margin-bottom:6px}
+
+/* ---- 現れ方 ---- */
+.rv{opacity:0;transform:translateY(22px);
+  transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.rv.on{opacity:1;transform:none}
+
+footer.site{border-top:1px solid var(--line);padding:34px 0 60px;
+  font-size:12.5px;color:var(--dim);letter-spacing:.05em}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:18px;align-items:baseline}
+footer.site nav{margin-left:auto;display:flex;gap:20px}
+footer.site a{color:var(--dim);text-decoration:none}
+footer.site a:hover{color:var(--gold)}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .rv{opacity:1;transform:none}
+  .hero .mark span,.hero .kicker,.hero .say,.hero .scrollcue{opacity:1;transform:none}
+}
+
+/* ---- 種類で絞る ---- */
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 30px}
+.chip{appearance:none;background:transparent;border:1px solid var(--line);
+  border-radius:99px;color:var(--muted);cursor:pointer;font:inherit;
+  font-size:13px;letter-spacing:.12em;padding:9px 20px;
+  display:inline-flex;align-items:baseline;gap:9px;
+  transition:color .35s var(--ease),border-color .35s var(--ease),background .35s var(--ease)}
+.chip i{font-style:normal;font-size:11px;letter-spacing:.06em;color:var(--dim)}
+.chip:hover{color:var(--text);border-color:rgba(232,182,44,.5)}
+.chip.on{color:#0b1018;background:var(--gold);border-color:var(--gold);font-weight:600}
+.chip.on i{color:rgba(11,16,24,.62)}
+.tag.kind{color:var(--gold);border-color:rgba(232,182,44,.34)}
+.works li[hidden]{display:none}
+
+/* ---- 記録の一覧 ---- */
+.notes{list-style:none;padding:0;margin:0;display:grid;gap:2px}
+.note-row{display:grid;grid-template-columns:104px 1fr;gap:22px;align-items:baseline;
+  padding:24px 18px;border-radius:6px;text-decoration:none;color:inherit;
+  border:1px solid transparent;
+  transition:background .45s var(--ease),border-color .45s var(--ease),transform .45s var(--ease)}
+.note-row:hover{background:rgba(255,255,255,.04);border-color:var(--line);transform:translateX(4px)}
+.note-row time{font-size:12.5px;letter-spacing:.1em;color:var(--dim);
+  font-variant-numeric:tabular-nums}
+.note-row h3{font-family:var(--mincho);font-size:19px;letter-spacing:.1em;margin:0 0 7px}
+.note-row p{font-size:13.5px;color:var(--muted);margin:0 0 11px;line-height:1.85}
+@media(max-width:540px){.note-row{grid-template-columns:1fr;gap:8px;padding:20px 14px}}
+
+/* ---- 作っているものの三区分 ---- */
+.kinds{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:0 0 10px}
+.kind{border:1px solid var(--line);border-radius:6px;padding:22px 20px;
+  background:linear-gradient(150deg,rgba(255,255,255,.05),rgba(255,255,255,.012));
+  transition:border-color .5s var(--ease),transform .5s var(--ease)}
+.kind:hover{border-color:rgba(232,182,44,.4);transform:translateY(-3px)}
+.kind h3{font-family:var(--mincho);font-size:19px;letter-spacing:.14em;margin:0 0 10px;
+  display:flex;align-items:baseline;gap:10px}
+.kind h3 i{font-style:normal;font-size:11.5px;letter-spacing:.14em;color:var(--gold)}
+.kind p{font-size:13.5px;color:var(--muted);margin:0;line-height:1.9}
+@media(max-width:660px){.kinds{grid-template-columns:1fr}}

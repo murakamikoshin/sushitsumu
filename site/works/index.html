@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Works — Koshin Studio</title>
+<meta name="description" content="作ったものの一覧。ブラウザゲーム、スマートフォンのアプリ、Web サイト。">
+<meta name="theme-color" content="#080d16">
+<meta property="og:title" content="Works — Koshin Studio">
+<meta property="og:description" content="作ったものの一覧。ブラウザゲーム、スマートフォンのアプリ、Web サイト。">
+<meta property="og:type" content="website">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<canvas id="motes"></canvas>
+
+<header class="site"><div class="wrap">
+  <a class="logo" href="/">Koshin Studio</a>
+  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/profile/">Profile</a></nav>
+</div></header>
+<main><div class="wrap">
+  <h1>Works</h1>
+  <div class="rule"></div>
+  <p class="lead">作ったものの一覧です。増えたらここに並びます。</p>
+
+  <div class="chips rv"><button class="chip on" data-f="all">All<i>すべて</i></button><button class="chip" data-f="game">Games<i>ゲーム</i></button><button class="chip" data-f="app">Apps<i>アプリ</i></button><button class="chip" data-f="site">Sites<i>サイト</i></button></div>
+  <ul class="works" id="worklist">
+      <li class="rv" data-kind="game" data-delay="0"><a class="work" href="/works/sushitsumu/">
+        <img src="/assets/sushitsumu-square.png" alt="すし積むの表紙" width="800" height="800" loading="lazy">
+        <div>
+          <h3>すし積む</h3>
+          <p>シャリから始めて、同じネタ同士をぶつけて育てる落ち物パズル。行き着く先は金のすし桶。ブラウザだけで遊べます。</p>
+          <div class="tags"><span class="tag kind">ゲーム</span><span class="tag">ブラウザ</span><span class="tag">14 言語</span><span class="tag">オンライン番付</span><span class="tag">2026</span></div>
+        </div>
+      </a></li>
+  </ul>
+  <p class="soon rv" id="empty" hidden>こ の 種 類 は ま だ あ り ま せ ん</p>
+  <p class="soon rv" style="margin-top:22px">次 の 作 品 を 用 意 し て い ま す</p>
+</div></main>
+<footer class="site"><div class="wrap">
+  <span>© 2026 Koshin Studio</span>
+  <nav><a href="/profile/">Profile</a><a href="/privacy/">あつかい</a></nav>
+</div></footer>
+<script src="/motion.js" defer></script>
+</body>
+</html>

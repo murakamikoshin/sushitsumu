@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>すし積む — Koshin Studio</title>
+<meta name="description" content="シャリから始めて同じネタをぶつけて育てる、江戸前の落ち物パズル。ブラウザだけで遊べます。14 言語対応、オンライン番付つき。">
+<meta property="og:title" content="すし積む">
+<meta property="og:description" content="シャリから始めて同じネタをぶつけて育てる、江戸前の落ち物パズル。">
+<meta property="og:type" content="article">
+<meta name="theme-color" content="#080d16">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<canvas id="motes"></canvas>
+
+<header class="site"><div class="wrap">
+  <a class="logo" href="/">Koshin Studio</a>
+  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/profile/">Profile</a></nav>
+</div></header>
+
+<main><div class="wrap">
+  <h1>すし積む</h1>
+  <div class="rule"></div>
+  <p class="lead">シャリから始めて、同じネタ同士をぶつけて育てる落ち物パズル。<br>行き着く先は、金のすし桶。</p>
+
+  <p><a class="btn" href="/works/sushitsumu/play/">遊 ぶ</a></p>
+
+  <img src="/assets/sushitsumu-portrait.png" alt="すし積むの画面。藍色の壁に「すし積む」の暖簾がかかり、白木のすし桶にネタが積まれている" width="800" height="1200" style="max-width:340px;margin:34px 0;border-radius:4px">
+
+  <h2 class="rv">どんなゲームか</h2>
+  <p>桶の上からシャリを落とします。同じネタ同士が触れると、ひとつ上のネタに変わる。シャリが玉子に、玉子がエビに、エビがサーモンに——そうやって十一段を上っていきます。</p>
+  <p>桶からあふれたら、しまい。ただそれだけの遊びですが、<strong>大きいネタほど場所を取る</strong>ので、後先を考えずに積むとすぐ行き詰まります。どこに落とすかを毎回選ぶ、その積み重ねです。</p>
+  <p>合体で生まれたネタが、間を置かずさらに合体すると「連鎖」。五つ繋がれば「大連鎖」で、点が跳ねます。</p>
+
+  <h2 class="rv">入っているもの</h2>
+  <h3>寿司図鑑</h3>
+  <p>これまでに作れたネタだけ、姿が見えます。まだのものは影だけ。端末ごとの記録なので、人によって埋まり方が違います。全十二種（ガリを含む）。</p>
+  <h3>番付（オンラインランキング）</h3>
+  <p>その日の上位と、通算の上位。名前を入れて送ると並びます。パソコンで遊ぶと、画面の右に常に出ています。</p>
+  <h3>お品書き</h3>
+  <p>大将が「マグロを二貫」といった注文を出すので、時間内にその通り作るとボーナス。続けて捌くほど倍率が上がり、落とすと一に戻ります。点の出方が普通の遊び方の 1.6 倍ほどになるので、番付は別枠です。</p>
+  <h3>ガリ</h3>
+  <p>二十回に一度くらい、ネタの代わりにガリが来ます。触れたネタをひとつ消します。積み間違えたときの逃げ道です。</p>
+
+  <h2 class="rv">遊ぶのに要るもの</h2>
+  <p>ブラウザだけです。導入も、登録も要りません。スマートフォンは指でなぞって位置を決め、離すと落ちます。パソコンは左右キーとスペースでも遊べます。</p>
+  <p>日本語・英語・スペイン語・ポルトガル語・フランス語・ドイツ語・イタリア語・ポーランド語・トルコ語・ロシア語・インドネシア語・ベトナム語・韓国語・中国語の十四言語に対応しています。</p>
+
+  <h2 class="rv">作りについて</h2>
+  <p>全体が <strong>HTML ファイル一枚</strong>です。物理演算に <a href="https://brm.io/matter-js/" rel="noopener">Matter.js</a> を使い、寿司の絵は画像ではなく Canvas に毎回描いています。番付は Cloudflare Workers と D1 で動いていて、送られてきた手順を向こうで検算してから並べています。</p>
+  <p>釣り合いの調整は、自動で遊ばせて数字を取ってから決めました。その話は<a href="/notes/anago/">開発の記録</a>に書いています。</p>
+
+  <p style="margin-top:40px">
+    <a class="btn" href="/works/sushitsumu/play/">遊 ぶ</a>
+    <a class="btn ghost" href="/works/sushitsumu/guide.html" style="margin-left:10px">遊び方をくわしく</a>
+  </p>
+</div></main>
+
+<footer class="site"><div class="wrap">
+  <span>© 2026 Koshin Studio</span>
+  <nav><a href="/profile/">Profile</a><a href="/privacy/">あつかい</a></nav>
+</div></footer>
+<script src="/motion.js" defer></script>
+</body>
+</html>

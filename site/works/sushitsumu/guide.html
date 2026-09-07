@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>すし積む 遊び方 — Koshin Studio</title>
+<meta name="description" content="すし積むの遊び方。ネタ十一段の一覧、合体の点数、連鎖、ガリ、お品書き、番付、操作方法までまとめています。">
+<meta name="theme-color" content="#080d16">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<canvas id="motes"></canvas>
+
+<header class="site"><div class="wrap">
+  <a class="logo" href="/">Koshin Studio</a>
+  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/profile/">Profile</a></nav>
+</div></header>
+
+<main><div class="wrap">
+  <h1>すし積む 遊び方</h1>
+  <div class="rule"></div>
+  <p class="lead">覚えることは三つだけです。落とす、合わせる、あふれさせない。</p>
+
+  <h2 class="rv">基本</h2>
+  <p><strong>落とす。</strong>桶の上を指でなぞると、次のネタが左右に動きます。指を離すと落ちます。パソコンなら左右キーで動かして、スペースで落とせます。</p>
+  <p><strong>合わせる。</strong>同じネタ同士が触れると、ひとつ上のネタに変わります。触れさえすればいいので、上から重ねても、横から寄せても構いません。</p>
+  <p><strong>あふれさせない。</strong>桶の縁（暖簾の下の赤い点線）を越えたまま三秒たつと、しまいです。三秒あるので、崩れて一瞬だけ越えたくらいでは終わりません。</p>
+
+  <h2 class="rv">ネタ十一段</h2>
+  <p>下から順に育てていきます。数字は合体したときに入る点です。</p>
+  <div class="scroll rv"><table>
+    <tr><th>段</th><th>ネタ</th><th class="n">大きさ</th><th class="n">合体で入る点</th></tr>
+    <tr><td>1</td><td>シャリ</td><td class="n">直径 30</td><td class="n">—</td></tr>
+    <tr><td>2</td><td>玉子</td><td class="n">39 × 26</td><td class="n">8</td></tr>
+    <tr><td>3</td><td>エビ</td><td class="n">51 × 28</td><td class="n">18</td></tr>
+    <tr><td>4</td><td>サーモン</td><td class="n">68 × 38</td><td class="n">36</td></tr>
+    <tr><td>5</td><td>マグロ</td><td class="n">73 × 39</td><td class="n">70</td></tr>
+    <tr><td>6</td><td>いくら軍艦</td><td class="n">75 × 54</td><td class="n">130</td></tr>
+    <tr><td>7</td><td>ウニ軍艦</td><td class="n">89 × 63</td><td class="n">230</td></tr>
+    <tr><td>8</td><td>大トロ</td><td class="n">119 × 66</td><td class="n">380</td></tr>
+    <tr><td>9</td><td>穴子一本焼き</td><td class="n">158 × 57</td><td class="n">600</td></tr>
+    <tr><td>10</td><td>伊勢海老</td><td class="n">184 × 86</td><td class="n">950</td></tr>
+    <tr><td>11</td><td>ゴールデンすし桶</td><td class="n">直径 168</td><td class="n">1,500</td></tr>
+  </table></div>
+  <p class="note">桶の内側の幅は 336。金のすし桶はちょうどその半分です。落ちてくるのはシャリ・玉子・エビの三種だけなので、上の段はすべて自分で作ることになります。</p>
+
+  <h3>金のすし桶を二つ作ると</h3>
+  <p>ぶつけると<strong>両方消えて 8,000 点</strong>、桶がまるごと空きます。まず見ることはありません。自動で三百戦以上まわして、一度も起きませんでした。</p>
+
+  <h2 class="rv">連鎖</h2>
+  <p>合体で生まれたネタが、間を置かずさらに合体すると連鎖です。ただの連打は連鎖になりません。「生まれた駒が、続けてもう一度合体したとき」だけ数えています。</p>
+  <p>連鎖が深いほど点が伸び、五つ繋がると<strong>大連鎖</strong>。狙って起こすには、同じネタを二組ぶん、隣り合わせに用意しておきます。</p>
+
+  <h2 class="rv">ガリ</h2>
+  <p>二十回に一度くらい、ネタの代わりに小さなガリが来ます。<strong>触れたネタをひとつ消します</strong>（40 点）。</p>
+  <p>使いどころは、上のほうに取り残された小さいネタです。大きいネタを消すのはもったいないので、山のてっぺんに引っかかっている玉子やエビを狙うのが得です。</p>
+
+  <h2 class="rv">お品書き（注文モード）</h2>
+  <p>タイトルの「「お品書き」で遊ぶ」から入ります。大将が「マグロを二貫」のような注文を出すので、時間内にその通りのネタを作ればボーナス。</p>
+  <p>続けて捌くほど<strong>のれん倍率</strong>が上がり、落とすと一に戻ります。点の出方が普通の遊び方の 1.6 倍ほどになるので、番付は別枠で並べています。</p>
+
+  <h2 class="rv">番付</h2>
+  <p>しまいの画面で名前を入れて「載せる」を押すと並びます。その日の上位と、通算の上位。パソコンで遊ぶと画面の右にずっと出ています。</p>
+  <div class="scroll rv"><table>
+    <tr><th>番付</th><th class="n">必要な点</th><th>目安</th></tr>
+    <tr><td>見習い職人</td><td class="n">0</td><td>まずは飯炊き三年から</td></tr>
+    <tr><td>追い回し</td><td class="n">12,000</td><td>ウニ軍艦まで</td></tr>
+    <tr><td>若手職人</td><td class="n">26,000</td><td>大トロが見えてくる</td></tr>
+    <tr><td>中堅職人</td><td class="n">42,000</td><td>穴子まで</td></tr>
+    <tr><td>花板</td><td class="n">58,000</td><td>伊勢海老まで</td></tr>
+    <tr><td>大将</td><td class="n">72,000</td><td>あと一歩</td></tr>
+    <tr><td>伝説のすし職人</td><td class="n">85,000</td><td><strong>金のすし桶を出した</strong></td></tr>
+  </table></div>
+  <p class="note">最上段は、自動プレイで金のすし桶に届いた試合の点（86,000 以上）に合わせてあります。桶を出せば、まず届きます。</p>
+
+  <h2 class="rv">操作</h2>
+  <div class="scroll rv"><table>
+    <tr><th></th><th>スマートフォン</th><th>パソコン</th></tr>
+    <tr><td>動かす</td><td>画面をなぞる</td><td>← → または A / D</td></tr>
+    <tr><td>落とす</td><td>指を離す</td><td>スペース / ↓ / Enter</td></tr>
+    <tr><td>中断</td><td>「中断」を押す</td><td>Esc または P</td></tr>
+  </table></div>
+  <p class="note">スマートフォンでは、指でネタが隠れないように、ネタが指より少し上に出ます。</p>
+
+  <p style="margin-top:40px"><a class="btn" href="/works/sushitsumu/play/">遊 ぶ</a></p>
+</div></main>
+
+<footer class="site"><div class="wrap">
+  <span>© 2026 Koshin Studio</span>
+  <nav><a href="/profile/">Profile</a><a href="/privacy/">あつかい</a></nav>
+</div></footer>
+<script src="/motion.js" defer></script>
+</body>
+</html>

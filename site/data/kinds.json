@@ -1,0 +1,5 @@
+{
+  "game": { "label": "Games", "ja": "ゲーム",   "note": "あそぶもの" },
+  "app":  { "label": "Apps",  "ja": "アプリ",   "note": "つかうもの" },
+  "site": { "label": "Sites", "ja": "サイト",   "note": "つくったサイト" }
+}
