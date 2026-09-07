@@ -123,7 +123,7 @@ const workCard = (w, i) => `      <li class="rv" data-kind="${w.kind}" data-dela
         <div>
           <h3>${esc(w.title)}</h3>
           <p>${esc(w.blurb)}</p>
-          <div class="tags"><span class="tag kind">${kinds[w.kind].ja}</span>${
+          <div class="tags"><span class="tag tag-kind">${kinds[w.kind].ja}</span>${
             w.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join('')
           }<span class="tag">${esc(w.year)}</span></div>
         </div>

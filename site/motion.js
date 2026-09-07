@@ -179,6 +179,7 @@
 
       /* 輪がロゴを避けきれないほど狭い画面では、横に流れる帯にする */
       if (rxCap < Wc) {
+        orbit.classList.add('strip');
         if (!calm) ang += 0.00055 * spin;
         var span = n * (cw + 22);
         for (var m = 0; m < n; m++) {
@@ -200,6 +201,7 @@
         return;
       }
 
+      orbit.classList.remove('strip');
       var rx = Math.min(rxCap, Math.max(box.width * 0.30, Wc));
       var ry = Math.min(ryCap, Math.max(box.height * 0.22, Hc));
       if (!calm) ang += 0.0022 * spin;

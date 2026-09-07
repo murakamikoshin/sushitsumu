@@ -132,6 +132,28 @@ for (const size of SIZES) {
           out.small.push(`${el.tagName}${el.className ? '.' + String(el.className).split(' ')[0] : ''} ${Math.round(b.width)}x${Math.round(b.height)} "${(el.textContent || '').trim().slice(0, 14)}"`);
         }
       }
+      /* 小さな部品が不自然に膨らんでいないか
+         （別のクラスの箱指定を拾ってしまう事故を捕まえる） */
+      out.puffy = [];
+      for (const el of document.querySelectorAll('span,i,b,em,small,button,a')) {
+        if (el.children.length) continue;
+        const txt = (el.textContent || '').trim();
+        if (!txt || txt.length > 20) continue;
+        const r = el.getBoundingClientRect();
+        if (!r.height || !r.width) continue;
+        const c = getComputedStyle(el);
+        if (c.display === 'inline') continue;
+        if (c.height && c.height !== 'auto' && el.style.height !== '') continue;
+        if (parseFloat(c.minHeight) > 40) continue;
+        if (el.closest('#orbit')) continue;   // 回る札は意図して正方形
+        const lh = parseFloat(c.lineHeight) || parseFloat(c.fontSize) * 1.6;
+        const pad = parseFloat(c.paddingTop) + parseFloat(c.paddingBottom);
+        if (r.height > lh + pad + 14 && r.height > lh * 2.2) {
+          out.puffy.push(`${el.tagName}.${String(el.className).split(' ')[0] || ''} `
+            + `${Math.round(r.width)}x${Math.round(r.height)}（行の高さ ${Math.round(lh)}）「${txt.slice(0, 10)}」`);
+        }
+      }
+
       /* 画像の代替文字 */
       for (const im of document.querySelectorAll('img')) {
         if (!im.hasAttribute('alt')) out.noalt.push(im.getAttribute('src') || '(src なし)');
@@ -181,6 +203,7 @@ for (const size of SIZES) {
     if (r.overflow) add('高', `${path} [${size.n}]`,
       `横にはみ出し ${r.overflow.doc} > ${r.overflow.view}（${r.overflow.by.join(', ')}）`);
     for (const s of new Set(r.small)) add('中', `${path} [${size.n}]`, `押しにくい: ${s}`);
+    for (const s of new Set(r.puffy)) add('高', `${path} [${size.n}]`, `不自然に膨らんだ部品: ${s}`);
     for (const a of r.noalt) add('中', `${path} [${size.n}]`, `alt が無い画像: ${a}`);
     for (const d of r.dupIds) add('中', `${path} [${size.n}]`, `id の重複: ${d}`);
     for (const c of r.contrast) {
