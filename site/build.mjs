@@ -85,6 +85,9 @@ const kinds = read('/data/kinds.json');
 const conf  = existsSync(here + '/data/site.json') ? read('/data/site.json') : { social: [], ads: {} };
 const stack = existsSync(here + '/data/stack.json') ? read('/data/stack.json') : { groups: [] };
 
+/* 絵の在り処は拡張子なしで持つ決まり。古い書き方（.png 付き）も受ける */
+const base = (p) => String(p || '').replace(/\.(png|jpe?g|webp|avif|gif)$/i, '');
+
 const head = (title, desc, extra = '') => `<!doctype html>
 <html lang="ja">
 <head>
@@ -124,8 +127,14 @@ const foot = `
 </html>
 `;
 
+/* 絵は拡張子を付けずに持つ。webp を先に出し、読めない相手には jpg を渡す。
+   元の PNG は重すぎるので配らない */
 const workCard = (w, i) => `      <li class="rv" data-kind="${w.kind}" data-delay="${i * 70}"><a class="work" href="${w.url}">
-        <img src="${w.cover}" alt="${esc(w.title)}の表紙" width="800" height="800" loading="lazy">
+        <picture>
+          <source srcset="${base(w.cover)}.webp 360w, ${base(w.cover)}@2x.webp 720w" sizes="132px" type="image/webp">
+          <img src="${base(w.cover)}.jpg" srcset="${base(w.cover)}.jpg 360w, ${base(w.cover)}@2x.jpg 720w" sizes="132px"
+               alt="${esc(w.title)}の表紙" width="${w.coverW || 720}" height="${w.coverH || 720}" loading="lazy" decoding="async">
+        </picture>
         <div>
           <h3>${esc(w.title)}</h3>
           <p>${esc(w.blurb)}</p>
@@ -219,7 +228,7 @@ const orbitCells = []
 
 const orbitHtml = orbitCells.map((c, i) => `      <a class="orb${c.img ? ' has-img' : ''}" href="${c.href}" style="--i:${i}">
         ${c.img
-          ? `<picture><source srcset="${c.img.replace(/\.\w+$/, '.webp')}" type="image/webp"><img src="${c.img.replace(/\.\w+$/, '.jpg')}" alt="${esc(c.label)}" width="360" height="360" loading="eager" decoding="async"></picture>`
+          ? `<picture><source srcset="${base(c.img)}.webp" type="image/webp"><img src="${base(c.img)}.jpg" alt="${esc(c.label)}" width="360" height="360" loading="eager" decoding="async"></picture>`
           : `<span class="orb-mark">${esc(c.label)}</span>`}
         <span class="orb-cap">${esc(c.img ? c.label : c.sub)}</span>
       </a>`).join('\n');
@@ -237,25 +246,26 @@ const kindHtml = kindKeys.map((k, i) => {
 
 /* 代表作 */
 const f = works.find((w) => w.featured) || works[0];
+/* 出す絵と数字は works.json から取る。作品が入れ替わっても書き換えずに済む */
+const featImg = base((f && f.hero) || (f && f.cover) || '');
 const featHtml = f ? `    <div class="feat-media rv">
       <picture>
-        <source srcset="/assets/sushitsumu-wide.webp 960w, /assets/sushitsumu-wide@2x.webp 1600w"
-                sizes="(max-width: 900px) 100vw, 900px" type="image/webp">
-        <img src="/assets/sushitsumu-wide.jpg" alt="${esc(f.title)}" width="960" height="540" loading="lazy" decoding="async">
+        <source srcset="${featImg}.webp" type="image/webp">
+        <img src="${featImg}.jpg" alt="${esc(f.heroAlt || f.title)}"
+             width="${f.heroW || f.coverW || 1200}" height="${f.heroH || f.coverH || 831}"
+             loading="lazy" decoding="async">
       </picture>
     </div>
     <div class="wrap feat-body">
       <p class="eyebrow rv">代表作 / ${kinds[f.kind].ja}</p>
       <h2 class="rv" data-delay="60">${esc(f.title)}</h2>
       <p class="rv" data-delay="100" style="max-width:32em;color:var(--muted)">${esc(f.blurb)}</p>
-      <div class="stats rv" data-delay="140">
-        <div><b data-count="11">0</b><span>段のネタ</span></div>
-        <div><b data-count="14">0</b><span>言語</span></div>
-        <div><b data-count="262">0</b><span>戦を自動で検証</span></div>
+      <div class="stats rv" data-delay="140">${(f.stats || []).map((x) =>
+        `\n        <div><b data-count="${x.n}">0</b><span>${esc(x.label)}</span></div>`).join('')}
       </div>
       <p class="rv" data-delay="180" style="margin-top:30px">
         <a class="btn" href="/works/sushitsumu/play/">遊 ぶ</a>
-        <a class="btn ghost" href="${f.url}" style="margin-left:10px">くわしく</a>
+        <a class="btn ghost" href="${f.url}">くわしく</a>
       </p>
     </div>` : '';
 

@@ -92,6 +92,37 @@ const lum = ([r, g, b]) => {
   } catch (e) { add('高', 'build.mjs', '組み直しでつまずいた: ' + (e.message || e)); }
 }
 
+/* ---- 出てくる絵が、写した先にも残るか ----
+   手元では見えているのに、git に入っていない絵がある状態で配ると、
+   向こうでだけ 404 になる。元の PNG を追跡から外したときに一度やった。
+   ページから指されている /assets 以下を、git の一覧と突き合わせる。 */
+{
+  let tracked = null;
+  try {
+    tracked = new Set(execFileSync('git', ['ls-files', 'site'],
+      { cwd: ROOT + '/..', encoding: 'utf8' }).split('\n').filter(Boolean));
+  } catch (e) { /* git が無い所では見送る */ }
+  if (tracked) {
+    const seen = new Set();
+    for (const p of pages()) {
+      const f = ROOT + (p.endsWith('/') ? p + 'index.html' : p);
+      if (!existsSync(f)) continue;
+      const html = readFileSync(f, 'utf8');
+      for (const m of html.matchAll(/["'( ]\/((?:assets|vendor|fonts)\/[A-Za-z0-9@._/-]+)/g)) {
+        const rel = m[1].replace(/[),]+$/, '');
+        if (seen.has(rel)) continue;
+        seen.add(rel);
+        if (!tracked.has('site/' + rel)) {
+          add(existsSync(ROOT + '/' + rel) ? '高' : '高', p,
+            existsSync(ROOT + '/' + rel)
+              ? `git に入っていない絵を指している（配ると 404 になる）: /${rel}`
+              : `そもそも無いものを指している: /${rel}`);
+        }
+      }
+    }
+  }
+}
+
 const browser = await chromium.launch({ executablePath: CHROME });
 let totalBytes = 0;
 const seenRes = new Set();

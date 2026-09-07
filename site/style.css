@@ -122,7 +122,9 @@ p{margin:0 0 19px}
 strong{color:#fff;font-weight:600}
 
 /* ---- 押しどころ ---- */
-.btn{display:inline-block;position:relative;overflow:hidden;
+/* ボタンが二つ並ぶとき、左の余白で離すと、折り返した二つ目だけが
+   一段右にずれる。間の余白として持たせる */
+.btn{margin:0 12px 12px 0;display:inline-block;position:relative;overflow:hidden;
   background:var(--shu);color:#fff;text-decoration:none;
   font-family:var(--mincho);font-size:17px;letter-spacing:.24em;text-indent:.24em;
   padding:16px 46px;border-radius:2px;
@@ -323,10 +325,14 @@ h2.sec span{font-family:var(--gothic);font-size:11px;letter-spacing:.24em;
 
 /* ---- 代表作 ---- */
 .feat{padding-top:0;overflow:hidden}
-.feat-media{position:relative;margin:0 0 -70px;transform-origin:center top}
-.feat-media img{width:100%;max-height:62vh;object-fit:cover;
-  -webkit-mask-image:linear-gradient(180deg,#000 42%,transparent 99%);
-  mask-image:linear-gradient(180deg,#000 42%,transparent 99%)}
+/* 出す絵は、宣伝用の絵ではなく実際に遊んでいる画面。
+   宣伝用の絵には題字が焼き込んであって、すぐ下の見出しと重なって見える。
+   下に向かって地に溶かすので、字が乗るあたりは絵を残さない */
+.feat-media{position:relative;margin:0 0 8px;transform-origin:center top}
+.feat-media img{width:100%;max-height:46vh;object-fit:cover;object-position:center bottom;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 12% 74%,transparent 100%);
+  mask-image:linear-gradient(180deg,transparent 0,#000 12% 74%,transparent 100%)}
+@media(max-width:760px){.feat-media img{height:240px;max-height:none}}
 .feat-body{position:relative;z-index:2}
 .eyebrow{font-size:11px;letter-spacing:.28em;color:var(--gold);margin:0 0 12px}
 .feat-body h2{font-family:var(--mincho);font-size:clamp(30px,6vw,52px);

@@ -40,7 +40,11 @@
   <div class="chips rv"><button class="chip on" data-f="all">All<i>すべて</i></button><button class="chip" data-f="game">Games<i>ゲーム</i></button><button class="chip" data-f="app">Apps<i>アプリ</i></button><button class="chip" data-f="site">Sites<i>サイト</i></button><button class="chip" data-f="cg">3D<i>3Dモデル</i></button></div>
   <ul class="works" id="worklist">
       <li class="rv" data-kind="game" data-delay="0"><a class="work" href="/works/sushitsumu/">
-        <img src="/assets/sushitsumu-square.png" alt="すし積むの表紙" width="800" height="800" loading="lazy">
+        <picture>
+          <source srcset="/assets/sushitsumu-square.webp 360w, /assets/sushitsumu-square@2x.webp 720w" sizes="132px" type="image/webp">
+          <img src="/assets/sushitsumu-square.jpg" srcset="/assets/sushitsumu-square.jpg 360w, /assets/sushitsumu-square@2x.jpg 720w" sizes="132px"
+               alt="すし積むの表紙" width="720" height="720" loading="lazy" decoding="async">
+        </picture>
         <div>
           <h3>すし積む</h3>
           <p>シャリから始めて、同じネタ同士をぶつけて育てる落ち物パズル。行き着く先は金のすし桶。ブラウザだけで遊べます。</p>
