@@ -9,28 +9,46 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from
 
 const here = import.meta.dirname;
 
-/* ゲーム本体の在り処。site/ が sushitsumu の中にあっても、
-   別のリポジトリとして隣に並んでいても、どちらでも見つかるようにする。 */
-const CANDIDATES = [here + '/..', here + '/../sushitsumu', here + '/../../sushitsumu'];
+/* ゲーム本体（sushitsumu）の在り処。
+   site/ が sushitsumu の中にあっても、別のリポジトリとして
+   どこかに置かれていても動くように、順に探す。
+   見つからないときは環境変数か引数で教える:
+       GAME_DIR=~/Desktop/sushitsumu/sushitsumu node build.mjs
+       node build.mjs ~/Desktop/sushitsumu/sushitsumu
+   すでに写し終わっていれば、見つからなくても一覧は書き出す。 */
+const told = process.argv[2] || process.env.GAME_DIR;
+const CANDIDATES = [
+  told,
+  here + '/..',
+  here + '/../sushitsumu',
+  here + '/../../sushitsumu',
+  here + '/../../sushitsumu/sushitsumu',
+].filter(Boolean).map((d) => d.replace(/^~/, process.env.HOME || '~'));
 const root = CANDIDATES.find((d) => existsSync(d + '/index.html'));
-if (!root) {
-  console.error('ゲーム本体（index.html）が見つかりません。探した場所:\n  ' + CANDIDATES.join('\n  '));
-  process.exit(1);
+
+/* ---- ゲーム本体と絵を、配る形に並べる ---- */
+if (root) {
+  mkdirSync(here + '/works/sushitsumu/play', { recursive: true });
+  mkdirSync(here + '/assets', { recursive: true });
+  copyFileSync(root + '/index.html', here + '/works/sushitsumu/play/index.html');
+  for (const [from, to] of [
+    ['cover-square-800x800.png', 'sushitsumu-square.png'],
+    ['cover-portrait-800x1200.png', 'sushitsumu-portrait.png'],
+    ['cover-landscape-1920x1080.png', 'sushitsumu-landscape.png'],
+  ]) copyFileSync(root + '/store/' + from, here + '/assets/' + to);
+  console.log('site: ゲーム本体と表紙を写しました（' + root + '）');
+} else if (existsSync(here + '/works/sushitsumu/play/index.html')) {
+  console.log('site: ゲーム本体は写し済みのものを使います');
+} else {
+  console.warn('site: ゲーム本体が見つかりません。一覧だけ書き出します。');
+  console.warn('      GAME_DIR=<sushitsumu の場所> node build.mjs で教えてください。');
+  console.warn('      探した場所:\n        ' + CANDIDATES.join('\n        '));
 }
+
+/* ---- 部品 ---- */
 const read = (p) => JSON.parse(readFileSync(here + p, 'utf8'));
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-/* ---- ゲーム本体と絵 ---- */
-mkdirSync(here + '/works/sushitsumu/play', { recursive: true });
-mkdirSync(here + '/assets', { recursive: true });
-copyFileSync(root + '/index.html', here + '/works/sushitsumu/play/index.html');
-for (const [from, to] of [
-  ['cover-square-800x800.png', 'sushitsumu-square.png'],
-  ['cover-portrait-800x1200.png', 'sushitsumu-portrait.png'],
-  ['cover-landscape-1920x1080.png', 'sushitsumu-landscape.png'],
-]) copyFileSync(root + '/store/' + from, here + '/assets/' + to);
-
-/* ---- 部品 ---- */
 const works = read('/data/works.json');
 const notes = read('/data/notes.json');
 const kinds = read('/data/kinds.json');

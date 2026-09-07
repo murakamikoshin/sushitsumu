@@ -7,6 +7,11 @@ HTML と CSS と、外部 library を入れない JavaScript が一枚ずつ。
 
     node site/build.mjs
 
+ゲーム本体（sushitsumu の index.html）が隣に見つからないときは、場所を教える。
+
+    GAME_DIR=~/Desktop/sushitsumu/sushitsumu node build.mjs
+    node build.mjs ~/Desktop/sushitsumu/sushitsumu
+
 やっていること:
 
 - `index.html`（ゲーム本体）を `site/works/sushitsumu/play/` に写す
