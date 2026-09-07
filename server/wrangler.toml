@@ -1,0 +1,13 @@
+name = "sushitsumu-rank"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sushitsumu"
+database_id = "ここに wrangler d1 create sushitsumu が出した ID を貼る"
+
+# 誰でも書き込める番付なので、置き場所を絞りたい時はここにゲームの URL を並べる。
+# 空にすると全部のサイトから受ける。
+[vars]
+ALLOW_ORIGINS = ""

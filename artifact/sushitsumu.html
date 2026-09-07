@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&display=swap">
 <title>すし積む</title>
+
 <style>
 /* ============================================================
    すし積む  -  iOS(Safari / WKWebView) 最適化 落ち物合体パズル
@@ -318,6 +319,21 @@ body:not(.has-rank) .needs-rank { display: none !important; }
 .rEmpty { font-size: 12px; color: #9a8a72; padding: 26px 0; text-align: center; line-height: 2; }
 
 /* ---- 横向き（ランドスケープ）警告 ---- */
+/* 広告の幕。広告そのものは SDK が上に被せるので、裏を隠すだけの役 */
+#adCurtain {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 18px; background: var(--sumi); color: var(--washi);
+  font-family: var(--mincho);
+}
+#adCurtain[hidden] { display: none; }
+#adCurtain .noren {
+  font-size: 22px; letter-spacing: .5em; text-indent: .5em;
+  padding: 10px 24px; border: 1px solid rgba(250, 246, 236, .28); border-radius: 2px;
+  color: var(--kin);
+}
+#adCurtain p { font-size: 12px; letter-spacing: .22em; opacity: .6; }
+
 #rotate { display: none; }
 @media (orientation: landscape) and (max-height: 520px) and (pointer: coarse) {
   #rotate {
@@ -339,6 +355,8 @@ body:not(.has-rank) .needs-rank { display: none !important; }
   50%      { transform: rotate(10deg); }
 }
 </style>
+</head>
+
 <div id="app">
   <header class="hud">
     <div class="hud-l">
@@ -432,6 +450,12 @@ body:not(.has-rank) .needs-rank { display: none !important; }
       </div>
     </div>
   </main>
+
+  <!-- 広告のあいだの幕。SDK が無い時は一度も出ない -->
+  <div id="adCurtain" hidden>
+    <div class="noren">広告</div>
+    <p>このあと、すぐに再開します</p>
+  </div>
 
   <!-- 横向き時のご案内 -->
   <div id="rotate">
@@ -782,6 +806,7 @@ function flushOps() {
         burst(mx, my, ['#ffe89a', '#ffd45a', '#fff8dc', '#e8b62c'], 60, 8);
         showPop('大 入 袋 ！', 1);
         seJackpot();
+        adHappy();
         continue;
       }
 
@@ -2612,9 +2637,11 @@ function gameOver() {
   document.getElementById('overModal').hidden = false;
   seOver();
   bgmStop(0.8);
+  countPlay();
+  adGameStop();
 
   // 名前を登録済みなら自動で送る。初回は本人が押すまで送らない
-  if (rankDb) {
+  if (rankApi) {
     sendNote.textContent = '';
     var savedName = cleanName(lsGet('sushitsumu.name') || '');
     nameInput.value = savedName;
@@ -2660,6 +2687,7 @@ function beginGame(mode) {
   document.getElementById('titleModal').hidden = true;
   resize();
   resetGame();
+  adGameStart();
 }
 document.getElementById('startBtn').addEventListener('click', function (e) {
   e.preventDefault(); beginGame('normal');
@@ -2669,10 +2697,14 @@ document.getElementById('startOrderBtn').addEventListener('click', function (e) 
 });
 document.getElementById('retryBtn').addEventListener('click', function (e) {
   e.preventDefault();
-  unlockAudio();
-  bgmStart();
+  if (adBusy) return;
+  unlockAudio();          // iOS は指が触れている間でないと音を開けない
   document.getElementById('overModal').hidden = true;
-  resetGame();
+  adBreakPoint().then(function () {
+    bgmStart();
+    resetGame();
+    adGameStart();
+  });
 });
 
 /* ============================================================
@@ -2869,13 +2901,15 @@ function drawOrder() {
 
 /* ============================================================
    18. オンライン番付
-   共有データベースはアーティファクトとして公開した時だけ使える。
-   単体の index.html には window.claude が無いので、その場合は
-   番付の UI ごと隠して、これまで通り端末内のハイスコアだけで動かす。
+   置き場所によって裏側が変わるので、呼び出し口を一つに絞る。
+     ・アーティファクト  → window.claude の共有データベース
+     ・ポータル / 自前   → RANK_API に置いた HTTP サーバ
+   どちらも無ければ番付の UI ごと隠して、端末内のハイスコアだけで動く。
    ============================================================ */
+var RANK_API  = '';      // 例 'https://sushitsumu-rank.xxxx.workers.dev'（末尾の / は不要）
 var RANK_SHOW = 20;      // 一覧に出す人数
 var RANK_SCAN = 100;     // 自分の順位を数えるために見る範囲
-var rankDb = null;
+var rankApi = null;      // { top(kind,mode,n), submit(id,name,score,kind) }
 var rankMode = 'day';
 var rankKind = 'normal';     // どちらの遊び方の番付か
 var rankBusy = false;
@@ -2908,6 +2942,86 @@ function cleanName(n) {
   }
   return out.trim().slice(0, 12);
 }
+function rankFields(kind) {
+  return kind === 'order'
+    ? { all: 'bestO', day: 'dayBestO' }
+    : { all: 'best',  day: 'dayBest'  };
+}
+
+/* ---- 裏側 その一：アーティファクトの共有データベース ---- */
+function claudeBackend(db) {
+  return {
+    top: function (kind, mode, n) {
+      var f = rankFields(kind), col = db.collection('scores');
+      var q = mode === 'day'
+        ? col.where('day', '==', jstDay()).orderBy(f.day, 'desc').limit(n)
+        : col.orderBy(f.all, 'desc').limit(n);
+      return q.get().then(function (snap) {
+        var out = [];
+        if (!snap || !snap.docs) return out;
+        snap.docs.forEach(function (d) {
+          var r = d.data() || {};
+          out.push({
+            id: d.id, name: r.name,
+            score: Number(mode === 'day' ? r[f.day] : r[f.all]) || 0
+          });
+        });
+        return out;
+      });
+    },
+    /* 一人一文書。文書数が青天井にならないよう、自己ベストだけを持たせる */
+    submit: function (id, name, sc, kind) {
+      var today = jstDay(), f = rankFields(kind), ref = db.doc('scores/' + id);
+      return ref.get().then(function (snap) {
+        var cur = (snap && snap.exists && snap.data()) || {};
+        var sameDay = (cur.day === today);
+        // set は全置換なので、触らない側の記録も持ち回す
+        var body = {
+          name: name, day: today, updatedAt: new Date().toISOString(),
+          best:     Number(cur.best)  || 0,
+          bestO:    Number(cur.bestO) || 0,
+          dayBest:  sameDay ? (Number(cur.dayBest)  || 0) : 0,
+          dayBestO: sameDay ? (Number(cur.dayBestO) || 0) : 0
+        };
+        body[f.all] = Math.max(body[f.all], sc);
+        body[f.day] = Math.max(body[f.day], sc);
+        return ref.set(body);
+      });
+    }
+  };
+}
+
+/* ---- 裏側 その二：自前の HTTP サーバ（server/ の Worker を想定）----
+   自己ベストの取り回しは向こう側でやるので、こちらは投げるだけ。 */
+function httpBackend(base) {
+  function ask(path, opt) {
+    return fetch(base + path, opt).then(function (r) {
+      if (!r.ok) throw { code: r.status === 429 ? 'busy' : 'http' };
+      return r.json();
+    });
+  }
+  return {
+    top: function (kind, mode, n) {
+      return ask('/top?kind=' + encodeURIComponent(kind) +
+                 '&mode=' + encodeURIComponent(mode) +
+                 '&day='  + encodeURIComponent(jstDay()) +
+                 '&limit=' + n).then(function (rows) {
+        return (rows || []).map(function (r) {
+          return { id: String(r.id), name: r.name, score: Number(r.score) || 0 };
+        });
+      });
+    },
+    submit: function (id, name, sc, kind) {
+      return ask('/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: id, name: name, score: sc, kind: kind, day: jstDay()
+        })
+      });
+    }
+  };
+}
 
 var nameInput = document.getElementById('nameInput');
 var sendNote  = document.getElementById('sendNote');
@@ -2919,63 +3033,24 @@ var tabAll    = document.getElementById('tabAll');
 var tabNormal = document.getElementById('tabNormal');
 var tabOrder  = document.getElementById('tabOrder');
 
+function rankReady(api) {
+  rankApi = api;
+  document.body.classList.add('has-rank');
+  nameInput.value = cleanName(lsGet('sushitsumu.name') || '');
+}
 function initRanking() {
+  if (RANK_API) { rankReady(httpBackend(RANK_API.replace(/\/+$/, ''))); return; }
   if (!window.claude || typeof window.claude.use !== 'function') return;
   window.claude.use('db').then(function (db) {
-    if (!db) return;
-    rankDb = db;
-    document.body.classList.add('has-rank');
-    nameInput.value = cleanName(lsGet('sushitsumu.name') || '');
+    if (db) rankReady(claudeBackend(db));
   })['catch'](function () {});
-}
-
-function rankFields(kind) {
-  return kind === 'order'
-    ? { all: 'bestO', day: 'dayBestO' }
-    : { all: 'best',  day: 'dayBest'  };
-}
-function topQuery(n) {
-  var f = rankFields(rankKind);
-  var col = rankDb.collection('scores');
-  return rankMode === 'day'
-    ? col.where('day', '==', jstDay()).orderBy(f.day, 'desc').limit(n)
-    : col.orderBy(f.all, 'desc').limit(n);
-}
-function scoreOf(row) {
-  var f = rankFields(rankKind);
-  return Number(rankMode === 'day' ? row[f.day] : row[f.all]) || 0;
-}
-
-/* 一人一文書。文書数が青天井にならないよう、自己ベストだけを持たせる */
-function submitScore(name, sc, kind) {
-  if (!rankDb) return Promise.reject({ code: 'unavailable' });
-  var today = jstDay();
-  var f = rankFields(kind);
-  var ref = rankDb.doc('scores/' + playerId());
-  return ref.get().then(function (snap) {
-    var cur = (snap && snap.exists && snap.data()) || {};
-    var sameDay = (cur.day === today);
-    // set は全置換なので、触らない側の記録も持ち回す
-    var body = {
-      name: name, day: today, updatedAt: new Date().toISOString(),
-      best:     Number(cur.best)  || 0,
-      bestO:    Number(cur.bestO) || 0,
-      dayBest:  sameDay ? (Number(cur.dayBest)  || 0) : 0,
-      dayBestO: sameDay ? (Number(cur.dayBestO) || 0) : 0
-    };
-    body[f.all] = Math.max(body[f.all], sc);
-    body[f.day] = Math.max(body[f.day], sc);
-    return ref.set(body);
-  });
 }
 
 /* 自分の順位を数える（RANK_SCAN 位まで） */
 function myRank() {
-  return topQuery(RANK_SCAN).get().then(function (snap) {
+  return rankApi.top(rankKind, rankMode, RANK_SCAN).then(function (rows) {
     var me = playerId();
-    for (var i = 0; i < snap.docs.length; i++) {
-      if (snap.docs[i].id === me) return i + 1;
-    }
+    for (var i = 0; i < rows.length; i++) if (rows[i].id === me) return i + 1;
     return 0;
   });
 }
@@ -2999,22 +3074,24 @@ function afterSubmit() {
       return sp;
     };
     sendNote.appendChild(mk('本日', r[0]));
-    sendNote.appendChild(document.createTextNode('　'));
+    sendNote.appendChild(document.createTextNode('\u3000'));
     sendNote.appendChild(mk('総合', r[1]));
   });
 }
 
 function doSubmit() {
-  if (!rankDb || rankBusy) return;
+  if (!rankApi || rankBusy) return;
   var name = cleanName(nameInput.value);
   if (!name) { sendNote.textContent = '名前を入れてください。'; nameInput.focus(); return; }
   lsSet('sushitsumu.name', name);
   rankBusy = true;
   sendNote.textContent = '送っています…';
-  submitScore(name, score, gameMode).then(afterSubmit)['catch'](function (e) {
-    sendNote.textContent = (e && e.code === 'quota_exceeded')
-      ? '番付が満杯で登録できませんでした。'
-      : '番付に繋がりませんでした。通信を確かめて、もう一度お試しください。';
+  rankApi.submit(playerId(), name, score, gameMode).then(afterSubmit)['catch'](function (e) {
+    var code = e && e.code;
+    sendNote.textContent =
+      code === 'quota_exceeded' ? '番付が満杯で登録できませんでした。' :
+      code === 'busy'           ? '混み合っています。少し置いてからお試しください。' :
+      '番付に繋がりませんでした。通信を確かめて、もう一度お試しください。';
   }).then(function () { rankBusy = false; });
 }
 
@@ -3026,8 +3103,8 @@ function rankMessage(text) {
   rlistEl.appendChild(li);
 }
 
-function renderRank(snap) {
-  if (!snap || snap.empty) {
+function renderRank(rows) {
+  if (!rows || !rows.length) {
     rankMessage(rankMode === 'day'
       ? '本日はまだ誰も握っていません。一番乗りをどうぞ。'
       : 'まだ誰も番付に載っていません。');
@@ -3035,10 +3112,9 @@ function renderRank(snap) {
   }
   rlistEl.innerHTML = '';
   var me = playerId();
-  snap.docs.forEach(function (d, i) {
-    var row = d.data() || {};
+  rows.forEach(function (row, i) {
     var li = document.createElement('li');
-    if (d.id === me) li.className = 'me';
+    if (row.id === me) li.className = 'me';
     var rk = document.createElement('span');
     rk.className = 'rk' + (i < 3 ? ' g' + (i + 1) : '');
     rk.textContent = String(i + 1);
@@ -3048,14 +3124,14 @@ function renderRank(snap) {
     rn.textContent = cleanName(row.name) || '名無し';
     var rs = document.createElement('span');
     rs.className = 'rs';
-    rs.textContent = fmt(Math.max(0, Math.floor(scoreOf(row))));
+    rs.textContent = fmt(Math.max(0, Math.floor(row.score)));
     li.appendChild(rk); li.appendChild(rn); li.appendChild(rs);
     rlistEl.appendChild(li);
   });
 }
 
 function loadRank() {
-  if (!rankDb) return;
+  if (!rankApi) return;
   tabDay.classList.toggle('is-on', rankMode === 'day');
   tabAll.classList.toggle('is-on', rankMode === 'all');
   tabNormal.classList.toggle('is-on', rankKind === 'normal');
@@ -3064,7 +3140,7 @@ function loadRank() {
     (rankKind === 'order' ? 'お品書き' : 'お任せ') + '・' +
     (rankMode === 'day' ? '本日（日本時間 ' + jstDay() + '）' : 'これまで') + 'の上位';
   rankMessage('読み込んでいます…');
-  topQuery(RANK_SHOW).get().then(renderRank)['catch'](function () {
+  rankApi.top(rankKind, rankMode, RANK_SHOW).then(renderRank)['catch'](function () {
     rankMessage('番付を読み込めませんでした。');
   });
 }
@@ -3091,7 +3167,107 @@ document.getElementById('openRank').addEventListener('click', function () { open
 document.getElementById('openRank2').addEventListener('click', function () { openRankModal('day'); });
 
 /* ============================================================
-   19. 起動
+   19. 広告
+   ポータル（CrazyGames / Poki / Google H5 Games Ads）に載せた時だけ
+   何プレイかに一本、区切りで挟む。SDK が無ければ丸ごと素通りするので、
+   単体の index.html でもアーティファクトでも今まで通り動く。
+   載せる先が決まったら <head> に SDK の script を一行足すだけでよい。
+   ============================================================ */
+var AD_EVERY = 5;        // 何プレイごとに一本挟むか
+var AD_SKIP  = 1;        // 最初の何プレイは出さないか（第一印象を損ねない）
+var adHost = null, adReady = false, adBusy = false;
+
+/* 置き場所を見て裏側を選ぶ。増やす時はここに一つ足すだけ */
+function detectAdHost() {
+  var CG = window.CrazyGames && window.CrazyGames.SDK;
+  if (CG) return {
+    name: 'crazygames',
+    boot:  function () { return CG.init ? CG.init() : null; },
+    start: function () { try { CG.game.gameplayStart(); } catch (e) {} },
+    stop:  function () { try { CG.game.gameplayStop();  } catch (e) {} },
+    happy: function () { try { CG.game.happytime();     } catch (e) {} },
+    show:  function () {
+      return new Promise(function (done) {
+        try {
+          CG.ad.requestAd('midgame', {
+            adFinished: function () { done('done'); },
+            adError:    function () { done('error'); }
+          });
+        } catch (e) { done('error'); }
+      });
+    }
+  };
+  var P = window.PokiSDK;
+  if (P) return {
+    name: 'poki',
+    boot:  function () { return P.init ? P.init() : null; },
+    start: function () { try { P.gameplayStart(); } catch (e) {} },
+    stop:  function () { try { P.gameplayStop();  } catch (e) {} },
+    happy: function () {},
+    show:  function () {
+      try { return Promise.resolve(P.commercialBreak()); } catch (e) { return Promise.resolve('error'); }
+    }
+  };
+  if (typeof window.adBreak === 'function') return {     // Google H5 Games Ads
+    name: 'google',
+    boot:  function () { try { window.adConfig({ preloadAdBreaks: 'on' }); } catch (e) {} },
+    start: function () {}, stop: function () {}, happy: function () {},
+    show:  function () {
+      return new Promise(function (done) {
+        try {
+          window.adBreak({
+            type: 'next', name: 'between-games',
+            adBreakDone: function () { done('done'); }
+          });
+        } catch (e) { done('error'); }
+      });
+    }
+  };
+  return null;
+}
+function initAds() {
+  adHost = detectAdHost();
+  if (!adHost) return;
+  try {
+    Promise.resolve(adHost.boot())
+      .then(function () { adReady = true; })['catch'](function () { adReady = true; });
+  } catch (e) { adReady = true; }
+}
+function adGameStart() { if (adHost) adHost.start(); }
+function adGameStop()  { if (adHost) adHost.stop();  }
+function adHappy()     { if (adHost) adHost.happy(); }
+
+/* 広告のあいだは音を止める。soundOn は触らないので音入/音切の表示は動かない */
+function adMute(on) {
+  if (!actx) return;
+  try { if (on) actx.suspend(); else actx.resume(); } catch (e) {}
+}
+function adCurtain(on) {
+  document.getElementById('adCurtain').hidden = !on;
+}
+function playCount() { return parseInt(lsGet('sushitsumu.plays') || '0', 10) || 0; }
+function countPlay() { lsSet('sushitsumu.plays', String(playCount() + 1)); }
+
+/* 一区切りついた時に呼ぶ。出し終える（あるいは出さないと決める）まで待てる */
+function adBreakPoint() {
+  var n = playCount();
+  if (!adHost || !adReady || adBusy) return Promise.resolve(false);
+  if (n <= AD_SKIP || n % AD_EVERY !== 0) return Promise.resolve(false);
+  adBusy = true;
+  adGameStop();
+  adMute(true);
+  adCurtain(true);
+  return Promise.resolve(adHost.show())['catch'](function () { return 'error'; })
+    .then(function () {
+      adCurtain(false);
+      adMute(false);
+      adBusy = false;
+      return true;
+    });
+}
+
+/* ============================================================
+   20. 起動
    ============================================================ */
 soundOn = lsGet('sushitsumu.snd') !== '0';
 applySound();
@@ -3099,6 +3275,7 @@ document.getElementById('sndBtn').addEventListener('click', function (e) {
   e.preventDefault(); toggleSound();
 });
 initRanking();
+initAds();
 buildSprites();
 buildBarrel();
 resize();
