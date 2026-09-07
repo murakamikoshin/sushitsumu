@@ -874,6 +874,22 @@ function rr(c, x, y, w, h, r) {
   c.lineTo(x, y + r);           c.quadraticCurveTo(x, y, x + r, y);
   c.closePath();
 }
+/* 軍艦の海苔の外形。
+   上の角は丸めるのではなく斜めに削ぎ落とす。角丸だと角が残って見える。
+   削ぎの繋ぎ目だけわずかに均して、折り紙のように尖らせない。 */
+function noriPath(c, w, h, bottom, cutX, cutY, rBot, soft) {
+  var L = -w / 2, R = w / 2, T = -h / 2, B = bottom;
+  c.beginPath();
+  c.moveTo(0, T);
+  c.arcTo(R - cutX, T, R, T + cutY, soft);
+  c.arcTo(R, T + cutY, R, B, soft);
+  c.arcTo(R, B, L, B, rBot);
+  c.arcTo(L, B, L, T + cutY, rBot);
+  c.arcTo(L, T + cutY, L + cutX, T, soft);
+  c.arcTo(L + cutX, T, 0, T, soft);
+  c.closePath();
+}
+
 /* 角ごとに半径を変えられる角丸矩形 */
 function rr4(c, x, y, w, h, rtl, rtr, rbr, rbl) {
   var m = Math.min(w, h) / 2;
@@ -973,8 +989,10 @@ function nigiri(c, w, h, fill, detail, edge) {
    シャリの上に黒い帯を載せる描き方だと、帯が別の物に見えて軍艦にならない。
    海苔を外形にし、その内側の窪みへ具を盛る。シャリは底から少しだけ覗かせる。 */
 function gunkan(c, w, h, topping) {
-  var rTop = Math.min(h * 0.34, w * 0.19);   // 巻きの上の縁は大きく落ちる
+  var cutX = w * 0.13;                      // 上の角の削ぎ（横）
+  var cutY = h * 0.21;                      // 上の角の削ぎ（縦）
   var rBot = Math.min(h * 0.18, w * 0.10);
+  var soft = Math.min(h * 0.06, w * 0.035); // 削ぎの繋ぎ目を均す量
   var nt = Math.max(3.5, w * 0.055);   // 海苔の厚み（左右に縁として見える）
   var noriBot = h * 0.43;              // 海苔の下端（巻いてあるので、シャリはほぼ隠れる）
   var rimY = -h * 0.04;                // 海苔の縁（具はここから上）
@@ -1007,11 +1025,11 @@ function gunkan(c, w, h, topping) {
   ng.addColorStop(0.82, '#1d261d');
   ng.addColorStop(1, '#0b0f0b');
   c.fillStyle = ng;
-  rr4(c, -w / 2, -h / 2, w, noriBot + h / 2, rTop, rTop, rBot, rBot);
+  noriPath(c, w, h, noriBot, cutX, cutY, rBot, soft);
   c.fill();
 
   c.save();
-  rr4(c, -w / 2, -h / 2, w, noriBot + h / 2, rTop, rTop, rBot, rBot);
+  noriPath(c, w, h, noriBot, cutX, cutY, rBot, soft);
   c.clip();
   // 海苔の繊維
   c.strokeStyle = 'rgba(255,255,255,.05)';
@@ -1041,15 +1059,15 @@ function gunkan(c, w, h, topping) {
 
   // 具（海苔の縁から上へ浅く盛り上がる。深い窓にすると画面に見えてしまう）
   c.save();
-  var tx0 = -w / 2 + nt, tx1 = w / 2 - nt, tsp = tx1 - tx0;
+  var tx0 = -w / 2 + nt, tx1 = w / 2 - nt;
   c.beginPath();
   c.moveTo(tx0, rimY);
-  c.bezierCurveTo(tx0 + tsp * 0.01, crest + h * 0.12,
-                  tx0 + tsp * 0.14, crest,
-                  tx0 + tsp * 0.36, crest);
-  c.lineTo(tx1 - tsp * 0.36, crest);
-  c.bezierCurveTo(tx1 - tsp * 0.14, crest,
-                  tx1 - tsp * 0.01, crest + h * 0.12,
+  c.bezierCurveTo(tx0 + w * 0.045, rimY - h * 0.22,
+                  -w * 0.35, crest,
+                  -w * 0.25, crest);
+  c.lineTo(w * 0.25, crest);
+  c.bezierCurveTo(w * 0.35, crest,
+                  tx1 - w * 0.045, rimY - h * 0.22,
                   tx1, rimY);
   c.closePath();
   c.clip();
@@ -1077,7 +1095,7 @@ function gunkan(c, w, h, topping) {
   // 全体の縁
   c.strokeStyle = 'rgba(0,0,0,.55)';
   c.lineWidth = 1.4;
-  rr4(c, -w / 2, -h / 2, w, noriBot + h / 2, rTop, rTop, rBot, rBot);
+  noriPath(c, w, h, noriBot, cutX, cutY, rBot, soft);
   c.stroke();
 }
 
