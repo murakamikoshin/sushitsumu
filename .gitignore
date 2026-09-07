@@ -1,8 +1,8 @@
 .DS_Store
 .wrangler/
-node_modules/
+# 実体でも symlink でも入らないように（前に symlink を commit した）
+node_modules
 store/.work/
-tools/sim/node_modules
 tools/sim/lab*.html
 tools/sim/runs*.json
 # 配る絵は追跡する（写しただけで公開できるように）。
