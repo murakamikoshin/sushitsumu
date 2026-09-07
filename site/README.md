@@ -24,6 +24,19 @@ HTML と CSS と、外部 library を入れない JavaScript が一枚ずつ。
 
 `site/data/notes.json` に一つ足して、本文は `site/notes/<slug>/index.html`。
 
+## 別リポジトリに切り出したあと
+
+`build.mjs` はゲーム本体を次の順で探す。隣に `sushitsumu` が並んでいれば、
+そのままで通る。
+
+    ../index.html            （sushitsumu の中にあるとき）
+    ../sushitsumu/index.html （隣に並んでいるとき）
+
+Cloudflare Pages の Git 連携で自動配信するなら、ゲーム本体と表紙は
+**site 側にも commit しておく**（`.gitignore` から外す）。Pages のビルド機で
+隣のリポジトリは見えないため。ゲームを直したら `node build.mjs` して
+commit し直す。
+
 ## 出す
 
     npx wrangler pages deploy site --project-name koshin-studio

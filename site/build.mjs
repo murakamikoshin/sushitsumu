@@ -5,10 +5,18 @@
    作品が増えたら data/works.json に一行足して、これを走らせるだけ。
        node site/build.mjs
    ============================================================ */
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 
 const here = import.meta.dirname;
-const root = here + '/..';
+
+/* ゲーム本体の在り処。site/ が sushitsumu の中にあっても、
+   別のリポジトリとして隣に並んでいても、どちらでも見つかるようにする。 */
+const CANDIDATES = [here + '/..', here + '/../sushitsumu', here + '/../../sushitsumu'];
+const root = CANDIDATES.find((d) => existsSync(d + '/index.html'));
+if (!root) {
+  console.error('ゲーム本体（index.html）が見つかりません。探した場所:\n  ' + CANDIDATES.join('\n  '));
+  process.exit(1);
+}
 const read = (p) => JSON.parse(readFileSync(here + p, 'utf8'));
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
