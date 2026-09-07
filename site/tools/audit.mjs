@@ -15,6 +15,8 @@
 import { chromium } from 'playwright-core';
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, statSync, readdirSync, mkdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 
 const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const SHOT = process.env.SHOT_DIR || '/tmp/claude-0/audit';
@@ -63,6 +65,26 @@ const lum = ([r, g, b]) => {
   const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
   return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
 };
+
+/* ---- 組み直しても同じ形になるか ----
+   build.mjs は出来上がりの HTML を書き換える作りなので、差し込みが
+   きちんと入れ替わらないと、組むたびに増えていく（パンくずが 14 個に
+   なっていた）。二度組んで、一文字でも変わったら報せる。 */
+{
+  const files = pages().map((p) => ROOT + (p === '/' ? '/index.html' : p + 'index.html'));
+  const snap = () => files.map((f) =>
+    existsSync(f) ? createHash('sha1').update(readFileSync(f)).digest('hex') : '');
+  const before = snap();
+  try {
+    execFileSync(process.execPath, [ROOT + '/build.mjs'], { encoding: 'utf8' });
+    const after = snap();
+    files.forEach((f, i) => {
+      if (before[i] !== after[i]) {
+        add('高', f.slice(ROOT.length), '組み直すたびに中身が変わる（差し込みが入れ替わっていない）');
+      }
+    });
+  } catch (e) { add('高', 'build.mjs', '組み直しでつまずいた: ' + (e.message || e)); }
+}
 
 const browser = await chromium.launch({ executablePath: CHROME });
 let totalBytes = 0;
@@ -191,6 +213,14 @@ for (const size of SIZES) {
           sel: el.tagName + (el.className ? '.' + String(el.className).split(' ')[0] : ''),
         });
       }
+      /* 目印になる部分が二重に出ていないか */
+      out.dupes = [];
+      for (const [sel, max] of [['header.site', 1], ['footer.site', 1], ['main', 1],
+                                ['nav.crumbs', 1], ['h1', 1], ['#orbit', 1], ['canvas#motes', 1]]) {
+        const n2 = document.querySelectorAll(sel).length;
+        if (n2 > max) out.dupes.push(`${sel} が ${n2} 個`);
+      }
+
       /* リンク */
       out.links = [...document.querySelectorAll('a[href]')].map((a) => a.getAttribute('href'));
       /* id の重複 */
@@ -206,6 +236,7 @@ for (const size of SIZES) {
     for (const s of new Set(r.puffy)) add('高', `${path} [${size.n}]`, `不自然に膨らんだ部品: ${s}`);
     for (const a of r.noalt) add('中', `${path} [${size.n}]`, `alt が無い画像: ${a}`);
     for (const d of r.dupIds) add('中', `${path} [${size.n}]`, `id の重複: ${d}`);
+    for (const d of r.dupes) add('高', `${path} [${size.n}]`, `二重に出ている: ${d}`);
     for (const c of r.contrast) {
       const L1 = lum(c.fg), L2 = lum(c.bg);
       const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);

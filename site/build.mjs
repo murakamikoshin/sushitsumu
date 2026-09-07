@@ -402,7 +402,9 @@ for (const file of pages) {
   } else if (nm2 && noteBySlug[nm2[1]]) {
     trail = [['Notes', '/notes/'], [noteBySlug[nm2[1]].title, noteBySlug[nm2[1]].url]];
   }
-  html = html.replace(/\n?\s*<nav class="crumbs">[\s\S]*?<\/nav>/g, '');
+  /* 属性付きも消えるようにする（class="crumbs" だけを見ると一致せず、
+     組み直すたびに増え続けていた） */
+  html = html.replace(/\s*<nav class="crumbs"[^>]*>[\s\S]*?<\/nav>/g, '');
   if (trail) {
     const items = [['Koshin Studio', '/']].concat(trail);
     const cr = '<nav class="crumbs" aria-label="現在地">' + items.map((t, i) =>
@@ -427,6 +429,7 @@ for (const file of pages) {
              .replace(/\n?\s*<meta name="twitter:card"[^>]*>/g, '')
              .replace(/\n?\s*<meta property="og:site_name"[^>]*>/g, '')
              .replace(/\n?\s*<meta property="og:locale"[^>]*>/g, '')
+             .replace(/\n?\s*<link rel="alternate" type="application\/rss\+xml"[^>]*>/g, '')
              .replace(/\n?\s*<script type="application\/ld\+json">[\s\S]*?<\/script>/g, '');
   const ld = ldFor(file, url);
   const head = [
