@@ -10,7 +10,7 @@ compatibility_date = "2026-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "sushitsumu"
-database_id = ""   # setup.sh が入れる。手でやるなら wrangler d1 create の出した uuid を貼る
+database_id = "dd490877-177e-4e12-b25a-fa9e65473ba5"
 
 # 誰でも書き込める番付なので、置き場所を絞りたい時はここにゲームの URL を並べる。
 # 空にすると全部のサイトから受ける。
