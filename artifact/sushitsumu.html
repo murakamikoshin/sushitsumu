@@ -386,8 +386,9 @@ var Engine    = Matter.Engine,
 var W = 360, H = 640;          // 論理サイズ（9:16）
 var WALL = 12;                 // 桶の枠の厚み
 var LEFT = WALL, RIGHT = W - WALL, FLOOR = H - WALL;
-var DROP_Y = 70;               // ネタの待機高さ
-var DEAD_Y = 126;              // デッドライン
+var BARREL_TOP = 320;          // すし桶の縁（ここから下が桶の中）
+var DROP_Y = 200;              // ネタの待機高さ（桶の上の開けた場所）
+var DEAD_Y = BARREL_TOP + 6;   // デッドライン＝桶の縁
 var DEAD_LIMIT = 3.0;          // 3秒滞留でゲームオーバー
 var FINGER_OFFSET_Y = 56;      // 指でネタが隠れないよう上にオフセット
 var GARI_RATE = 20;            // 20回に1回ガリ
@@ -395,20 +396,19 @@ var DROP_INTERVAL = 420;       // 次のネタが出るまで(ms)
 
 /* ---- 寿司ネタ 11段階 ---- */
 var SUSHI = [
-  { n:'シャリ',           shape:'circle',  r:15,           col:'#ffffff' },
-  { n:'玉子',             shape:'rrect',   w:30,  h:20, ch:6,  col:'#f7c53c' },
-  { n:'エビ',             shape:'rrect',   w:40,  h:22, ch:10, col:'#ff9fb0' },
-  { n:'サーモン',         shape:'ellipse', w:50,  h:28,        col:'#ff9245' },
-  { n:'マグロ',           shape:'rrect',   w:60,  h:32, ch:4,  col:'#d5323c' },
-  { n:'いくら軍艦',       shape:'circle',  r:35,           col:'#a51f22', nori:true },
-  { n:'ウニ軍艦',         shape:'circle',  r:40,           col:'#d79c33', nori:true },
-  { n:'大トロ',           shape:'rrect',   w:90,  h:50, ch:18, col:'#f2a3ad' },
-  { n:'あなご一本焼き',   shape:'rrect',   w:140, h:25, ch:9,  col:'#7a4a22', bar:true },
-  { n:'伊勢海老',         shape:'rrect',   w:120, h:80, ch:26, col:'#a8324e' },
-  { n:'ゴールデンすし桶', shape:'circle',  r:100,          col:'#e8b62c', gold:true }
+  { n:'シャリ',           shape:'circle',  r:19,           col:'#ffffff' },
+  { n:'玉子',             shape:'rrect',   w:49,  h:33,  ch:11, col:'#f7c53c' },
+  { n:'エビ',             shape:'rrect',   w:64,  h:35,  ch:16, col:'#ff9fb0' },
+  { n:'サーモン',         shape:'ellipse', w:85,  h:47,         col:'#ff9245' },
+  { n:'マグロ',           shape:'rrect',   w:91,  h:49,  ch:7,  col:'#d5323c' },
+  { n:'いくら軍艦',       shape:'circle',  r:45,           col:'#a51f22', nori:true },
+  { n:'ウニ軍艦',         shape:'circle',  r:53,           col:'#d79c33', nori:true },
+  { n:'大トロ',           shape:'rrect',   w:149, h:83,  ch:29, col:'#f2a3ad' },
+  { n:'あなご一本焼き',   shape:'rrect',   w:247, h:71,  ch:25, col:'#7a4a22', bar:true },
+  { n:'伊勢海老',         shape:'rrect',   w:192, h:128, ch:40, col:'#a8324e' },
+  { n:'ゴールデンすし桶', shape:'circle',  r:105,          col:'#e8b62c', gold:true }
 ];
-// 半幅・半高を計算しておく
-SUSHI[9].pad = 30;   // 伊勢海老は触角と脚が本体からはみ出す
+SUSHI[9].pad = 50;   // 伊勢海老は触角と脚が本体からはみ出す
 SUSHI.forEach(function (d) {
   if (d.shape === 'circle') { d.hw = d.r; d.hh = d.r; }
   else { d.hw = d.w / 2; d.hh = d.h / 2; }
@@ -446,12 +446,15 @@ var engine = Engine.create({
 engine.gravity.y = 1.1;
 var world = engine.world;
 
+// 壁と床は見た目の厚み(WALL)より十分厚くする。
+// 薄いと、重くなった大きなネタが一枚板をすり抜けて桶の外へ落ちる。
+var WALL_T = 80;
 var walls = [
-  Bodies.rectangle(WALL / 2, H / 2, WALL, H * 2,
+  Bodies.rectangle(WALL - WALL_T / 2, H / 2, WALL_T, H * 3,
     { isStatic: true, friction: 0.5, label: 'wall' }),
-  Bodies.rectangle(W - WALL / 2, H / 2, WALL, H * 2,
+  Bodies.rectangle(W - WALL + WALL_T / 2, H / 2, WALL_T, H * 3,
     { isStatic: true, friction: 0.5, label: 'wall' }),
-  Bodies.rectangle(W / 2, FLOOR + WALL / 2, W, WALL,
+  Bodies.rectangle(W / 2, FLOOR + WALL_T / 2, W + WALL_T * 2, WALL_T,
     { isStatic: true, friction: 0.7, label: 'wall' })
 ];
 Composite.add(world, walls);
@@ -552,7 +555,7 @@ function nextTurn() {
   // 指を置いたまま待っていた場合、新しいネタをすぐ指の位置に追従させる
   if (pointerDown) {
     previewX = lastPtr.x;
-    previewY = Math.max(26, Math.min(DROP_Y, lastPtr.y - FINGER_OFFSET_Y));
+    previewY = Math.max(172, Math.min(DROP_Y, lastPtr.y - FINGER_OFFSET_Y));
   }
   clampPreview();
   dropLock = false;
@@ -646,6 +649,10 @@ function flushOps() {
         continue;
       }
 
+      // 生成位置が壁に食い込むと、押し出されて桶の外へ飛び出すことがある
+      var nhw = SUSHI[op.level + 1].hw;
+      mx = Math.max(LEFT + nhw + 1, Math.min(RIGHT - nhw - 1, mx));
+      my = Math.max(SUSHI[op.level + 1].hh + 2, my);
       var nb = makeSushi(op.level + 1, mx, my);
       Composite.add(world, nb);
       Body.setVelocity(nb, { x: 0, y: -1.6 });
@@ -819,7 +826,7 @@ function onMove(clientX, clientY) {
   if (!current) return;                 // 次のネタ待ち。位置だけ覚えておく
   previewX = lastPtr.x;
   // 指の真上に出して、ネタが指で隠れないようにする
-  previewY = Math.max(26, Math.min(DROP_Y, lastPtr.y - FINGER_OFFSET_Y));
+  previewY = Math.max(172, Math.min(DROP_Y, lastPtr.y - FINGER_OFFSET_Y));
   clampPreview();
 }
 function onUp() {
@@ -1259,7 +1266,10 @@ function drawItem(c, level) {
        前から順に「触角・頭胸甲（盾形）・細くなる腹節・大きく開いた尾扇」を
        別々に重ね、尾扇は必ず腹節より後ろへはみ出させる。 */
     case 9: {
-      var hw = w / 2, hh = h / 2;
+      // 120x80 を基準に描いてあるので、実寸に合わせて拡大する（縦横比は 1.5 で不変）
+      c.save();
+      c.scale(w / 120, w / 120);
+      var hw = 60, hh = 40;
       var SHELL_D = 'rgba(112,20,6,.85)';
       var HEAD_BACK = -hw + 42;      // 頭胸甲の後端
       var TAIL_X = hw - 26;          // 尾扇の付け根
@@ -1386,6 +1396,7 @@ function drawItem(c, level) {
         c.fillStyle = 'rgba(255,255,255,.9)';
         c.beginPath(); c.arc(-hw + 4, dir * hh * 0.52 - 1.2, 1.2, 0, 6.2832); c.fill();
       });
+      c.restore();
       break;
     }
 
@@ -1520,67 +1531,167 @@ function buildBarrel() {
 }
 
 function drawBarrelTo(c) {
-  // 盤面：和紙。階調をしっかり付けて、のっぺりさせない
-  var bg = c.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, '#fefdfa');
-  bg.addColorStop(0.5, '#f7f1e3');
-  bg.addColorStop(1, '#e7dcc2');
-  c.fillStyle = bg;
+  // ---- 店の板壁 ----
+  var wall = c.createLinearGradient(0, 0, 0, BARREL_TOP);
+  wall.addColorStop(0, '#ddd1b7');
+  wall.addColorStop(0.55, '#cbbc9c');
+  wall.addColorStop(1, '#ac9a78');
+  c.fillStyle = wall;
   c.fillRect(0, 0, W, H);
-
-  // 繊維の目（変換を戻して実ピクセル等倍で敷く）
+  // 板の継ぎ目（縦羽目板）
+  for (var pk = 1; pk < 8; pk++) {
+    var kx = Math.round(pk * (W / 8)) + 0.5;
+    c.strokeStyle = 'rgba(96,70,36,.16)';
+    c.lineWidth = 1;
+    c.beginPath(); c.moveTo(kx, 0); c.lineTo(kx, BARREL_TOP); c.stroke();
+    c.strokeStyle = 'rgba(255,247,228,.3)';
+    c.beginPath(); c.moveTo(kx + 1.5, 0); c.lineTo(kx + 1.5, BARREL_TOP); c.stroke();
+  }
   c.save();
   c.setTransform(1, 0, 0, 1, 0, 0);
   c.fillStyle = buildWashiPattern(c);
   c.fillRect(0, 0, W * 2, H * 2);
   c.restore();
 
+  // ---- 暖簾 ----
+  var NOREN_H = 150, ROD_Y = 12;
+  // 竹の掛け竿
+  var rod = c.createLinearGradient(0, ROD_Y - 4, 0, ROD_Y + 4);
+  rod.addColorStop(0, '#c9a86a');
+  rod.addColorStop(0.5, '#9d7c42');
+  rod.addColorStop(1, '#6f5527');
+  c.fillStyle = rod;
+  c.fillRect(6, ROD_Y - 4, W - 12, 8);
+
+  var chars = ['す', 'し', '積', 'む'];
+  var nx = 16, nw = (W - 32 - 3 * 5) / 4;
+  for (var pn = 0; pn < 4; pn++) {
+    var px = nx + pn * (nw + 5);
+    var ng = c.createLinearGradient(px, ROD_Y, px + nw, ROD_Y + NOREN_H);
+    ng.addColorStop(0, '#22456b');
+    ng.addColorStop(0.5, '#173250');
+    ng.addColorStop(1, '#0f2339');
+    c.fillStyle = ng;
+    c.beginPath();
+    c.moveTo(px, ROD_Y);
+    c.lineTo(px + nw, ROD_Y);
+    c.lineTo(px + nw, ROD_Y + NOREN_H - 6);
+    // 裾はわずかに揺れる
+    c.quadraticCurveTo(px + nw * 0.5, ROD_Y + NOREN_H + (pn % 2 ? 4 : -3),
+                       px, ROD_Y + NOREN_H - 5);
+    c.closePath();
+    c.fill();
+    // 織りの縦筋
+    c.save();
+    c.clip();
+    c.strokeStyle = 'rgba(255,255,255,.05)';
+    c.lineWidth = 1;
+    for (var t = 0; t < 6; t++) {
+      c.beginPath();
+      c.moveTo(px + 6 + t * (nw / 6), ROD_Y);
+      c.lineTo(px + 6 + t * (nw / 6), ROD_Y + NOREN_H);
+      c.stroke();
+    }
+    c.restore();
+    // 白抜きの文字
+    c.fillStyle = '#f4efe2';
+    c.font = '600 46px ' + F_MIN;
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText(chars[pn], px + nw / 2, ROD_Y + NOREN_H * 0.52);
+  }
+  // 暖簾の落とす影
+  var nsh = c.createLinearGradient(0, ROD_Y + NOREN_H - 4, 0, ROD_Y + NOREN_H + 44);
+  nsh.addColorStop(0, 'rgba(40,25,8,.22)');
+  nsh.addColorStop(1, 'rgba(40,25,8,0)');
+  c.fillStyle = nsh;
+  c.fillRect(0, ROD_Y + NOREN_H - 4, W, 48);
+
+  // 桶が壁に落とす影
+  var bsh = c.createLinearGradient(0, BARREL_TOP, 0, BARREL_TOP - 30);
+  bsh.addColorStop(0, 'rgba(40,25,8,.28)');
+  bsh.addColorStop(1, 'rgba(40,25,8,0)');
+  c.fillStyle = bsh;
+  c.fillRect(0, BARREL_TOP - 30, W, 30);
+
+  // ---- すし桶の中（和紙）----
+  var inner = c.createLinearGradient(0, BARREL_TOP, 0, FLOOR);
+  inner.addColorStop(0, '#fefdfa');
+  inner.addColorStop(0.5, '#f7f1e3');
+  inner.addColorStop(1, '#e7dcc2');
+  c.fillStyle = inner;
+  c.fillRect(WALL, BARREL_TOP, W - WALL * 2, FLOOR - BARREL_TOP);
+
+  c.save();
+  c.beginPath();
+  c.rect(WALL, BARREL_TOP, W - WALL * 2, FLOOR - BARREL_TOP);
+  c.clip();
+
   // 桶の底の簀（すのこ）
   c.strokeStyle = 'rgba(150,115,65,.13)';
   c.lineWidth = 1;
-  for (var i = 0; i < 7; i++) {
+  for (var i = 0; i < 6; i++) {
     var sy = FLOOR - 7 - i * 13;
     c.beginPath();
     c.moveTo(WALL + 7, sy + 0.5);
     c.lineTo(W - WALL - 7, sy + 0.5);
     c.stroke();
   }
-
-  // 内側の陰（上・下・左右）で桶の中の奥行きを出す
-  function shade(x0, y0, x1, y1, w, h, a) {
+  // 内側の陰
+  function shade(x0, y0, x1, y1, w2, h2, a) {
     var g = c.createLinearGradient(x0, y0, x1, y1);
     g.addColorStop(0, 'rgba(88,62,26,' + a + ')');
     g.addColorStop(1, 'rgba(88,62,26,0)');
     c.fillStyle = g;
-    c.fillRect(x0 < x1 ? x0 : x1, y0 < y1 ? y0 : y1, w, h);
+    c.fillRect(x0 < x1 ? x0 : x1, y0 < y1 ? y0 : y1, w2, h2);
   }
-  shade(0, 0, 0, H * 0.20, W, H * 0.20, .14);
-  shade(0, FLOOR, 0, FLOOR - 80, W, 80, .17);
-  shade(WALL, 0, WALL + 26, 0, 26, H, .14);
-  shade(W - WALL, 0, W - WALL - 26, 0, 26, H, .14);
+  shade(0, BARREL_TOP, 0, BARREL_TOP + 54, W, 54, .2);
+  shade(0, FLOOR, 0, FLOOR - 70, W, 70, .17);
+  shade(WALL, 0, WALL + 24, 0, 24, H, .14);
+  shade(W - WALL, 0, W - WALL - 24, 0, 24, H, .14);
 
-  // 枠：白木（盤面と明度差をつけて桶の輪郭を立てる）
-  var wood = c.createLinearGradient(0, 0, 0, H);
-  wood.addColorStop(0, '#e6cda3');
-  wood.addColorStop(0.45, '#d0ae7d');
+  // 落款
+  var seal = document.createElement('canvas');
+  seal.width = seal.height = 72;
+  var sc = seal.getContext('2d');
+  sc.fillStyle = '#c8402f';
+  rr(sc, 4, 4, 64, 64, 10);
+  sc.fill();
+  sc.globalCompositeOperation = 'destination-out';
+  sc.font = '600 44px ' + F_MIN;
+  sc.textAlign = 'center';
+  sc.textBaseline = 'middle';
+  sc.fillText('寿', 36, 38);
+  c.save();
+  c.globalAlpha = 0.13;
+  c.drawImage(seal, W - WALL - 42, BARREL_TOP + 26, 26, 26);
+  c.restore();
+  c.restore();
+
+  // ---- 桶の枠（白木）----
+  var wood = c.createLinearGradient(0, BARREL_TOP, 0, H);
+  wood.addColorStop(0, '#eed8b2');
+  wood.addColorStop(0.4, '#d0ae7d');
   wood.addColorStop(1, '#ab875a');
   c.fillStyle = wood;
-  c.fillRect(0, 0, WALL, H);
-  c.fillRect(W - WALL, 0, WALL, H);
+  c.fillRect(0, BARREL_TOP, WALL, H - BARREL_TOP);
+  c.fillRect(W - WALL, BARREL_TOP, WALL, H - BARREL_TOP);
   c.fillRect(0, H - WALL, W, WALL);
 
-  // 木目：繊維に沿った淡い揺らぎを数本だけ
+  // 木目
   c.strokeStyle = 'rgba(126,90,44,.22)';
   c.lineWidth = 1;
   for (var g2 = 0; g2 < 3; g2++) {
     var gx = 3 + g2 * 4;
     c.beginPath();
-    c.moveTo(gx + 0.5, 0);
-    c.bezierCurveTo(gx + 3, H * 0.3, gx - 3, H * 0.66, gx + 1, H);
+    c.moveTo(gx + 0.5, BARREL_TOP);
+    c.bezierCurveTo(gx + 3, BARREL_TOP + (H - BARREL_TOP) * 0.35,
+                    gx - 3, BARREL_TOP + (H - BARREL_TOP) * 0.7, gx + 1, H);
     c.stroke();
     c.beginPath();
-    c.moveTo(W - gx - 0.5, 0);
-    c.bezierCurveTo(W - gx - 3, H * 0.34, W - gx + 3, H * 0.7, W - gx - 1, H);
+    c.moveTo(W - gx - 0.5, BARREL_TOP);
+    c.bezierCurveTo(W - gx - 3, BARREL_TOP + (H - BARREL_TOP) * 0.38,
+                    W - gx + 3, BARREL_TOP + (H - BARREL_TOP) * 0.74, W - gx - 1, H);
     c.stroke();
   }
   for (var g3 = 0; g3 < 2; g3++) {
@@ -1591,8 +1702,9 @@ function drawBarrelTo(c) {
     c.stroke();
   }
 
-  // 箍（たが）：銅の細帯。主張しすぎない太さに
-  [Math.round(H * 0.24), Math.round(H * 0.72)].forEach(function (hy) {
+  // 箍（たが）
+  [BARREL_TOP + Math.round((H - BARREL_TOP) * 0.32),
+   BARREL_TOP + Math.round((H - BARREL_TOP) * 0.74)].forEach(function (hy) {
     var hg = c.createLinearGradient(0, hy, 0, hy + 4);
     hg.addColorStop(0, '#c08145');
     hg.addColorStop(0.45, '#96602d');
@@ -1605,44 +1717,25 @@ function drawBarrelTo(c) {
     c.fillRect(W - WALL, hy, WALL, 1);
   });
 
-  // 木口（こぐち）のハイライト
-  c.fillStyle = 'rgba(255,248,232,.5)';
-  c.fillRect(0, 0, WALL, 2);
-  c.fillRect(W - WALL, 0, WALL, 2);
-
-  // 落款（朱の角印）。広い余白を「間」として引き締める
-  var seal = document.createElement('canvas');
-  seal.width = seal.height = 72;
-  var sc = seal.getContext('2d');
-  sc.fillStyle = '#c8402f';
-  rr(sc, 4, 4, 64, 64, 10);
-  sc.fill();
-  sc.globalCompositeOperation = 'destination-out';   // 文字を抜いて白抜きの印にする
-  sc.font = '600 44px ' + F_MIN;
-  sc.textAlign = 'center';
-  sc.textBaseline = 'middle';
-  sc.fillText('寿', 36, 38);
-  c.save();
-  c.globalAlpha = 0.14;
-  c.drawImage(seal, W - WALL - 44, DEAD_Y + 32, 26, 26);
-  c.restore();
-
-  // 桶の縁
-  c.strokeStyle = 'rgba(105,74,34,.55)';
+  // 桶の縁（木口）
+  var rim = c.createLinearGradient(0, BARREL_TOP - 3, 0, BARREL_TOP + 5);
+  rim.addColorStop(0, '#fff3dd');
+  rim.addColorStop(1, '#c8a674');
+  c.fillStyle = rim;
+  c.fillRect(0, BARREL_TOP - 3, WALL, 8);
+  c.fillRect(W - WALL, BARREL_TOP - 3, WALL, 8);
+  c.strokeStyle = 'rgba(105,74,34,.6)';
   c.lineWidth = 1;
+  c.strokeRect(0.5, BARREL_TOP - 2.5, WALL - 1, 7);
+  c.strokeRect(W - WALL + 0.5, BARREL_TOP - 2.5, WALL - 1, 7);
+
+  // 桶の内側の線
+  c.strokeStyle = 'rgba(105,74,34,.5)';
   c.beginPath();
-  c.moveTo(WALL + 0.5, 0);
+  c.moveTo(WALL + 0.5, BARREL_TOP);
   c.lineTo(WALL + 0.5, FLOOR + 0.5);
   c.lineTo(W - WALL - 0.5, FLOOR + 0.5);
-  c.lineTo(W - WALL - 0.5, 0);
-  c.stroke();
-  // 枠の内側に一段明るいハイライト
-  c.strokeStyle = 'rgba(255,246,226,.5)';
-  c.beginPath();
-  c.moveTo(WALL - 1.5, 0);
-  c.lineTo(WALL - 1.5, FLOOR - 1);
-  c.moveTo(W - WALL + 1.5, 0);
-  c.lineTo(W - WALL + 1.5, FLOOR - 1);
+  c.lineTo(W - WALL - 0.5, BARREL_TOP);
   c.stroke();
 }
 
@@ -1751,11 +1844,24 @@ function loop(now) {
     }
     if (acc > STEP * 4) acc = 0;
     flushOps();
+    sweepStrays();
     checkGameOver(dt / 1000);
   }
   stepParticles();
   stepFloats();
   render();
+}
+
+/* 桶の外へこぼれたネタを片付ける */
+function sweepStrays() {
+  var bodies = Composite.allBodies(world);
+  for (var i = 0; i < bodies.length; i++) {
+    var b = bodies[i];
+    if (b.isStatic || !(b.sushi || b.gari)) continue;
+    if (b.position.y > H + 60 || b.position.x < -60 || b.position.x > W + 60) {
+      Composite.remove(world, b);
+    }
+  }
 }
 
 function checkGameOver(dtSec) {
@@ -1846,19 +1952,19 @@ function render() {
     var remain = Math.max(0, DEAD_LIMIT - deadTimer);
     var pulse = 0.45 + 0.55 * Math.abs(Math.sin(performance.now() / 165));
     ctx.save();
-    var wg = ctx.createLinearGradient(0, 0, 0, DEAD_Y);
+    var wg = ctx.createLinearGradient(0, BARREL_TOP, 0, BARREL_TOP - 96);
     wg.addColorStop(0, 'rgba(200,64,47,' + (0.42 * pulse).toFixed(3) + ')');
     wg.addColorStop(1, 'rgba(200,64,47,0)');
     ctx.fillStyle = wg;
-    ctx.fillRect(WALL, 0, W - WALL * 2, DEAD_Y);
+    ctx.fillRect(WALL, BARREL_TOP - 96, W - WALL * 2, 96);
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = 'rgba(255,250,242,' + (0.55 + 0.45 * pulse).toFixed(3) + ')';
     ctx.font = '600 17px ' + F_MIN;
-    ctx.fillText('の れ ん 際', W / 2, 34);
+    ctx.fillText('の れ ん 際', W / 2, BARREL_TOP - 62);
     ctx.font = '200 32px ' + F_GO;
-    ctx.fillText(remain.toFixed(1), W / 2, 66);
+    ctx.fillText(remain.toFixed(1), W / 2, BARREL_TOP - 30);
     ctx.restore();
   }
 }
