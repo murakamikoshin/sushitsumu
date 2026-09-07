@@ -601,9 +601,12 @@ body.lat .rankNote { font-size: 10.5px; }
           <span data-t="hint3">「ガリ」は触れたネタを一つ消す。</span>
           <span id="hintKeys" hidden></span>
         </p>
-        <button class="langLink" id="langBtn2" type="button" aria-label="Language">
-          <span aria-hidden="true">🌐</span> <span id="langBtn2Name">日本語</span>
-        </button>
+        <div class="btnRow tight">
+          <button class="langLink" id="langBtn2" type="button" aria-label="Language">
+            <span aria-hidden="true">🌐</span> <span id="langBtn2Name">日本語</span>
+          </button>
+          <button class="langLink" id="openPrivacy" type="button" data-t="privacy">あつかい</button>
+        </div>
       </div>
     </div>
 
@@ -630,6 +633,20 @@ body.lat .rankNote { font-size: 10.5px; }
           <button class="btn ghost small" id="toTitleBtn" data-t="toTitle">タイトルへ</button>
         </div>
         <button class="btn" id="retryBtn" data-t="retry">もう一丁</button>
+      </div>
+    </div>
+
+    <!-- 預かるものの説明。番付に名前を送る以上、黙っているわけにいかない -->
+    <div class="modal" id="privacyModal" hidden>
+      <div class="card">
+        <h2 data-t="privacyTitle">あつかい</h2>
+        <div class="rule"></div>
+        <p class="hint">
+          <span data-t="priv1"></span><br><br>
+          <span data-t="priv2"></span><br><br>
+          <span data-t="priv3"></span>
+        </p>
+        <button class="btn" id="closePrivacy" data-t="close">閉 じ る</button>
       </div>
     </div>
 
@@ -814,6 +831,10 @@ var LANGS = [
 var TXT = {};
 
 TXT.ja = {
+  privacy:'あつかい', privacyTitle:'あつかい',
+  priv1:'番付に載せた時だけ、入れた名前・得点・端末が作った番号・その一戦の手順を、こちらのサーバーに預かります。手順は、得点の辻褄を見るためのものです。',
+  priv2:'それ以外は何も集めません。会員登録も、追跡の仕組みも、他社の解析も入っていません。',
+  priv3:'高得点・寿司図鑑・言葉・音の設定は、この端末の中にだけ残ります。番付に載せなければ、外へは何も出ません。',
   title:'すし積む', noren:['す','し','積','む'],
   sub:'江戸前合体遊戯',
   lblScore:'スコア', lblHi:'高得点', lblNext:'つぎ',
@@ -868,6 +889,10 @@ TXT.ja = {
 };
 
 TXT.en = {
+  privacy:'PRIVACY', privacyTitle:'PRIVACY',
+  priv1:'When you post to the leaderboard, the name you type, your score, an ID generated on your device and a record of that round’s moves are stored on our server. The move record is only used to check the score adds up.',
+  priv2:'Nothing else is collected. There are no accounts, no tracking and no third-party analytics.',
+  priv3:'Your best score, sushi book, language and sound settings stay in this browser only. If you never post a score, nothing leaves your device.',
   title:'SUSHI TSUMU', noren:['SU','SHI','TSU','MU'],
   sub:'AN EDOMAE MERGE PUZZLE',
   lblScore:'SCORE', lblHi:'BEST', lblNext:'NEXT',
@@ -921,6 +946,10 @@ TXT.en = {
 };
 
 TXT.es = {
+  privacy:'PRIVACIDAD', privacyTitle:'PRIVACIDAD',
+  priv1:'Al publicar en la clasificación se guardan en nuestro servidor el nombre que escribes, tu puntuación, un identificador creado en tu dispositivo y el registro de jugadas de esa partida. Ese registro solo sirve para comprobar que la puntuación cuadra.',
+  priv2:'No se recoge nada más. No hay cuentas, ni seguimiento, ni analíticas de terceros.',
+  priv3:'Tu récord, el libro de sushi, el idioma y el sonido se quedan solo en este navegador. Si no publicas nada, no sale nada de tu dispositivo.',
   hintKeys:'También con las flechas y Espacio.',
   pause:'PAUSA', pauseTitle:'EN PAUSA', resume:'CONTINUAR', quit:'SALIR AL INICIO',
   pauseNote:'Salir también cuenta como una partida jugada.',
@@ -971,6 +1000,10 @@ TXT.es = {
 };
 
 TXT.pt = {
+  privacy:'PRIVACIDADE', privacyTitle:'PRIVACIDADE',
+  priv1:'Ao publicar na classificação, o nome que você digita, sua pontuação, um identificador criado no seu aparelho e o registro das jogadas daquela partida ficam no nosso servidor. O registro serve apenas para conferir se a pontuação bate.',
+  priv2:'Nada além disso é coletado. Não há contas, rastreamento nem análise de terceiros.',
+  priv3:'Seu recorde, o livro de sushi, o idioma e o som ficam só neste navegador. Se você não publicar, nada sai do seu aparelho.',
   hintKeys:'Também com as setas e Espaço.',
   pause:'PAUSA', pauseTitle:'EM PAUSA', resume:'CONTINUAR', quit:'SAIR AO INÍCIO',
   pauseNote:'Sair também conta como uma partida jogada.',
@@ -1021,6 +1054,10 @@ TXT.pt = {
 };
 
 TXT.fr = {
+  privacy:'DONNÉES', privacyTitle:'CONFIDENTIALITÉ',
+  priv1:'Lorsque vous publiez au classement, le nom saisi, votre score, un identifiant créé sur votre appareil et le relevé des coups de cette partie sont conservés sur notre serveur. Ce relevé sert uniquement à vérifier que le score est cohérent.',
+  priv2:'Rien d’autre n’est collecté. Pas de compte, pas de pistage, pas d’analyse tierce.',
+  priv3:'Votre record, le livre de sushis, la langue et le son restent dans ce navigateur. Si vous ne publiez rien, rien ne quitte votre appareil.',
   hintKeys:'Les flèches et Espace marchent aussi.',
   pause:'PAUSE', pauseTitle:'EN PAUSE', resume:'REPRENDRE', quit:'QUITTER',
   pauseNote:'Quitter compte aussi comme une partie jouée.',
@@ -1071,6 +1108,10 @@ TXT.fr = {
 };
 
 TXT.de = {
+  privacy:'DATENSCHUTZ', privacyTitle:'DATENSCHUTZ',
+  priv1:'Beim Eintrag in die Bestenliste werden der eingegebene Name, Ihre Punktzahl, eine auf Ihrem Gerät erzeugte Kennung und der Spielverlauf dieser Runde auf unserem Server gespeichert. Der Verlauf dient nur der Prüfung, ob die Punktzahl stimmt.',
+  priv2:'Mehr wird nicht erhoben. Keine Konten, kein Tracking, keine Analyse durch Dritte.',
+  priv3:'Rekord, Sushi-Buch, Sprache und Ton bleiben nur in diesem Browser. Ohne Eintrag verlässt nichts Ihr Gerät.',
   hintKeys:'Pfeiltasten und Leertaste gehen auch.',
   pause:'PAUSE', pauseTitle:'PAUSIERT', resume:'WEITER', quit:'ZUM ANFANG',
   pauseNote:'Auch ein Abbruch zählt als gespielte Runde.',
@@ -1121,6 +1162,10 @@ TXT.de = {
 };
 
 TXT.it = {
+  privacy:'PRIVACY', privacyTitle:'PRIVACY',
+  priv1:'Quando pubblichi in classifica, il nome che scrivi, il punteggio, un identificatore creato sul tuo dispositivo e il registro delle mosse di quella partita vengono conservati sul nostro server. Il registro serve solo a verificare che il punteggio torni.',
+  priv2:'Non viene raccolto altro. Nessun account, nessun tracciamento, nessuna analisi di terze parti.',
+  priv3:'Record, libro dei sushi, lingua e audio restano solo in questo browser. Se non pubblichi, nulla lascia il tuo dispositivo.',
   hintKeys:'Anche con le frecce e Spazio.',
   pause:'PAUSA', pauseTitle:'IN PAUSA', resume:'CONTINUA', quit:'ESCI ALL’INIZIO',
   pauseNote:'Anche uscire conta come una partita giocata.',
@@ -1171,6 +1216,10 @@ TXT.it = {
 };
 
 TXT.pl = {
+  privacy:'PRYWATNOŚĆ', privacyTitle:'PRYWATNOŚĆ',
+  priv1:'Przy wysyłaniu wyniku do rankingu na naszym serwerze zapisujemy wpisane imię, wynik, identyfikator utworzony na Twoim urządzeniu oraz zapis ruchów z tej partii. Zapis służy wyłącznie sprawdzeniu, czy wynik się zgadza.',
+  priv2:'Nic więcej nie jest zbierane. Bez kont, bez śledzenia, bez analityki firm trzecich.',
+  priv3:'Rekord, księga sushi, język i dźwięk zostają tylko w tej przeglądarce. Jeśli nie wyślesz wyniku, nic nie opuszcza urządzenia.',
   hintKeys:'Strzałki i spacja też działają.',
   pause:'PAUZA', pauseTitle:'PAUZA', resume:'WRÓĆ DO GRY', quit:'WYJDŹ DO MENU',
   pauseNote:'Wyjście też liczy się jako rozegrana partia.',
@@ -1221,6 +1270,10 @@ TXT.pl = {
 };
 
 TXT.tr = {
+  privacy:'GİZLİLİK', privacyTitle:'GİZLİLİK',
+  priv1:'Sıralamaya gönderdiğinizde yazdığınız isim, puanınız, cihazınızda üretilen bir kimlik ve o turun hamle kaydı sunucumuzda saklanır. Hamle kaydı yalnızca puanın tutup tutmadığını denetlemek içindir.',
+  priv2:'Bunun dışında hiçbir şey toplanmaz. Hesap yok, izleme yok, üçüncü taraf analiz yok.',
+  priv3:'Rekorunuz, suşi kitabı, dil ve ses ayarları yalnızca bu tarayıcıda kalır. Puan göndermezseniz cihazınızdan hiçbir şey çıkmaz.',
   hint1m:'Nişan almak için sürükle, bırakınca düşer.',
   hintKeys:'Ok tuşları ve boşluk da çalışır.',
   pause:'DURAKLAT', pauseTitle:'DURAKLADI', resume:'DEVAM ET', quit:'ÇIK VE BAŞA DÖN',
@@ -1272,6 +1325,10 @@ TXT.tr = {
 };
 
 TXT.ru = {
+  privacy:'ДАННЫЕ', privacyTitle:'КОНФИДЕНЦИАЛЬНОСТЬ',
+  priv1:'При отправке результата в таблицу на нашем сервере сохраняются введённое имя, очки, идентификатор, созданный на вашем устройстве, и запись ходов этой партии. Запись нужна только для проверки, что счёт сходится.',
+  priv2:'Больше ничего не собирается. Ни учётных записей, ни слежки, ни сторонней аналитики.',
+  priv3:'Рекорд, книга суси, язык и звук хранятся только в этом браузере. Если не отправлять результат, с устройства ничего не уходит.',
   hint1m:'Тяните мышью, чтобы прицелиться, отпустите — упадёт.',
   hintKeys:'Стрелки и пробел тоже работают.',
   pause:'ПАУЗА', pauseTitle:'ПАУЗА', resume:'ПРОДОЛЖИТЬ', quit:'ВЫЙТИ В НАЧАЛО',
@@ -1324,6 +1381,10 @@ TXT.ru = {
 };
 
 TXT.id = {
+  privacy:'PRIVASI', privacyTitle:'PRIVASI',
+  priv1:'Saat Anda mengirim ke papan peringkat, nama yang diketik, skor, sebuah pengenal yang dibuat di perangkat Anda, dan catatan langkah pada ronde itu disimpan di server kami. Catatan langkah hanya dipakai untuk memeriksa kecocokan skor.',
+  priv2:'Selain itu tidak ada yang dikumpulkan. Tanpa akun, tanpa pelacakan, tanpa analitik pihak ketiga.',
+  priv3:'Rekor, buku sushi, bahasa, dan suara hanya tersimpan di peramban ini. Jika tidak mengirim skor, tidak ada yang keluar dari perangkat Anda.',
   hintKeys:'Tombol panah dan spasi juga bisa.',
   pause:'JEDA', pauseTitle:'DIJEDA', resume:'LANJUTKAN', quit:'KELUAR KE AWAL',
   pauseNote:'Keluar tetap dihitung sebagai satu permainan.',
@@ -1374,6 +1435,10 @@ TXT.id = {
 };
 
 TXT.vi = {
+  privacy:'DỮ LIỆU', privacyTitle:'QUYỀN RIÊNG TƯ',
+  priv1:'Khi bạn gửi lên bảng xếp hạng, tên bạn nhập, điểm số, một mã do thiết bị của bạn tạo ra và bản ghi các nước đi của ván đó được lưu trên máy chủ của chúng tôi. Bản ghi chỉ dùng để kiểm tra điểm có khớp không.',
+  priv2:'Ngoài ra không thu thập gì thêm. Không tài khoản, không theo dõi, không phân tích của bên thứ ba.',
+  priv3:'Kỷ lục, sổ sushi, ngôn ngữ và âm thanh chỉ nằm trong trình duyệt này. Nếu không gửi điểm, không có gì rời khỏi thiết bị của bạn.',
   hintKeys:'Phím mũi tên và Space cũng được.',
   pause:'TẠM DỪNG', pauseTitle:'ĐANG TẠM DỪNG', resume:'TIẾP TỤC', quit:'THOÁT VỀ ĐẦU',
   pauseNote:'Thoát vẫn được tính là một ván đã chơi.',
@@ -1424,6 +1489,10 @@ TXT.vi = {
 };
 
 TXT.ko = {
+  privacy:'개 인 정 보', privacyTitle:'개인정보',
+  priv1:'순위표에 올릴 때만, 입력한 이름·점수·기기에서 만든 식별자·그 판의 진행 기록을 저희 서버에 보관합니다. 진행 기록은 점수가 맞는지 확인하는 데에만 씁니다.',
+  priv2:'그 밖에는 아무것도 수집하지 않습니다. 회원가입도, 추적도, 외부 분석 도구도 없습니다.',
+  priv3:'최고 기록·스시 도감·언어·소리 설정은 이 브라우저에만 남습니다. 순위표에 올리지 않으면 밖으로 나가는 것은 없습니다.',
   hintKeys:'방향키와 스페이스로도 됩니다.',
   pause:'중 단', pauseTitle:'일시정지', resume:'계 속 하 기', quit:'그만두고 처음으로',
   pauseNote:'그만두어도 플레이한 판수에는 들어갑니다.',
@@ -1475,6 +1544,10 @@ TXT.ko = {
 };
 
 TXT.zh = {
+  privacy:'隐 私', privacyTitle:'隐私',
+  priv1:'仅在上榜时，会把您输入的名字、分数、设备生成的标识以及该局的操作记录保存到我们的服务器。操作记录只用于核对分数是否对得上。',
+  priv2:'除此之外不收集任何内容。没有账号，没有追踪，也没有第三方分析。',
+  priv3:'最高分、寿司图鉴、语言和声音设置只留在此浏览器中。不上榜就不会有任何内容离开您的设备。',
   hintKeys:'也可以用方向键和空格。',
   pause:'暂 停', pauseTitle:'已暂停', resume:'继 续', quit:'退出回标题',
   pauseNote:'中途退出也计入已玩局数。',
@@ -4661,6 +4734,13 @@ document.getElementById('openDex').addEventListener('click', function (e) {
 });
 document.getElementById('closeDex').addEventListener('click', function () {
   document.getElementById('dexModal').hidden = true;
+});
+document.getElementById('openPrivacy').addEventListener('click', function (e) {
+  e.preventDefault();
+  document.getElementById('privacyModal').hidden = false;
+});
+document.getElementById('closePrivacy').addEventListener('click', function () {
+  document.getElementById('privacyModal').hidden = true;
 });
 
 /* ============================================================
