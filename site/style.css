@@ -4,16 +4,19 @@
    字だけを取り出して積んである（site/tools/fonts.py）。全部入りは 1.4MB
    だが、これで 1 ウェイト 150KB ほど。文章を足したら作り直すこと。
    ============================================================ */
-@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;
-  src:url("/vendor/fonts/koshin-la-400.woff2") format("woff2");
-  unicode-range:U+0000-00FF,U+2000-206F}
-@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;
-  src:url("/vendor/fonts/koshin-jp-400.woff2") format("woff2")}
-@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;
-  src:url("/vendor/fonts/koshin-la-600.woff2") format("woff2");
-  unicode-range:U+0000-00FF,U+2000-206F}
-@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;
-  src:url("/vendor/fonts/koshin-jp-600.woff2") format("woff2")}
+/* font-face:start */
+/* ここは site/tools/fonts.py が書きます。手で直さないこと */
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;src:url("/vendor/fonts/koshin-ja-400.woff2") format("woff2");}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;src:url("/vendor/fonts/koshin-la-400.woff2") format("woff2");unicode-range:U+0000-00FF,U+2000-206F;}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;src:url("/vendor/fonts/koshin-ex0-400.woff2") format("woff2");unicode-range:U+2192;}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;src:url("/vendor/fonts/koshin-ex1-400.woff2") format("woff2");unicode-range:U+203B;}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;src:url("/vendor/fonts/koshin-ex2-400.woff2") format("woff2");unicode-range:U+2190;}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;src:url("/vendor/fonts/koshin-ja-600.woff2") format("woff2");}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;src:url("/vendor/fonts/koshin-la-600.woff2") format("woff2");unicode-range:U+0000-00FF,U+2000-206F;}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;src:url("/vendor/fonts/koshin-ex0-600.woff2") format("woff2");unicode-range:U+2192;}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;src:url("/vendor/fonts/koshin-ex1-600.woff2") format("woff2");unicode-range:U+203B;}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;src:url("/vendor/fonts/koshin-ex2-600.woff2") format("woff2");unicode-range:U+2190;}
+/* font-face:end */
 
 /* ============================================================
    Koshin Studio
