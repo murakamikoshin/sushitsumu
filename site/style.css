@@ -551,3 +551,4 @@ h2::after{transform-origin:left center;transition:transform 1.1s var(--ease) .1s
 
 /* 札が横に流れる形のときは、画面の外へ出た分を隠す */
 #orbit.strip{overflow:hidden}
+.ct-soon a{color:var(--sky);text-underline-offset:4px}

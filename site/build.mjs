@@ -374,7 +374,11 @@ for (const file of pages) {
   const ctHtml = (ct.email || ct.form)
     ? [ct.email ? `<a class="ct-main" href="mailto:${ct.email}?subject=${encodeURIComponent('制作のご相談')}">${esc(ct.email)}<span>メールで相談する</span></a>` : '',
        ct.form ? `<a class="ct-sub" href="${ct.form}" target="_blank" rel="noopener">フォームから送る</a>` : ''].filter(Boolean).join('')
-    : `<p class="ct-soon">連絡先は準備中です。<br><span>data/site.json の contact.email を入れると、ここに出ます。</span></p>`;
+    : ((conf.social || []).length
+        ? `<p class="ct-soon">いまは ${(conf.social || []).map((x) =>
+             `<a href="${x.url}" rel="noopener" target="_blank">${esc(x.label)}</a>`).join(' か ')}` +
+          ` からご連絡ください。<br><span>専用の窓口は近く用意します。</span></p>`
+        : `<p class="ct-soon">連絡先は近く用意します。<br><span>もう少しお待ちください。</span></p>`);
   html = html.replace(/<!--contact:start-->[\s\S]*?<!--contact:end-->/,
     '<!--contact:start-->' + ctHtml + '<!--contact:end-->');
 
