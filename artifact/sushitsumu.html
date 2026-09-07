@@ -357,7 +357,7 @@ body:not(.has-rank) .needs-rank { display: none !important; }
         <div class="sub">江戸前合体遊戯</div>
         <div class="modeRow">
           <button class="modeBtn" id="startBtn">お 任 せ<small>心ゆくまで積む</small></button>
-          <button class="modeBtn alt" id="startOrderBtn">お 品 書 き<small>注文どおりに握って祝儀を稼ぐ</small></button>
+          <button class="modeBtn alt" id="startOrderBtn">お 品 書 き<small>注文で祝儀、連鎖で加増</small></button>
         </div>
         <button class="btn ghost small needs-rank" id="openRank">番 付 を 見 る</button>
         <p class="hint">
@@ -632,7 +632,8 @@ function makeSushi(level, x, y) {
     opt.chamfer = { radius: Math.min(d.ch, Math.min(d.w, d.h) / 2 - 0.5) };
     b = Bodies.rectangle(x, y, d.w, d.h, opt);
   }
-  b.sushi = { level: level, merged: false, born: performance.now(), id: ++bodySeq };
+  b.sushi = { level: level, merged: false, born: performance.now(), id: ++bodySeq,
+              mergedAt: 0, chain: 0 };
   return b;
 }
 
@@ -768,17 +769,32 @@ function flushOps() {
       var nhw = SUSHI[op.level + 1].hw;
       mx = Math.max(LEFT + nhw + 1, Math.min(RIGHT - nhw - 1, mx));
       my = Math.max(SUSHI[op.level + 1].hh + 2, my);
+      var chain = chainDepthOf(op.a, op.b);
       var nb = makeSushi(op.level + 1, mx, my);
+      nb.sushi.chain = chain;
+      nb.sushi.mergedAt = performance.now();
       Composite.add(world, nb);
       Body.setVelocity(nb, { x: 0, y: -1.6 });
 
-      addScore(MERGE_SCORE[op.level]);
+      var gain = Math.round(MERGE_SCORE[op.level] * chainMult(chain));
+      addScore(gain);
       orderMade(op.level + 1);
-      addFloat(mx, my - SUSHI[op.level + 1].hh - 6, '+' + fmt(MERGE_SCORE[op.level]),
-               op.level + 1 >= 7 ? '#c8402f' : 'rgba(58,40,16,.95)');
+      var fy = my - SUSHI[op.level + 1].hh - 6;
+      if (chain >= 2) {
+        if (chain > chainBest) chainBest = chain;
+        addFloat(mx, fy, chain + '連鎖 +' + fmt(gain), chain >= 3 ? '#c8402f' : '#c2690f');
+      } else {
+        addFloat(mx, fy, '+' + fmt(gain),
+                 op.level + 1 >= 7 ? '#c8402f' : 'rgba(58,40,16,.95)');
+      }
       var col = SUSHI[op.level + 1].col;
-      burst(mx, my, [col, '#ffffff', '#fff2c8'], 14 + op.level * 3, 3 + op.level * 0.5);
-      beep(420 + op.level * 70, 0.06, 'triangle');
+      burst(mx, my, [col, '#ffffff', '#fff2c8'],
+            (14 + op.level * 3) * (chain >= 2 ? 2 : 1), (3 + op.level * 0.5) * (chain >= 2 ? 1.5 : 1));
+      beep(420 + op.level * 70 + (chain - 1) * 120, 0.06 + (chain >= 2 ? 0.04 : 0), 'triangle');
+      if (chain >= 3) {
+        showPop(chainLabel(chain), 1);
+        beep(880 + chain * 90, 0.2, 'square');
+      }
 
       if (op.level + 1 >= 7) {   // 出来上がりがレベル8(大トロ)以上
         showPop(SHOUTS[Math.floor(Math.random() * SHOUTS.length)], 1);
@@ -856,7 +872,8 @@ function showPop(text, scale) {
   el.className = 'pop';
   el.textContent = text;
   if (scale && scale !== 1) el.style.fontSize = (scale * 100) + '%';
-  el.style.top = (28 + Math.random() * 16) + '%';
+  // 注文の木札を覆わないよう、桶の中ほどに出す
+  el.style.top = (54 + Math.random() * 10) + '%';
   popLayer.appendChild(el);
   setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1250);
 }
@@ -2316,7 +2333,8 @@ function gameOver() {
   var r = rankOf(score);
   document.getElementById('rankName').textContent = r.name;
   document.getElementById('rankNote').textContent =
-    (gameMode === 'order' ? '［お品書き］ ' : '') + r.note;
+    (gameMode === 'order' ? '［お品書き］ ' : '') + r.note +
+    (gameMode === 'order' && chainBest >= 2 ? '　最高 ' + chainBest + '連鎖' : '');
   document.getElementById('finalScore').textContent = fmt(score);
   document.getElementById('finalHi').textContent = fmt(hiScore);
   document.getElementById('overModal').hidden = false;
@@ -2351,6 +2369,7 @@ function resetGame() {
   pointerDown = false; dropLock = false;
   lastPtr = { x: W / 2, y: DROP_Y + FINGER_OFFSET_Y };
   order = null; orderWait = 0; orderMult = 1; orderStreak = 0; maxLevelMade = 2;
+  chainBest = 0;
   current = null; next = null;
   state = 'ready';
   acc = 0;
@@ -2394,6 +2413,34 @@ var orderWait = 0;           // 次の注文までの間(ms)
 var maxLevelMade = 2;        // これまでに作れた最大レベル(0基点)
 
 var ORDER_CHEERS = ['へい、お待ち！', 'あいよ、上がり！', 'ありがとうございます！'];
+
+/* 連鎖（お品書きのみ）
+   落とした直後の合体を数えると、ただの連打が連鎖になってしまう。
+   「合体で生まれた駒が、間を置かずさらに合体した時」だけを連鎖と数える。 */
+var CHAIN_WINDOW = 1400;   // 生まれてからこの時間内に合体すれば繋がったとみなす(ms)
+var CHAIN_CAP = 4;         // 倍率の上限
+var chainBest = 0;         // そのプレイでの最高連鎖
+
+function chainMult(n) { return Math.min(CHAIN_CAP, 1 + (n - 1) * 0.7); }
+
+var CHAIN_KANJI = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+function chainLabel(n) {
+  if (n >= 5) return '大 連 鎖 ！';
+  return CHAIN_KANJI[n] + ' 連 ！';
+}
+
+/* 合体しようとしている二つが、直前の合体から続いているか */
+function chainDepthOf(a, b) {
+  if (gameMode !== 'order') return 1;
+  var now = performance.now(), inherited = 0, i, bd, list = [a, b];
+  for (i = 0; i < 2; i++) {
+    bd = list[i];
+    if (bd.sushi && bd.sushi.mergedAt && now - bd.sushi.mergedAt < CHAIN_WINDOW) {
+      if (bd.sushi.chain > inherited) inherited = bd.sushi.chain;
+    }
+  }
+  return inherited + 1;
+}
 
 function orderReward(L) { return MERGE_SCORE[L - 1] * 6; }
 
