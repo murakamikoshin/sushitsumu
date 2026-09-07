@@ -961,8 +961,8 @@ function nigiri(c, w, h, fill, detail, edge) {
 function gunkan(c, w, h, topping) {
   var r = Math.min(h * 0.20, w * 0.11);
   var nt = Math.max(3.5, w * 0.055);   // 海苔の厚み（左右に縁として見える）
-  var noriBot = h * 0.26;              // 海苔の下端（ここから下はシャリ）
-  var rimY = -h * 0.06;                // 海苔の縁（具はここから上）
+  var noriBot = h * 0.43;              // 海苔の下端（巻いてあるので、シャリはほぼ隠れる）
+  var rimY = -h * 0.04;                // 海苔の縁（具はここから上）
   var crest = -h * 0.52;               // 具の盛り上がりの頂点
 
   // シャリ（底からわずかに覗く）
@@ -970,17 +970,17 @@ function gunkan(c, w, h, topping) {
   rg.addColorStop(0, '#fdfbf5');
   rg.addColorStop(1, '#dbd5c1');
   c.fillStyle = rg;
-  rr(c, -w * 0.45, h * 0.04, w * 0.90, h * 0.46, Math.min(h * 0.16, w * 0.1));
+  rr(c, -w * 0.46, h * 0.22, w * 0.92, h * 0.28, Math.min(h * 0.12, w * 0.08));
   c.fill();
   c.strokeStyle = 'rgba(156,144,113,.6)';
   c.lineWidth = 1;
   c.stroke();
   for (var i = 0; i < 4; i++) {
     c.save();
-    c.translate(-w * 0.24 + i * (w * 0.16), h * 0.45);
-    c.rotate((i - 1.5) * 0.4);
-    c.fillStyle = 'rgba(255,255,255,.95)';
-    c.beginPath(); c.ellipse(0, 0, w * 0.038, h * 0.028, 0, 0, 6.2832); c.fill();
+    c.translate(-w * 0.24 + i * (w * 0.16), h * 0.47);
+    c.rotate((i - 1.5) * 0.35);
+    c.fillStyle = 'rgba(255,255,255,.9)';
+    c.beginPath(); c.ellipse(0, 0, w * 0.03, h * 0.018, 0, 0, 6.2832); c.fill();
     c.restore();
   }
 
@@ -1226,53 +1226,83 @@ function drawItem(c, level) {
       break;
     }
 
-    /* 7. ウニ軍艦 */
+    /* 7. ウニ軍艦
+       濃い斑点を打つと虫の卵に見え、一枚の面にすると
+       バターの塊に見える。左から順に重ねた5つの弁として描き、
+       隣の弁との境目だけを溝として残すと、うにの盛りになる。 */
     case 6: {
       gunkan(c, w, h, function (cc, gw, gh) {
-        // 弁の隙間に見える濃い部分
-        cc.fillStyle = '#8a5a10';
-        cc.fillRect(-gw, -gh, gw * 2, gh * 2);
-        var lobes = 5;
-        for (var u = 0; u < lobes; u++) {
-          var t = u - (lobes - 1) / 2;                 // -2 .. 2
-          var lx = t * gw * 0.168;
-          var ly = -gh * 0.29 + Math.abs(t) * gh * 0.03 + (u % 2 ? gh * 0.018 : 0);
-          var lw = gw * 0.092;
-          var lh = gh * 0.205;
-          cc.save();
-          cc.translate(lx, ly);
-          cc.rotate(t * 0.12);
-          var g = cc.createLinearGradient(0, -lh, 0, lh);
-          g.addColorStop(0, '#ffe6a2');
-          g.addColorStop(0.33, '#f0b840');
-          g.addColorStop(0.72, '#cf8a1c');
-          g.addColorStop(1, '#96600f');
-          cc.fillStyle = g;
-          // 舌状（根元が広く、先が丸い）
-          cc.beginPath();
-          cc.moveTo(-lw * 0.85, lh);
-          cc.bezierCurveTo(-lw * 1.06, -lh * 0.28, -lw * 0.62, -lh, 0, -lh);
-          cc.bezierCurveTo(lw * 0.62, -lh, lw * 1.06, -lh * 0.28, lw * 0.85, lh);
-          cc.closePath();
-          cc.fill();
-          cc.strokeStyle = 'rgba(116,68,6,.65)';
-          cc.lineWidth = 1.1;
-          cc.stroke();
-          // うに特有の粒立ち（小さな窪み）
-          cc.fillStyle = 'rgba(146,88,8,.34)';
-          for (var d = 0; d < 5; d++) {
+        var nt2 = Math.max(3.5, gw * 0.055);
+        var x0 = -gw * 0.5 + nt2, x1 = gw * 0.5 - nt2, span = x1 - x0;
+        var crestY = -gh * 0.52, rimY2 = -gh * 0.04;
+        var n = 5;
+        var lw = (span / n) * 0.74;        // 半幅。隣と重ねて隙間を作らない
+        var shoulder = gh * 0.11;
+
+        for (var u = 0; u < n; u++) {
+          var t = (u + 0.5) / n;
+          var cx = x0 + span * t;
+          // 中央の弁ほど高く盛る
+          var topY = crestY + (1 - Math.sin(Math.PI * t)) * gh * 0.15
+                            + (u % 2 ? gh * 0.022 : 0);
+
+          function lobePath() {
             cc.beginPath();
-            cc.arc((d % 2 ? -1 : 1) * lw * 0.34, -lh * 0.58 + d * lh * 0.33,
-                   lw * 0.17, 0, 6.2832);
-            cc.fill();
+            cc.moveTo(cx - lw, rimY2);
+            cc.lineTo(cx - lw, topY + shoulder);
+            cc.quadraticCurveTo(cx - lw, topY, cx - lw * 0.1, topY);
+            cc.quadraticCurveTo(cx + lw, topY, cx + lw, topY + shoulder);
+            cc.lineTo(cx + lw, rimY2);
+            cc.closePath();
           }
-          // 先端の照り
-          cc.fillStyle = 'rgba(255,250,224,.5)';
-          cc.beginPath();
-          cc.ellipse(-lw * 0.16, -lh * 0.56, lw * 0.28, lh * 0.2, -0.2, 0, 6.2832);
+
+          lobePath();
+          var g = cc.createLinearGradient(cx - lw, topY, cx + lw * 0.4, rimY2);
+          g.addColorStop(0, u % 2 ? '#ffdf90' : '#ffe6a4');
+          g.addColorStop(0.3, '#f3bf52');
+          g.addColorStop(0.7, '#d4931f');
+          g.addColorStop(1, '#a86c14');
+          cc.fillStyle = g;
           cc.fill();
+
+          // 弁の丸みを出す照り
+          cc.save();
+          lobePath();
+          cc.clip();
+          var hl = cc.createLinearGradient(cx - lw * 0.6, topY, cx + lw * 0.2, topY + gh * 0.22);
+          hl.addColorStop(0, 'rgba(255,250,220,.55)');
+          hl.addColorStop(1, 'rgba(255,250,220,0)');
+          cc.fillStyle = hl;
+          cc.fillRect(cx - lw, topY - gh * 0.05, lw * 2, gh * 0.3);
+          // 根元の陰
+          var sd = cc.createLinearGradient(0, rimY2, 0, rimY2 - gh * 0.2);
+          sd.addColorStop(0, 'rgba(104,60,6,.5)');
+          sd.addColorStop(1, 'rgba(104,60,6,0)');
+          cc.fillStyle = sd;
+          cc.fillRect(cx - lw, rimY2 - gh * 0.2, lw * 2, gh * 0.2);
           cc.restore();
+
+          // 左側の輪郭＝隣の弁との溝
+          cc.strokeStyle = 'rgba(134,80,6,.6)';
+          cc.lineWidth = Math.max(1.4, gw * 0.013);
+          cc.beginPath();
+          cc.moveTo(cx - lw, rimY2);
+          cc.lineTo(cx - lw, topY + shoulder);
+          cc.quadraticCurveTo(cx - lw, topY, cx - lw * 0.1, topY);
+          cc.stroke();
         }
+
+        // 右端の弁の輪郭
+        var tl = (n - 0.5) / n;
+        var cxr = x0 + span * tl;
+        var topR = crestY + (1 - Math.sin(Math.PI * tl)) * gh * 0.15;
+        cc.strokeStyle = 'rgba(134,80,6,.6)';
+        cc.lineWidth = Math.max(1.4, gw * 0.013);
+        cc.beginPath();
+        cc.moveTo(cxr + lw * 0.1, topR);
+        cc.quadraticCurveTo(cxr + lw, topR, cxr + lw, topR + shoulder);
+        cc.lineTo(cxr + lw, rimY2);
+        cc.stroke();
       });
       break;
     }
