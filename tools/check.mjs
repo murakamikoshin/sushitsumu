@@ -25,6 +25,7 @@ const JOBS = [
   ['出迎えの声',   ROOT + '/site/tools/voice-check.mjs'],
   ['押した後',     ROOT + '/site/tools/interact.mjs'],
   ['見て回る',     ROOT + '/site/tools/audit.mjs'],
+  ['写した先',     ROOT + '/tools/fresh-check.mjs'],
 ];
 
 let failed = 0;

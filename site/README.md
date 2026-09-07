@@ -78,6 +78,7 @@ Cloudflare Pages に置く静的サイト。枠組み（Next.js など）は使�
     node site/tools/audit.mjs        # 置かれた形を見る
     node site/tools/interact.mjs     # 押した後まで見る
     node site/tools/voice-check.mjs  # 出迎えの声が鳴っているか
+    node tools/fresh-check.mjs       # 新しく clone した所で組んで、欠けが無いか
 
 `audit.mjs` は全ページ × 4 つの画面幅を回って数える。
 
