@@ -15,7 +15,18 @@
 <style>
 /* ============================================================
    すし積む  -  iOS(Safari / WKWebView) 最適化 落ち物合体パズル
+   意匠：藍の壁に白木のすし桶。差し色は朱と金のみ。
    ============================================================ */
+
+:root{
+  --sumi:  #0a121a;   /* 墨紺 */
+  --washi: #faf6ec;   /* 和紙 */
+  --kiji:  #e6cda6;   /* 白木 */
+  --shu:   #c8402f;   /* 朱 */
+  --kin:   #c9a227;   /* 金 */
+  --mincho:"Hiragino Mincho ProN","ヒラギノ明朝 ProN","Yu Mincho","YuMincho","Noto Serif JP",serif;
+  --gothic:"Helvetica Neue",Helvetica,Arial,"Hiragino Sans","Yu Gothic",sans-serif;
+}
 
 /* ---- リセット & iOS挙動の完全封じ込め ---- */
 *, *::before, *::after {
@@ -50,22 +61,13 @@ html, body {
 }
 
 body {
-  font-family: "Hiragino Mincho ProN", "ヒラギノ明朝 ProN", "Yu Mincho",
-               "YuMincho", "Noto Serif JP", serif;
-  color: #3b2415;
-  /* 和風・木目調の背景 */
-  background-color: #6d4526;
+  font-family: var(--mincho);
+  color: var(--washi);
+  background-color: var(--sumi);
+  /* 藍の壁。極細の織り目だけ乗せる */
   background-image:
-    /* 木目の縞 */
-    repeating-linear-gradient(96deg,
-      rgba(0,0,0,.16) 0px, rgba(0,0,0,.16) 1px,
-      rgba(255,255,255,.05) 2px, rgba(255,255,255,.05) 3px,
-      rgba(0,0,0,0) 4px, rgba(0,0,0,0) 13px),
-    repeating-linear-gradient(91deg,
-      rgba(0,0,0,.10) 0px, rgba(0,0,0,.10) 2px,
-      rgba(0,0,0,0) 2px, rgba(0,0,0,0) 29px),
-    /* 中央にほんのり光 */
-    radial-gradient(120% 80% at 50% 0%, #9a6737 0%, #6d4526 45%, #3f2716 100%);
+    repeating-linear-gradient(45deg, rgba(255,255,255,.014) 0 1px, transparent 1px 5px),
+    radial-gradient(135% 105% at 50% -15%, #2d5175 0%, #18304a 40%, #0a121a 100%);
   overscroll-behavior: none;
 }
 
@@ -76,57 +78,58 @@ body {
   display: flex;
   flex-direction: column;
   /* Notch / Dynamic Island / ホームバー を避ける */
-  padding-top:    calc(env(safe-area-inset-top, 0px)    + 6px);
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
-  padding-left:   calc(env(safe-area-inset-left, 0px)   + 8px);
-  padding-right:  calc(env(safe-area-inset-right, 0px)  + 8px);
+  padding-top:    calc(env(safe-area-inset-top, 0px)    + 10px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+  padding-left:   calc(env(safe-area-inset-left, 0px)   + 14px);
+  padding-right:  calc(env(safe-area-inset-right, 0px)  + 14px);
 }
 
-/* ---- 暖簾(のれん)風ヘッダー ---- */
+/* ---- ヘッダー：枠を持たせず、字組みだけで見せる ---- */
 .hud {
+  transition: opacity .4s ease;
   flex: 0 0 auto;
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 6px;
-  max-width: 560px;
   width: 100%;
-  margin: 0 auto 6px;
-}
-
-.panel {
-  background: linear-gradient(180deg, #fdf7e7 0%, #f0e4c8 100%);
-  border: 1.5px solid #4a2d18;
-  border-radius: 8px;
-  box-shadow: 0 2px 0 rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.7);
-  padding: 4px 8px 5px;
+  max-width: 520px;
+  margin: 0 auto;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 2px 14px;
 }
-.panel.score, .panel.hi { flex: 1 1 0; }
-.panel.next { flex: 0 0 auto; padding: 3px 10px 4px; }
+.hud-r { display: flex; flex-direction: column; align-items: center; gap: 5px; }
 
 .lbl {
-  font-size: 10px;
-  letter-spacing: .14em;
-  color: #8a5526;
-  line-height: 1.1;
-  white-space: nowrap;
+  font-size: 9.5px;
+  letter-spacing: .34em;
+  text-indent: .34em;
+  color: rgba(230,205,166,.72);
+  line-height: 1;
 }
-.val {
-  font-family: "Hiragino Sans", "Helvetica Neue", Arial, sans-serif;
-  font-weight: 800;
-  font-size: 21px;
-  line-height: 1.15;
-  color: #3b2415;
+.score {
+  font-family: var(--gothic);
+  font-weight: 300;
+  font-size: 33px;
+  line-height: 1.05;
+  margin-top: 6px;
+  color: var(--washi);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
-.panel.hi .val { font-size: 17px; color: #7a4a22; }
-#nextCv { width: 46px; height: 46px; display: block; }
+.hi { font-size: 10px; letter-spacing: .14em; color: rgba(250,246,236,.46); margin-top: 5px; }
+.hi b {
+  font-family: var(--gothic); font-weight: 400; font-size: 11.5px;
+  letter-spacing: 0; color: rgba(250,246,236,.7);
+}
+
+/* NEXT は白木の丸盆に乗せる */
+.tray {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #fdfaf3 0%, #efe3ca 68%, #e0d0ae 100%);
+  box-shadow: 0 3px 12px rgba(0,0,0,.42), inset 0 0 0 1px rgba(201,162,39,.5);
+  display: flex; align-items: center; justify-content: center;
+}
+#nextCv { width: 42px; height: 42px; display: block; }
+body.titling .hud { opacity: 0; pointer-events: none; }
 
 /* ---- ステージ（すし桶キャンバス） ---- */
 .stage {
@@ -139,9 +142,8 @@ body {
 }
 #game {
   display: block;
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.55), 0 0 0 2px rgba(50,28,12,.85);
-  background: #f6ecd8;
+  border-radius: 2px;
+  box-shadow: 0 26px 62px rgba(0,0,0,.68), 0 6px 16px rgba(0,0,0,.35);
 }
 
 /* ---- 中央ポップアップ（へい大将！など） ---- */
@@ -156,92 +158,93 @@ body {
 }
 .pop {
   position: absolute;
-  font-size: clamp(30px, 9vw, 52px);
-  font-weight: 900;
-  letter-spacing: .06em;
-  color: #fff4d0;
-  text-shadow:
-     0 0 6px rgba(255,140,0,.9),
-     3px 3px 0 #8c2b1c,
-    -2px -2px 0 #8c2b1c,
-     2px -2px 0 #8c2b1c,
-    -2px  2px 0 #8c2b1c,
-     0 8px 18px rgba(0,0,0,.6);
-  animation: popIn 1.15s cubic-bezier(.2,1.5,.4,1) forwards;
+  font-family: var(--mincho);
+  font-weight: 600;
+  font-size: clamp(25px, 7.2vw, 40px);
+  letter-spacing: .16em;
+  text-indent: .16em;
+  color: #fdf8ec;
   white-space: nowrap;
+  background: rgba(196,58,42,.95);
+  padding: 9px 24px 11px;
+  border-radius: 1px;
+  box-shadow: 0 14px 38px rgba(60,10,4,.45), inset 0 0 0 1px rgba(255,232,200,.28);
+  animation: popIn 1.2s cubic-bezier(.16,.9,.28,1) forwards;
 }
 @keyframes popIn {
-  0%   { transform: scale(.2) rotate(-14deg); opacity: 0; }
-  22%  { transform: scale(1.18) rotate(4deg); opacity: 1; }
-  36%  { transform: scale(1) rotate(0deg); }
-  75%  { transform: scale(1) translateY(0); opacity: 1; }
-  100% { transform: scale(.94) translateY(-46px); opacity: 0; }
+  0%   { opacity: 0; transform: translateY(14px) scale(.9); }
+  18%  { opacity: 1; transform: translateY(0) scale(1.02); }
+  30%  { transform: scale(1); }
+  70%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-38px); }
 }
 
-/* ---- モーダル（タイトル / 結果） ---- */
+/* ---- モーダル（タイトル / 結果）：和紙の額装 ---- */
 .modal {
-  position: absolute;
+  position: fixed;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(24,12,4,.72);
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
+  background: rgba(6,12,18,.72);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
   z-index: 20;
-  padding: 16px;
+  padding: 18px;
 }
 .modal[hidden] { display: none !important; }
 .card {
-  width: min(88%, 340px);
-  background: linear-gradient(180deg, #fdf7e7 0%, #efe1c2 100%);
-  border: 2px solid #4a2d18;
-  border-radius: 14px;
-  box-shadow: 0 14px 40px rgba(0,0,0,.6), inset 0 2px 0 rgba(255,255,255,.8);
-  padding: 20px 18px 18px;
+  position: relative;
+  width: min(86%, 318px);
+  background: var(--washi);
+  color: #1d1a15;
+  border-radius: 2px;
+  padding: 34px 26px 30px;
   text-align: center;
+  box-shadow: 0 26px 70px rgba(0,0,0,.6);
 }
-.card h1 {
-  font-size: 38px;
-  letter-spacing: .16em;
-  color: #8c2b1c;
-  text-shadow: 1px 1px 0 rgba(255,255,255,.8);
-  margin-bottom: 2px;
+.card::before {
+  content: '';
+  position: absolute; inset: 8px;
+  border: 1px solid rgba(185,148,95,.5);
+  pointer-events: none;
 }
-.card h2 { font-size: 22px; letter-spacing: .1em; color: #8c2b1c; margin-bottom: 10px; }
-.card .sub { font-size: 12px; letter-spacing: .18em; color: #8a5526; margin-bottom: 14px; }
-.rankName {
-  font-size: 26px; font-weight: 700; color: #3b2415; margin: 6px 0 2px;
-  letter-spacing: .06em;
-}
-.rankNote { font-size: 12px; color: #8a5526; margin-bottom: 12px; }
-.scoreRow {
-  display: flex; justify-content: space-around; align-items: baseline;
-  border-top: 1px dashed #b99b6a; border-bottom: 1px dashed #b99b6a;
-  padding: 10px 0; margin-bottom: 14px;
-}
-.scoreRow div { display: flex; flex-direction: column; gap: 2px; }
+.card h1 { font-size: 40px; font-weight: 600; letter-spacing: .24em; text-indent: .24em; }
+.card h2 { font-size: 19px; font-weight: 500; letter-spacing: .4em; text-indent: .4em; color: #6d6154; }
+.rule { width: 40px; height: 1px; background: var(--shu); margin: 16px auto 14px; }
+.sub  { font-size: 10px; letter-spacing: .44em; text-indent: .44em; color: #9a8a72; }
+
+.rankName { font-size: 27px; font-weight: 600; letter-spacing: .12em; text-indent: .12em; margin-top: 4px; }
+.rankNote { font-size: 11.5px; letter-spacing: .06em; color: #9a8a72; margin-top: 8px; }
+
+.scoreRow { display: flex; justify-content: center; gap: 42px; margin: 22px 0 4px; }
+.scoreRow div { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.scoreRow .k { font-size: 9px; letter-spacing: .3em; text-indent: .3em; color: #9a8a72; }
 .scoreRow .v {
-  font-family: "Hiragino Sans", "Helvetica Neue", Arial, sans-serif;
-  font-weight: 800; font-size: 24px; color: #3b2415;
+  font-family: var(--gothic); font-weight: 300; font-size: 25px;
+  color: #1d1a15; font-variant-numeric: tabular-nums;
 }
+
 .btn {
   display: inline-block;
-  font-family: inherit;
-  font-size: 19px;
-  letter-spacing: .12em;
-  color: #fff4d0;
-  background: linear-gradient(180deg, #c4402c 0%, #8c2b1c 100%);
-  border: 2px solid #57180f;
-  border-radius: 10px;
-  padding: 12px 30px;
-  box-shadow: 0 4px 0 #57180f, 0 8px 16px rgba(0,0,0,.4);
+  margin-top: 26px;
+  font-family: var(--mincho);
+  font-size: 13.5px;
+  letter-spacing: .3em;
+  text-indent: .3em;
+  color: #fff;
+  background: var(--shu);
+  border: 0;
+  border-radius: 2px;
+  padding: 13px 26px;
   cursor: pointer;
-  transition: transform .06s ease, box-shadow .06s ease;
+  box-shadow: 0 6px 16px rgba(0,0,0,.22);
+  transition: opacity .14s ease;
 }
-.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #57180f, 0 4px 10px rgba(0,0,0,.4); }
-.hint { font-size: 11.5px; color: #8a5526; margin-top: 12px; line-height: 1.7; }
-.err { color: #8c2b1c; font-size: 13px; line-height: 1.8; }
+.btn:active { opacity: .72; }
+
+.hint { font-size: 11px; color: #9a8a72; margin-top: 22px; line-height: 2.05; letter-spacing: .04em; }
+.err  { color: var(--shu); font-size: 12.5px; line-height: 2; }
 
 /* ---- 横向き（ランドスケープ）警告 ---- */
 #rotate { display: none; }
@@ -249,20 +252,20 @@ body {
   #rotate {
     position: fixed; inset: 0; z-index: 60;
     display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 14px;
-    background: rgba(24,12,4,.94);
-    color: #fdf7e7; text-align: center;
+    align-items: center; justify-content: center; gap: 18px;
+    background: rgba(8,16,24,.96);
+    color: var(--washi); text-align: center;
     padding: calc(env(safe-area-inset-top, 0px) + 10px)
              calc(env(safe-area-inset-right, 0px) + 10px)
              calc(env(safe-area-inset-bottom, 0px) + 10px)
              calc(env(safe-area-inset-left, 0px) + 10px);
   }
-  #rotate .ico { font-size: 40px; animation: tilt 1.6s ease-in-out infinite; }
-  #rotate p { font-size: 17px; letter-spacing: .12em; line-height: 1.9; }
+  #rotate .ico { font-size: 34px; opacity: .85; animation: tilt 1.8s ease-in-out infinite; }
+  #rotate p { font-size: 14px; letter-spacing: .3em; text-indent: .3em; line-height: 2.2; }
 }
 @keyframes tilt {
-  0%, 100% { transform: rotate(-12deg); }
-  50%      { transform: rotate(12deg); }
+  0%, 100% { transform: rotate(-10deg); }
+  50%      { transform: rotate(10deg); }
 }
 </style>
 </head>
@@ -270,9 +273,15 @@ body {
 
 <div id="app">
   <header class="hud">
-    <div class="panel score"><span class="lbl">スコア</span><span class="val" id="scoreEl">0</span></div>
-    <div class="panel next"><span class="lbl">NEXT</span><canvas id="nextCv" width="140" height="140"></canvas></div>
-    <div class="panel hi"><span class="lbl">ハイスコア</span><span class="val" id="hiEl">0</span></div>
+    <div class="hud-l">
+      <div class="lbl">スコア</div>
+      <div class="score" id="scoreEl">0</div>
+      <div class="hi">高得点 <b id="hiEl">0</b></div>
+    </div>
+    <div class="hud-r">
+      <div class="lbl">つぎ</div>
+      <div class="tray"><canvas id="nextCv" width="132" height="132"></canvas></div>
+    </div>
   </header>
 
   <main class="stage" id="stage">
@@ -283,13 +292,13 @@ body {
     <div class="modal" id="titleModal">
       <div class="card">
         <h1>すし積む</h1>
-        <div class="sub">江 戸 前 合 体 パ ズ ル</div>
-        <button class="btn" id="startBtn">の れ ん を 潜 る</button>
+        <div class="rule"></div>
+        <div class="sub">江戸前合体遊戯</div>
+        <button class="btn" id="startBtn">暖簾を潜る</button>
         <p class="hint">
-          指でドラッグして落とす位置を決め、<br>
-          離すとネタが落ちます。<br>
-          同じネタ同士がぶつかると合体！<br>
-          時々出る「ガリ」は触れたネタを1つ消します。
+          指でなぞって位置を決め、離せば落ちる。<br>
+          同じネタが触れ合えば合体。<br>
+          「ガリ」は触れたネタを一つ消す。
         </p>
       </div>
     </div>
@@ -297,23 +306,25 @@ body {
     <!-- 結果 -->
     <div class="modal" id="overModal" hidden>
       <div class="card">
-        <h2>し ま い ！</h2>
+        <h2>しまい</h2>
+        <div class="rule"></div>
         <div class="rankName" id="rankName">見習い職人</div>
         <div class="rankNote" id="rankNote"></div>
         <div class="scoreRow">
-          <div><span class="lbl">スコア</span><span class="v" id="finalScore">0</span></div>
-          <div><span class="lbl">ハイスコア</span><span class="v" id="finalHi">0</span></div>
+          <div><span class="k">スコア</span><span class="v" id="finalScore">0</span></div>
+          <div><span class="k">高得点</span><span class="v" id="finalHi">0</span></div>
         </div>
-        <button class="btn" id="retryBtn">も う 一 丁</button>
+        <button class="btn" id="retryBtn">もう一丁</button>
       </div>
     </div>
 
     <!-- ライブラリ読み込み失敗時 -->
     <div class="modal" id="libModal" hidden>
       <div class="card">
-        <h2>準備中…</h2>
+        <h2>準備中</h2>
+        <div class="rule"></div>
         <p class="err">
-          物理エンジン(Matter.js)を初期化できませんでした。<br>
+          物理エンジンを初期化できませんでした。<br>
           ページを再読み込みしてください。
         </p>
       </div>
@@ -477,9 +488,13 @@ var particles   = [];
 var pendingOps  = [];          // 物理ステップ後にまとめて処理
 var bodySeq     = 0;
 
+var F_MIN = '"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif';
+var F_GO  = '"Helvetica Neue",Arial,"Hiragino Sans",sans-serif';
+function fmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
 var scoreEl = document.getElementById('scoreEl');
 var hiEl    = document.getElementById('hiEl');
-hiEl.textContent = hiScore;
+hiEl.textContent = fmt(hiScore);
 
 function loadHi() {
   try { return parseInt(localStorage.getItem('sushitsumu.hi') || '0', 10) || 0; }
@@ -626,6 +641,7 @@ function flushOps() {
       burst(gx, gy, ['#ffc7d4', '#ffffff', '#ff88a6'], 16, 3.4);
       burst(op.gari.position.x, op.gari.position.y, ['#ffc7d4'], 8, 2.2);
       addScore(GARI_SCORE + lv * 10);
+      addFloat(gx, gy - 12, '+' + fmt(GARI_SCORE + lv * 10), '#c8402f');
       beep(1250, 0.07, 'square');
       showPop('お口直し！', 0.8);
     } else {
@@ -637,6 +653,7 @@ function flushOps() {
       if (op.level >= SUSHI.length - 1) {
         /* ゴールデンすし桶同士 → 消滅して大得点 */
         addScore(GOLDEN_BONUS);
+        addFloat(mx, my - 20, '+' + fmt(GOLDEN_BONUS), '#96690a');
         burst(mx, my, ['#ffe89a', '#ffd45a', '#fff8dc', '#e8b62c'], 60, 8);
         showPop('大 入 袋 ！', 1);
         beep(1600, 0.25, 'sawtooth');
@@ -648,6 +665,8 @@ function flushOps() {
       Body.setVelocity(nb, { x: 0, y: -1.6 });
 
       addScore(MERGE_SCORE[op.level]);
+      addFloat(mx, my - SUSHI[op.level + 1].hh - 6, '+' + fmt(MERGE_SCORE[op.level]),
+               op.level + 1 >= 7 ? '#c8402f' : 'rgba(58,40,16,.95)');
       var col = SUSHI[op.level + 1].col;
       burst(mx, my, [col, '#ffffff', '#fff2c8'], 14 + op.level * 3, 3 + op.level * 0.5);
       beep(420 + op.level * 70, 0.06, 'triangle');
@@ -662,10 +681,10 @@ function flushOps() {
 
 function addScore(v) {
   score += v;
-  scoreEl.textContent = score;
+  scoreEl.textContent = fmt(score);
   if (score > hiScore) {
     hiScore = score;
-    hiEl.textContent = hiScore;
+    hiEl.textContent = fmt(hiScore);
     saveHi(hiScore);
   }
 }
@@ -685,7 +704,8 @@ function burst(x, y, colors, n, spd) {
       r: 2 + Math.random() * 4,
       c: colors[Math.floor(Math.random() * colors.length)],
       rot: Math.random() * 6.28,
-      vr: (Math.random() - 0.5) * 0.4
+      vr: (Math.random() - 0.5) * 0.4,
+      sq: Math.random() < 0.45
     });
   }
   if (particles.length > 500) particles.splice(0, particles.length - 500);
@@ -701,11 +721,28 @@ function stepParticles() {
   }
 }
 
+/* ---- 加算点の浮き文字 ---- */
+var floats = [];
+function addFloat(x, y, text, color) {
+  floats.push({ x: x, y: y, t: text, c: color, life: 1 });
+  if (floats.length > 24) floats.shift();
+}
+function stepFloats() {
+  for (var i = floats.length - 1; i >= 0; i--) {
+    var f = floats[i];
+    f.y -= 0.62;
+    f.life -= 0.017;
+    if (f.life <= 0) floats.splice(i, 1);
+  }
+}
+
 /* ============================================================
    10. ポップアップ（DOM）
    ============================================================ */
 var popLayer = document.getElementById('popLayer');
 function showPop(text, scale) {
+  var stale = popLayer.firstChild;
+  while (stale) { popLayer.removeChild(stale); stale = popLayer.firstChild; }
   var el = document.createElement('div');
   el.className = 'pop';
   el.textContent = text;
@@ -1175,101 +1212,215 @@ function drawGari(c) {
   c.stroke();
 }
 
-/* ---- 桶（枠）の描画 ---- */
-function drawBarrel() {
-  // 内側の地
-  var bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, '#fffaf0');
-  bg.addColorStop(0.55, '#f6ecd8');
-  bg.addColorStop(1, '#e8d8b6');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, H);
+/* ---- 桶（枠）の描画 ----
+   桶は動かないので、起動時にオフスクリーンへ一度だけ描いて
+   毎フレームは drawImage 1回で済ませる（iPhone での負荷を抑える）。 */
+var barrelCv = null;
 
-  // うっすら木目（内側）
-  ctx.strokeStyle = 'rgba(160,120,70,.10)';
-  ctx.lineWidth = 1;
-  for (var i = 1; i < 18; i++) {
-    var y = i * (H / 18);
-    ctx.beginPath();
-    ctx.moveTo(WALL, y);
-    ctx.bezierCurveTo(W * 0.3, y + 5, W * 0.7, y - 5, W - WALL, y);
-    ctx.stroke();
+/* 和紙の繊維テクスチャ（タイル）。
+   目に見える「模様」にならないよう、ざらつきとして感じる程度に留める。 */
+function buildWashiPattern(c) {
+  var S = 256;
+  var t = document.createElement('canvas');
+  t.width = t.height = S;
+  var x = t.getContext('2d');
+  x.lineWidth = 0.6;
+  for (var i = 0; i < 900; i++) {
+    var px = Math.random() * S, py = Math.random() * S;
+    var a = Math.random() * Math.PI, len = 1.5 + Math.random() * 5;
+    x.strokeStyle = 'rgba(140,108,58,' + (0.012 + Math.random() * 0.026).toFixed(3) + ')';
+    x.beginPath();
+    x.moveTo(px, py);
+    x.lineTo(px + Math.cos(a) * len, py + Math.sin(a) * len);
+    x.stroke();
   }
-  // 屋号
-  ctx.save();
-  ctx.globalAlpha = 0.10;
-  ctx.fillStyle = '#8a5526';
-  ctx.font = '700 58px "Hiragino Mincho ProN", serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('す し', W / 2, H * 0.58);
-  ctx.fillText('積 む', W / 2, H * 0.58 + 66);
-  ctx.restore();
-
-  // 枠（木）
-  var wood = ctx.createLinearGradient(0, 0, 0, H);
-  wood.addColorStop(0, '#c08a4c');
-  wood.addColorStop(0.5, '#9a6737');
-  wood.addColorStop(1, '#6d4526');
-  ctx.fillStyle = wood;
-  ctx.fillRect(0, 0, WALL, H);
-  ctx.fillRect(W - WALL, 0, WALL, H);
-  ctx.fillRect(0, H - WALL, W, WALL);
-
-  // 木目線
-  ctx.strokeStyle = 'rgba(60,32,12,.35)';
-  ctx.lineWidth = 1;
-  for (var j = 0; j < 28; j++) {
-    var yy = j * (H / 28) + 4;
-    ctx.beginPath(); ctx.moveTo(1, yy); ctx.lineTo(WALL - 1, yy + 3); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(W - WALL + 1, yy + 2); ctx.lineTo(W - 1, yy); ctx.stroke();
+  for (var j = 0; j < 1400; j++) {
+    x.fillStyle = 'rgba(130,100,52,' + (0.01 + Math.random() * 0.028).toFixed(3) + ')';
+    x.fillRect(Math.random() * S, Math.random() * S, 1, 1);
   }
-  // 箍（たが）
-  ctx.fillStyle = 'rgba(70,40,16,.55)';
-  [H * 0.30, H * 0.62, H * 0.90].forEach(function (hy) {
-    ctx.fillRect(0, hy, WALL, 6);
-    ctx.fillRect(W - WALL, hy, WALL, 6);
-  });
-  // 内側の影
-  ctx.strokeStyle = 'rgba(90,55,20,.45)';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(WALL, 0, W - WALL * 2, H - WALL);
+  return c.createPattern(t, 'repeat');
 }
 
-/* ---- デッドライン ---- */
+function buildBarrel() {
+  barrelCv = document.createElement('canvas');
+  barrelCv.width = W * 2;
+  barrelCv.height = H * 2;
+  var c = barrelCv.getContext('2d');
+  c.scale(2, 2);
+  drawBarrelTo(c);
+}
+
+function drawBarrelTo(c) {
+  // 盤面：和紙。階調をしっかり付けて、のっぺりさせない
+  var bg = c.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#fefdfa');
+  bg.addColorStop(0.5, '#f7f1e3');
+  bg.addColorStop(1, '#e7dcc2');
+  c.fillStyle = bg;
+  c.fillRect(0, 0, W, H);
+
+  // 繊維の目（変換を戻して実ピクセル等倍で敷く）
+  c.save();
+  c.setTransform(1, 0, 0, 1, 0, 0);
+  c.fillStyle = buildWashiPattern(c);
+  c.fillRect(0, 0, W * 2, H * 2);
+  c.restore();
+
+  // 桶の底の簀（すのこ）
+  c.strokeStyle = 'rgba(150,115,65,.13)';
+  c.lineWidth = 1;
+  for (var i = 0; i < 7; i++) {
+    var sy = FLOOR - 7 - i * 13;
+    c.beginPath();
+    c.moveTo(WALL + 7, sy + 0.5);
+    c.lineTo(W - WALL - 7, sy + 0.5);
+    c.stroke();
+  }
+
+  // 内側の陰（上・下・左右）で桶の中の奥行きを出す
+  function shade(x0, y0, x1, y1, w, h, a) {
+    var g = c.createLinearGradient(x0, y0, x1, y1);
+    g.addColorStop(0, 'rgba(88,62,26,' + a + ')');
+    g.addColorStop(1, 'rgba(88,62,26,0)');
+    c.fillStyle = g;
+    c.fillRect(x0 < x1 ? x0 : x1, y0 < y1 ? y0 : y1, w, h);
+  }
+  shade(0, 0, 0, H * 0.20, W, H * 0.20, .14);
+  shade(0, FLOOR, 0, FLOOR - 80, W, 80, .17);
+  shade(WALL, 0, WALL + 26, 0, 26, H, .14);
+  shade(W - WALL, 0, W - WALL - 26, 0, 26, H, .14);
+
+  // 枠：白木（盤面と明度差をつけて桶の輪郭を立てる）
+  var wood = c.createLinearGradient(0, 0, 0, H);
+  wood.addColorStop(0, '#e6cda3');
+  wood.addColorStop(0.45, '#d0ae7d');
+  wood.addColorStop(1, '#ab875a');
+  c.fillStyle = wood;
+  c.fillRect(0, 0, WALL, H);
+  c.fillRect(W - WALL, 0, WALL, H);
+  c.fillRect(0, H - WALL, W, WALL);
+
+  // 木目：繊維に沿った淡い揺らぎを数本だけ
+  c.strokeStyle = 'rgba(126,90,44,.22)';
+  c.lineWidth = 1;
+  for (var g2 = 0; g2 < 3; g2++) {
+    var gx = 3 + g2 * 4;
+    c.beginPath();
+    c.moveTo(gx + 0.5, 0);
+    c.bezierCurveTo(gx + 3, H * 0.3, gx - 3, H * 0.66, gx + 1, H);
+    c.stroke();
+    c.beginPath();
+    c.moveTo(W - gx - 0.5, 0);
+    c.bezierCurveTo(W - gx - 3, H * 0.34, W - gx + 3, H * 0.7, W - gx - 1, H);
+    c.stroke();
+  }
+  for (var g3 = 0; g3 < 2; g3++) {
+    var gy = H - WALL + 4 + g3 * 4;
+    c.beginPath();
+    c.moveTo(0, gy + 0.5);
+    c.bezierCurveTo(W * 0.3, gy + 2.5, W * 0.7, gy - 1.5, W, gy + 0.5);
+    c.stroke();
+  }
+
+  // 箍（たが）：銅の細帯。主張しすぎない太さに
+  [Math.round(H * 0.24), Math.round(H * 0.72)].forEach(function (hy) {
+    var hg = c.createLinearGradient(0, hy, 0, hy + 4);
+    hg.addColorStop(0, '#c08145');
+    hg.addColorStop(0.45, '#96602d');
+    hg.addColorStop(1, '#77471f');
+    c.fillStyle = hg;
+    c.fillRect(0, hy, WALL, 4);
+    c.fillRect(W - WALL, hy, WALL, 4);
+    c.fillStyle = 'rgba(255,228,175,.3)';
+    c.fillRect(0, hy, WALL, 1);
+    c.fillRect(W - WALL, hy, WALL, 1);
+  });
+
+  // 木口（こぐち）のハイライト
+  c.fillStyle = 'rgba(255,248,232,.5)';
+  c.fillRect(0, 0, WALL, 2);
+  c.fillRect(W - WALL, 0, WALL, 2);
+
+  // 落款（朱の角印）。広い余白を「間」として引き締める
+  var seal = document.createElement('canvas');
+  seal.width = seal.height = 72;
+  var sc = seal.getContext('2d');
+  sc.fillStyle = '#c8402f';
+  rr(sc, 4, 4, 64, 64, 10);
+  sc.fill();
+  sc.globalCompositeOperation = 'destination-out';   // 文字を抜いて白抜きの印にする
+  sc.font = '600 44px ' + F_MIN;
+  sc.textAlign = 'center';
+  sc.textBaseline = 'middle';
+  sc.fillText('寿', 36, 38);
+  c.save();
+  c.globalAlpha = 0.14;
+  c.drawImage(seal, W - WALL - 44, DEAD_Y + 32, 26, 26);
+  c.restore();
+
+  // 桶の縁
+  c.strokeStyle = 'rgba(105,74,34,.55)';
+  c.lineWidth = 1;
+  c.beginPath();
+  c.moveTo(WALL + 0.5, 0);
+  c.lineTo(WALL + 0.5, FLOOR + 0.5);
+  c.lineTo(W - WALL - 0.5, FLOOR + 0.5);
+  c.lineTo(W - WALL - 0.5, 0);
+  c.stroke();
+  // 枠の内側に一段明るいハイライト
+  c.strokeStyle = 'rgba(255,246,226,.5)';
+  c.beginPath();
+  c.moveTo(WALL - 1.5, 0);
+  c.lineTo(WALL - 1.5, FLOOR - 1);
+  c.moveTo(W - WALL + 1.5, 0);
+  c.lineTo(W - WALL + 1.5, FLOOR - 1);
+  c.stroke();
+}
+
+/* ---- デッドライン：文字を置かず、朱の目印だけで示す ---- */
 function drawDeadline(danger) {
   ctx.save();
-  ctx.setLineDash([10, 8]);
-  ctx.lineWidth = danger ? 3 : 2;
-  ctx.strokeStyle = danger ? 'rgba(220,40,30,.95)' : 'rgba(190,60,50,.45)';
+  ctx.setLineDash([2, 7]);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = danger ? 'rgba(200,64,47,.9)' : 'rgba(200,64,47,.26)';
   ctx.beginPath();
-  ctx.moveTo(WALL, DEAD_Y);
-  ctx.lineTo(W - WALL, DEAD_Y);
+  ctx.moveTo(WALL + 10, DEAD_Y + 0.5);
+  ctx.lineTo(W - WALL - 10, DEAD_Y + 0.5);
   ctx.stroke();
   ctx.setLineDash([]);
-  ctx.font = '600 12px "Hiragino Sans", sans-serif';
-  ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
-  ctx.fillStyle = danger ? 'rgba(220,40,30,.95)' : 'rgba(190,60,50,.5)';
-  ctx.fillText('のれん際', W - WALL - 9, DEAD_Y - 5);
+  ctx.fillStyle = danger ? '#c8402f' : 'rgba(200,64,47,.5)';
+  ctx.beginPath();
+  ctx.moveTo(WALL - 1, DEAD_Y - 5.5); ctx.lineTo(WALL + 10, DEAD_Y); ctx.lineTo(WALL - 1, DEAD_Y + 5.5);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(W - WALL + 1, DEAD_Y - 5.5); ctx.lineTo(W - WALL - 10, DEAD_Y); ctx.lineTo(W - WALL + 1, DEAD_Y + 5.5);
+  ctx.closePath(); ctx.fill();
   ctx.restore();
 }
 
 /* ---- ガイドライン ---- */
 function drawGuide() {
   if (!current || state !== 'ready') return;
+  var hw = itemHalfWidth(current);
   ctx.save();
-  ctx.setLineDash([7, 9]);
-  ctx.lineWidth = 2.5;
-  ctx.strokeStyle = 'rgba(140,43,28,.4)';
+  ctx.setLineDash([2, 8]);
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(40,52,68,.22)';
   ctx.beginPath();
-  ctx.moveTo(previewX, previewY + itemHalfHeight(current) + 4);
-  ctx.lineTo(previewX, FLOOR - 2);
+  ctx.moveTo(previewX, previewY + itemHalfHeight(current) + 6);
+  ctx.lineTo(previewX, FLOOR - 4);
   ctx.stroke();
   ctx.setLineDash([]);
-  // 着地マーカー
-  ctx.strokeStyle = 'rgba(140,43,28,.35)';
-  ctx.lineWidth = 2;
+  // 着地の見当（幅を示す横線と両端の爪）
+  ctx.strokeStyle = 'rgba(40,52,68,.3)';
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.ellipse(previewX, FLOOR - 5, itemHalfWidth(current) * 0.9, 5, 0, 0, 6.2832);
+  ctx.moveTo(previewX - hw, FLOOR - 3.5);
+  ctx.lineTo(previewX + hw, FLOOR - 3.5);
+  ctx.moveTo(previewX - hw + 0.5, FLOOR - 9);
+  ctx.lineTo(previewX - hw + 0.5, FLOOR - 3.5);
+  ctx.moveTo(previewX + hw - 0.5, FLOOR - 9);
+  ctx.lineTo(previewX + hw - 0.5, FLOOR - 3.5);
   ctx.stroke();
   ctx.restore();
 }
@@ -1284,10 +1435,10 @@ function drawPreview() {
   ctx.restore();
   if (current.gari) {
     ctx.save();
-    ctx.fillStyle = 'rgba(200,60,100,.9)';
-    ctx.font = '700 11px "Hiragino Sans", sans-serif';
+    ctx.fillStyle = 'rgba(200,64,47,.72)';
+    ctx.font = '600 9px ' + F_MIN;
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    ctx.fillText('ガリ！ネタを1つ消す', previewX, previewY + 13);
+    ctx.fillText('ガ リ', previewX, previewY + 12);
     ctx.restore();
   }
 }
@@ -1301,7 +1452,7 @@ function drawNextPreview() {
   nctx.clearRect(0, 0, S, S);
   if (!next) return;
   var half = next.gari ? GARI.r : Math.max(SUSHI[next.level].hw, SUSHI[next.level].hh);
-  var k = (S * 0.40) / half;
+  var k = (S * 0.36) / half;
   nctx.save();
   nctx.translate(S / 2, S / 2);
   nctx.scale(k, k);
@@ -1334,6 +1485,7 @@ function loop(now) {
     checkGameOver(dt / 1000);
   }
   stepParticles();
+  stepFloats();
   render();
 }
 
@@ -1358,7 +1510,7 @@ function checkGameOver(dtSec) {
 
 function render() {
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
-  drawBarrel();
+  ctx.drawImage(barrelCv, 0, 0, W, H);
 
   var danger = deadTimer > 0.05;
   drawDeadline(danger);
@@ -1374,8 +1526,8 @@ function render() {
     ctx.rotate(b.angle);
     // 影
     ctx.save();
-    ctx.globalAlpha = 0.13;
-    ctx.fillStyle = '#000';
+    ctx.globalAlpha = 0.10;
+    ctx.fillStyle = '#4a3418';
     ctx.beginPath();
     var hh = b.gari ? GARI.r : SUSHI[b.sushi.level].hh;
     var hw = b.gari ? GARI.r : SUSHI[b.sushi.level].hw;
@@ -1397,23 +1549,47 @@ function render() {
     ctx.translate(p.x, p.y);
     ctx.rotate(p.rot);
     ctx.fillStyle = p.c;
-    ctx.fillRect(-p.r, -p.r * 0.6, p.r * 2, p.r * 1.2);
+    if (p.sq) {
+      ctx.fillRect(-p.r, -p.r * 0.55, p.r * 2, p.r * 1.1);
+    } else {
+      ctx.beginPath(); ctx.arc(0, 0, p.r * 0.85, 0, 6.2832); ctx.fill();
+    }
     ctx.restore();
   }
   ctx.globalAlpha = 1;
 
-  // 危険警告
+  // 加算点
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (var fi = 0; fi < floats.length; fi++) {
+    var f = floats[fi];
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, f.life * 1.6);
+    ctx.fillStyle = f.c;
+    ctx.font = '700 16px ' + F_GO;
+    ctx.fillText(f.t, f.x, f.y);
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+
+  // 危険警告：赤ベタではなく、上から差す朱の光で知らせる
   if (danger && state !== 'over') {
     var remain = Math.max(0, DEAD_LIMIT - deadTimer);
-    var pulse = 0.55 + 0.45 * Math.abs(Math.sin(performance.now() / 130));
+    var pulse = 0.45 + 0.55 * Math.abs(Math.sin(performance.now() / 165));
     ctx.save();
-    ctx.globalAlpha = pulse;
-    ctx.fillStyle = 'rgba(200,30,20,.20)';
+    var wg = ctx.createLinearGradient(0, 0, 0, DEAD_Y);
+    wg.addColorStop(0, 'rgba(200,64,47,' + (0.42 * pulse).toFixed(3) + ')');
+    wg.addColorStop(1, 'rgba(200,64,47,0)');
+    ctx.fillStyle = wg;
     ctx.fillRect(WALL, 0, W - WALL * 2, DEAD_Y);
-    ctx.fillStyle = '#b8231a';
-    ctx.font = '800 26px "Hiragino Sans", sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('あぶねぇ！ ' + remain.toFixed(1), W / 2, DEAD_Y * 0.55);
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(255,250,242,' + (0.55 + 0.45 * pulse).toFixed(3) + ')';
+    ctx.font = '600 17px ' + F_MIN;
+    ctx.fillText('の れ ん 際', W / 2, 34);
+    ctx.font = '200 32px ' + F_GO;
+    ctx.fillText(remain.toFixed(1), W / 2, 66);
     ctx.restore();
   }
 }
@@ -1433,8 +1609,8 @@ function gameOver() {
   var r = rankOf(score);
   document.getElementById('rankName').textContent = r.name;
   document.getElementById('rankNote').textContent = r.note;
-  document.getElementById('finalScore').textContent = score;
-  document.getElementById('finalHi').textContent = hiScore;
+  document.getElementById('finalScore').textContent = fmt(score);
+  document.getElementById('finalHi').textContent = fmt(hiScore);
   document.getElementById('overModal').hidden = false;
   beep(180, 0.5, 'sawtooth');
   var bodies = Composite.allBodies(world);
@@ -1452,6 +1628,7 @@ function resetGame() {
   }
   pendingOps.length = 0;
   particles.length = 0;
+  floats.length = 0;
   score = 0; scoreEl.textContent = '0';
   deadTimer = 0;
   previewX = W / 2; previewY = DROP_Y;
@@ -1464,9 +1641,11 @@ function resetGame() {
   nextTurn();
 }
 
+document.body.classList.add('titling');
 document.getElementById('startBtn').addEventListener('click', function (e) {
   e.preventDefault();
   unlockAudio();
+  document.body.classList.remove('titling');
   document.getElementById('titleModal').hidden = true;
   resize();
   resetGame();
@@ -1481,6 +1660,7 @@ document.getElementById('retryBtn').addEventListener('click', function (e) {
 /* ============================================================
    17. 起動
    ============================================================ */
+buildBarrel();
 resize();
 setTimeout(resize, 60);
 setTimeout(resize, 400);
