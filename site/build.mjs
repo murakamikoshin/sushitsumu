@@ -6,6 +6,7 @@
        node site/build.mjs
    ============================================================ */
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 
 /* 公開先。独自ドメインを繋いだら、ここだけ書き換える */
 const SITE = process.env.SITE_URL || 'https://koshin-studio.pages.dev';
@@ -527,14 +528,30 @@ for (const file of pages) {
   writeFileSync(file, html);
 }
 
+/* 最後に直した日。git が覚えている「実際に配った変更」の日を使う。
+   組み直すたびに今日の日付を並べると、嘘の更新を報せることになる。
+   git が無い所では日付を省く（無いほうが、間違った日より良い） */
+const lastMod = (f) => {
+  try {
+    const d = execFileSync('git', ['log', '-1', '--format=%cs', '--', f],
+      { cwd: here, encoding: 'utf8' }).trim();
+    return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : '';
+  } catch (e) { return ''; }
+};
+
 writeFileSync(here + '/sitemap.xml',
   '<?xml version="1.0" encoding="UTF-8"?>\n' +
   '<urlset xmlns="http://www.sitemap.org/schemas/sitemap/0.9">\n'.replace('sitemap.org', 'sitemaps.org') +
   pages.map((f) => {
     const rel = f.slice(here.length);
     const pri = rel === '/index.html' ? '1.0'
-      : /^\/(works|notes)\/index\.html$/.test(rel) ? '0.8' : '0.6';
-    return `  <url><loc>${urlOf(f)}</loc><priority>${pri}</priority></url>`;
+      : /^\/(works|notes)\/index\.html$/.test(rel) ? '0.9'
+      : /^\/works\/[^/]+\/index\.html$/.test(rel) ? '0.8'
+      : /^\/notes\/[^/]+\/index\.html$/.test(rel) ? '0.8'
+      : /^\/(contact|stack)\/index\.html$/.test(rel) ? '0.7' : '0.5';
+    const m = lastMod(f);
+    return `  <url><loc>${urlOf(f)}</loc>${m ? `<lastmod>${m}</lastmod>` : ''}`
+      + `<priority>${pri}</priority></url>`;
   }).join('\n') + '\n</urlset>\n');
 
 writeFileSync(here + '/robots.txt',
