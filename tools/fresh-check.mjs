@@ -11,7 +11,7 @@
 */
 import { chromium } from 'playwright-core';
 import { createServer } from 'node:http';
-import { readFileSync, existsSync, statSync, rmSync, mkdtempSync } from 'node:fs';
+import { readFileSync, existsSync, statSync, rmSync, mkdtempSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 
@@ -27,7 +27,32 @@ console.log('写しています …');
 execFileSync('git', ['clone', '-q', REPO, dir]);
 execFileSync(process.execPath, [dir + '/site/build.mjs'], { stdio: 'ignore' });
 
+/* .assetsignore に並べたものは配られない。写しからも落として、
+   「配らないと決めたものを、頁が指していないか」まで確かめる */
 const ROOT = dir + '/site';
+{
+  const f = ROOT + '/.assetsignore';
+  const pats = existsSync(f)
+    ? readFileSync(f, 'utf8').split('\n').map((x) => x.trim())
+        .filter((x) => x && !x.startsWith('#'))
+    : [];
+  let n = 0;
+  for (const pat of pats) {
+    const p0 = pat.replace(/^\//, '');
+    if (p0.includes('*')) {
+      const dirPart = p0.slice(0, p0.lastIndexOf('/') + 1);
+      const re = new RegExp('^' + p0.slice(dirPart.length).replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*') + '$');
+      const base = ROOT + '/' + dirPart;
+      if (!existsSync(base)) continue;
+      for (const e of readdirSync(base)) {
+        if (re.test(e)) { rmSync(base + e, { recursive: true, force: true }); n++; }
+      }
+    } else if (existsSync(ROOT + '/' + p0)) {
+      rmSync(ROOT + '/' + p0, { recursive: true, force: true }); n++;
+    }
+  }
+  console.log(`.assetsignore のぶん ${n} 件を落としました`);
+}
 const T = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg',
   '.webp': 'image/webp', '.png': 'image/png', '.woff2': 'font/woff2', '.ico': 'image/x-icon',
