@@ -2508,7 +2508,9 @@ window.addEventListener('keydown', function (e) {
   if (e.repeat) return;
   var k = e.key;
   // 名前を打っている最中は横取りしない
-  if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+  var ae = document.activeElement;
+  if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
+  if (e.target && e.target.tagName === 'INPUT') return;
 
   if (state === 'title') {
     if (k === 'Enter' || k === ' ') { e.preventDefault(); beginGame('normal'); }
@@ -4211,6 +4213,8 @@ document.getElementById('retryBtn').addEventListener('click', function (e) {
     bgmStart();
     resetGame();
     adGameStart();
+    document.body.classList.add('playing');   // 中断の道を出し直す
+    loadSidePanel();                          // 今送った点も番付に映す
   });
 });
 
@@ -4757,6 +4761,10 @@ document.getElementById('closeRank').addEventListener('click', function () {
 });
 document.getElementById('sendBtn').addEventListener('click', doSubmit);
 nameInput.addEventListener('keydown', function (e) {
+  /* blur() を先に呼ぶと、window まで上がった時には activeElement が
+     INPUT でなくなっていて「しまい」の Enter＝もう一丁と誤読される。
+     ここで止める。 */
+  e.stopPropagation();
   if (e.key === 'Enter') { e.preventDefault(); nameInput.blur(); doSubmit(); }
 });
 document.getElementById('openRank').addEventListener('click', function () { openRankModal('day'); });
