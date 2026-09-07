@@ -1,0 +1,43 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden}
+body{
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.015) 0 1px, transparent 1px 34px),
+    radial-gradient(130% 100% at 50% 40%, #2d5175 0%, #18304a 46%, #0a121a 100%);
+  font-family:"Noto Serif JP","Hiragino Mincho ProN","Yu Mincho",serif;
+  color:#faf6ec; position:relative; overflow:hidden;
+}
+/* 掛け竿と暖簾。上を埋める飾りで、字は入れない */
+.rod{position:absolute;top:0;left:0;right:0;height:@ROD@px;z-index:2;
+  background:linear-gradient(#d9b878,#a9863f 50%,#6f5527);
+  box-shadow:0 3px 14px rgba(0,0,0,.5)}
+.noren{position:absolute;top:@ROD@px;left:0;right:0;height:@NH@px;display:flex;gap:@NG@px;padding:0 @NG@px;z-index:1}
+.noren i{flex:1;position:relative;
+  background:linear-gradient(170deg,#2a5079,#1a3a5c 45%,#0e2237);
+  border-radius:0 0 5px 5px;box-shadow:0 14px 40px rgba(0,0,0,.55)}
+.noren i::after{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 13px)}
+/* 暖簾の裾から下へ、闇に溶かす */
+.fade{position:absolute;left:0;right:0;top:@FADE@px;height:150px;z-index:1;
+  background:linear-gradient(rgba(10,18,26,0),rgba(10,18,26,.55))}
+
+.wrap{position:absolute;inset:0;z-index:3;display:flex;flex-direction:@DIR@;
+  align-items:center;justify-content:center;gap:@GAP@px;
+  padding:@PADTOP@px @PAD@px @PAD@px}
+.art{height:@ARTH@;filter:drop-shadow(0 22px 56px rgba(0,0,0,.7))}
+.txt{text-align:@TA@;flex:0 0 auto}
+h1{font-size:@H1@px;font-weight:700;letter-spacing:.05em;line-height:1.02;
+   text-shadow:0 4px 30px rgba(0,0,0,.9)}
+.ja{font-size:@JA@px;letter-spacing:.28em;text-indent:.28em;color:#e6cda6;
+   margin-top:@JAM@px;text-shadow:0 2px 16px rgba(0,0,0,.9)}
+.rule{width:@RW@px;height:2px;background:#c8402f;margin:@RM@px @RA@}
+.tag{font-size:@TAG@px;letter-spacing:.14em;color:rgba(250,246,236,.85);line-height:1.75;
+   text-shadow:0 2px 16px rgba(0,0,0,.9)}
+.kin{color:#d9ab29}
+</style></head><body>
+<div class="rod"></div>
+<div class="noren"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div class="fade"></div>
+<div class="wrap"><img class="art" src="data:image/png;base64,@ART@"><div class="txt"><h1>SUSHI<br>TSUMU</h1><div class="ja">すし積む</div><div class="rule"></div><div class="tag">@TAGTEXT@</div></div></div>
+</body></html>

@@ -1,0 +1,17 @@
+{
+  "cover-landscape-1920x1080": { "w": 1920, "h": 1080, "vars": {
+    "ROD": 14, "NH": 330, "NG": 20, "FADE": 330, "DIR": "row", "GAP": 90,
+    "PAD": 56, "PADTOP": 300, "ARTH": "62%", "H1": 106, "JA": 30, "JAM": 18,
+    "RW": 108, "RM": 30, "RA": "0", "TAG": 26, "TA": "left",
+    "TAGTEXT": "Stack the neta, match to merge.<br><span class=\"kin\">11 kinds of sushi</span>, from rice to the golden tub." } },
+  "cover-portrait-800x1200": { "w": 800, "h": 1200, "vars": {
+    "ROD": 11, "NH": 330, "NG": 14, "FADE": 330, "DIR": "column", "GAP": 30,
+    "PAD": 38, "PADTOP": 330, "ARTH": "38%", "H1": 72, "JA": 23, "JAM": 13,
+    "RW": 84, "RM": 19, "RA": "auto", "TAG": 20, "TA": "center",
+    "TAGTEXT": "Stack the neta, match to merge.<br><span class=\"kin\">11 kinds of sushi</span>." } },
+  "cover-square-800x800": { "w": 800, "h": 800, "vars": {
+    "ROD": 10, "NH": 215, "NG": 13, "FADE": 215, "DIR": "column", "GAP": 22,
+    "PAD": 32, "PADTOP": 215, "ARTH": "40%", "H1": 60, "JA": 19, "JAM": 10,
+    "RW": 72, "RM": 15, "RA": "auto", "TAG": 17, "TA": "center",
+    "TAGTEXT": "Match. Merge. <span class=\"kin\">Golden tub.</span>" } }
+}
