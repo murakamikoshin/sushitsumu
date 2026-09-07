@@ -61,7 +61,9 @@ if (root) {
   writeFileSync(here + '/works/sushitsumu/play/index.html',
     readFileSync(root + '/index.html', 'utf8').replace(
       '<meta name="viewport"',
-      '<meta name="robots" content="noindex,follow">\n<meta name="viewport"'));
+      '<meta name="robots" content="noindex,follow">\n'
+      + '<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n'
+      + '<meta name="viewport"'));
   for (const [from, to] of [
     ['cover-square-800x800.png', 'sushitsumu-square.png'],
     ['cover-portrait-800x1200.png', 'sushitsumu-portrait.png'],

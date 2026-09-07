@@ -1,7 +1,8 @@
 /* favicon.svg から、貼り付け用の PNG を起こす。
 
    SVG だけだと、iOS のホーム画面や古い環境で何も出ない。
-   180 / 192 / 512 の三枚と、web manifest を用意する。
+   180 / 192 / 512 の三枚、favicon.ico、web manifest を用意する。
+   Pillow が要る（favicon.ico を書くのに使う）。
 
        node site/tools/icons.mjs
 */
@@ -42,3 +43,11 @@ writeFileSync(SITE + '/site.webmanifest', JSON.stringify({
   ],
 }, null, 2) + '\n');
 console.log('  site.webmanifest');
+
+/* 古い相手のための .ico。Pillow が無ければ飛ばす */
+import { spawnSync } from 'node:child_process';
+const r = spawnSync('python3', ['-c',
+  'from PIL import Image;import sys;'
+  + 'Image.open(sys.argv[1]).convert("RGBA").save(sys.argv[2],sizes=[(16,16),(32,32),(48,48)])',
+  SITE + '/assets/icon/icon-512.png', SITE + '/favicon.ico'], { encoding: 'utf8' });
+console.log(r.status === 0 ? '  favicon.ico' : '  favicon.ico は作れませんでした（Pillow が要ります）');
