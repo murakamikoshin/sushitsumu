@@ -52,6 +52,32 @@ npx wrangler deploy                                            # workers.dev の
 
 初回の `deploy` では workers.dev の名前を決めるよう聞かれることがある。
 
+## 端末を使わずに置く（ダッシュボードから）
+
+Mac が手元に無い時（スマホだけの時）はこちら。全部ブラウザで済む。
+
+1. **データベースを作る** — Cloudflare のダッシュボード → Storage & Databases →
+   D1 → データベースを作る。名前は `sushitsumu`。
+2. **表を用意する** — いま作ったデータベースを開いて Console（コンソール）に
+   `schema.sql` の中身を貼って実行する。
+3. **Worker を作る** — Compute（Workers）→ 新しい Worker を作る。
+   名前は `sushitsumu-rank`。ひな型のまま一度デプロイしてよい。
+4. **中身を差し替える** — その Worker の編集画面を開き、中身を全部消して
+   `worker.bundle.js` を丸ごと貼り、デプロイする。
+5. **データベースを繋ぐ** — その Worker の Settings（設定）→ Bindings
+   （バインディング）→ D1 を追加。変数名は `DB`、データベースは
+   `sushitsumu` を選ぶ。保存すると再デプロイされる。
+6. 出てきた `https://….workers.dev` を `index.html` の `RANK_API` に入れる。
+
+`worker.bundle.js` は `worker.js` と `verify.js` を一つに綴じた生成物。
+**直に触らないこと。** 直すのは元の二つで、そのあと
+
+```sh
+node server/build-bundle.mjs
+```
+
+を流し直す。
+
 **一つのログインで複数のアカウントを扱っている場合**は、どれに置くか
 聞かれる。迷わせたくなければ `wrangler.toml` の `account_id` に書いておく。
 
