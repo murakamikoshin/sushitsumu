@@ -352,6 +352,21 @@ body:not(.has-rank) .needs-rank { display: none !important; }
 .rEmpty { font-size: 12px; color: #9a8a72; padding: 26px 0; text-align: center; line-height: 2; }
 
 /* ---- 横向き（ランドスケープ）警告 ---- */
+/* タイトルの言語切り替え。ヘッダーは題字を出す間だけ隠れるので、
+   最初の画面にも置いておかないと言葉を変えられない */
+.langLink {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 16px; padding: 6px 12px;
+  font-family: var(--mincho); font-size: 11px; letter-spacing: .1em;
+  color: #9a8a72; background: transparent;
+  border: 1px solid rgba(185,148,95,.55); border-radius: 2px; cursor: pointer;
+  max-width: 100%;
+}
+.langLink:active { opacity: .6; }
+/* 差し色は朱と金だけの意匠なので、地球の青は落として墨に寄せる */
+.langLink span[aria-hidden] { filter: grayscale(1); opacity: .5; font-size: 12px; }
+.langLink #langBtn2Name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* ---- 言葉えらび ---- */
 .langGrid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 7px;
@@ -463,6 +478,9 @@ body.lat .rankNote { font-size: 10.5px; }
           <span data-t="hint2">同じネタが触れ合えば合体。</span><br>
           <span data-t="hint3">「ガリ」は触れたネタを一つ消す。</span>
         </p>
+        <button class="langLink" id="langBtn2" type="button" aria-label="Language">
+          <span aria-hidden="true">🌐</span> <span id="langBtn2Name">日本語</span>
+        </button>
       </div>
     </div>
 
@@ -4092,6 +4110,7 @@ function applyLang() {
   document.getElementById('libBody').innerHTML = t('libBody');
   applySound();
   document.getElementById('langBtn').textContent = langInfo(lang).s;
+  document.getElementById('langBtn2Name').textContent = langInfo(lang).n;
   buildBarrel();                       // 暖簾の屋号を書き直す
   if (state === 'over') showResult();  // 結果を開いたまま切り替えた時
   if (current) drawNextPreview();
@@ -4129,10 +4148,12 @@ seedItems((Math.random() * 0x100000000) >>> 0);
 soundOn = lsGet('sushitsumu.snd') !== '0';
 lang = pickLang();
 buildLangGrid();
-document.getElementById('langBtn').addEventListener('click', function (e) {
+function openLangModal(e) {
   e.preventDefault();
   document.getElementById('langModal').hidden = false;
-});
+}
+document.getElementById('langBtn').addEventListener('click', openLangModal);
+document.getElementById('langBtn2').addEventListener('click', openLangModal);
 document.getElementById('closeLang').addEventListener('click', function () {
   document.getElementById('langModal').hidden = true;
 });
