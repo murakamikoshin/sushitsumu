@@ -3692,7 +3692,7 @@ function drawOrder() {
      ・ポータル / 自前   → RANK_API に置いた HTTP サーバ
    どちらも無ければ番付の UI ごと隠して、端末内のハイスコアだけで動く。
    ============================================================ */
-var RANK_API  = '';      // 例 'https://sushitsumu-rank.xxxx.workers.dev'（末尾の / は不要）
+var RANK_API  = 'https://sushitsumu-rank.murakamikoshin.workers.dev';   // 番付サーバー（server/ 参照）
 var RANK_SHOW = 20;      // 一覧に出す人数
 var RANK_SCAN = 100;     // 自分の順位を数えるために見る範囲
 var rankApi = null;      // { top(kind,mode,n), submit(id,name,score,kind) }
