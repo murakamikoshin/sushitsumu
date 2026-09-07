@@ -495,6 +495,14 @@ for (const file of pages) {
       : '';
     return `<div class="ad-slot" data-slot="${kind}"${inner ? '' : ' hidden'}>${inner}</div>\n<!--/ad-->`;
   });
+  /* 枠だけ置いても出ない。読み込む側の script が要る。
+     入れっぱなしにすると、広告を止めたあとも向こうへ繋ぎに行くので、
+     枠が生きているページにだけ、そのつど入れ直す */
+  html = html.replace(/\n?\s*<script async src="https:\/\/pagead2\.googlesyndication\.com[^>]*><\/script>/g, '');
+  if (ads.enabled && ads.client && /<ins class="adsbygoogle"/.test(html)) {
+    html = html.replace('</head>',
+      `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ads.client}" crossorigin="anonymous"></script>\n</head>`);
+  }
   const url = urlOf(file);
   html = html.replace(/\n?\s*<link rel="canonical"[^>]*>/g, '')
              .replace(/\n?\s*<meta property="og:url"[^>]*>/g, '')
