@@ -46,6 +46,12 @@ commit し直す。
 
     npx wrangler pages deploy site --project-name koshin-studio
 
+別リポジトリに切り出したあとは、その中で
+
+    npx wrangler pages deploy . --project-name koshin-studio
+
+`.assetsignore` に、配らないもの（.git など）を並べてある。
+
 ## 中身
 
     site/
