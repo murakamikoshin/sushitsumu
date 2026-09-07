@@ -54,7 +54,13 @@ function why() {
 if (root) {
   mkdirSync(here + '/works/sushitsumu/play', { recursive: true });
   mkdirSync(here + '/assets', { recursive: true });
-  copyFileSync(root + '/index.html', here + '/works/sushitsumu/play/index.html');
+  /* 本体はそのまま写すが、検索の当たり先だけ作品ページに寄せる。
+     遊ぶだけの頁と作品ページが並ぶと、どちらも中途半端に扱われる。
+     配る本体（CrazyGames へ出すもの）には手を入れない */
+  writeFileSync(here + '/works/sushitsumu/play/index.html',
+    readFileSync(root + '/index.html', 'utf8').replace(
+      '<meta name="viewport"',
+      '<meta name="robots" content="noindex,follow">\n<meta name="viewport"'));
   for (const [from, to] of [
     ['cover-square-800x800.png', 'sushitsumu-square.png'],
     ['cover-portrait-800x1200.png', 'sushitsumu-portrait.png'],
@@ -135,7 +141,7 @@ const chips = ['<button class="chip on" data-f="all">All<i>すべて</i></button
     `<button class="chip" data-f="${k}">${kinds[k].label}<i>${kinds[k].ja}</i></button>`)).join('');
 
 writeFileSync(here + '/works/index.html',
-  head('Works — Koshin Studio', '作ったものの一覧。ブラウザゲーム、スマートフォンのアプリ、Web サイト。') +
+  head('Works — ブラウザゲーム・アプリ・Web サイトの制作一覧 — Koshin Studio', '作ったものの一覧。ブラウザゲーム、スマートフォンのアプリ、Web サイト。') +
 `<main><div class="wrap">
   <h1>Works</h1>
   <div class="rule"></div>
@@ -188,7 +194,7 @@ const noteRow = (n, i) => `    <li class="rv" data-delay="${i * 70}"><a class="n
     </a></li>`;
 
 writeFileSync(here + '/notes/index.html',
-  head('Notes — Koshin Studio', '作りながら考えたことの記録。数字を取って直した話が中心です。') +
+  head('Notes — 作りながら考えたことの記録 — Koshin Studio', '作りながら考えたことの記録。数字を取って直した話が中心です。') +
 `<main><div class="wrap">
   <h1>Notes</h1>
   <div class="rule"></div>
@@ -303,14 +309,28 @@ const urlOf = (f) => {
 const workBySlug = Object.fromEntries(works.map((w) => [w.slug, w]));
 const noteBySlug = Object.fromEntries(notes.map((n) => [n.slug, n]));
 
+/* 本名は書かない。確かめようのないことを構造化データに入れると、
+   検索側にも読む人にも嘘をつくことになる。
+   代わりに、footer に出しているのと同じ公開の持ち場だけを繋ぐ */
 const PERSON = {
   '@type': 'Organization', '@id': SITE + '#studio', name: 'Koshin Studio',
   url: SITE, description: 'ゲーム、アプリ、Web サイト、3D モデルを個人で制作しています。',
-  founder: { '@type': 'Person', name: 'Koshin Murakami' },
+  logo: SITE + '/assets/og/og_home.jpg',
+  sameAs: (conf.social || []).map((x) => x.url),
+};
+
+/* og 画像の在り処。head に入れるものと同じ絵を構造化データからも指す */
+const ogFor = (rel) => {
+  const n = 'og' + (rel === '/index.html' ? '_home'
+    : rel.replace(/\/index\.html$/, '').replace(/\.html$/, '').replace(/\//g, '_')) + '.jpg';
+  return existsSync(here + '/assets/og/' + n)
+    ? SITE + '/assets/og/' + n : SITE + '/assets/sushitsumu-wide.jpg';
 };
 
 function ldFor(file, url) {
   const rel = file.slice(here.length);
+  const page = (name) => ({ '@type': 'WebPage', name: name, url: url,
+    inLanguage: 'ja', isPartOf: { '@id': SITE + '#studio' }, primaryImageOfPage: ogFor(rel) });
   const crumbs = (trail) => ({
     '@type': 'BreadcrumbList',
     itemListElement: trail.map((t, i) => ({
@@ -336,6 +356,9 @@ function ldFor(file, url) {
         inLanguage: 'ja', image: SITE + '/assets/sushitsumu-wide.jpg',
         applicationCategory: w.kind === 'game' ? 'GameApplication' : 'UtilitiesApplication',
         operatingSystem: 'Web', datePublished: w.year,
+        ...(w.kind === 'game'
+          ? { genre: ['パズル', '落ち物パズル'], gamePlatform: 'Web browser', playMode: 'SinglePlayer' }
+          : {}),
         author: { '@id': SITE + '#studio' }, publisher: { '@id': SITE + '#studio' },
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'JPY' } },
       crumbs([['Koshin Studio', '/'], ['Works', '/works/'], [w.title, w.url]]),
@@ -347,6 +370,7 @@ function ldFor(file, url) {
     return [
       { '@type': 'BlogPosting', headline: nn.title, url: SITE + nn.url, description: nn.blurb,
         datePublished: nn.date, dateModified: nn.date, inLanguage: 'ja',
+        image: ogFor(rel),
         author: { '@id': SITE + '#studio' }, publisher: { '@id': SITE + '#studio' },
         mainEntityOfPage: SITE + nn.url },
       crumbs([['Koshin Studio', '/'], ['Notes', '/notes/'], [nn.title, nn.url]]),
@@ -355,6 +379,43 @@ function ldFor(file, url) {
   if (rel === '/works/index.html') return [crumbs([['Koshin Studio', '/'], ['Works', '/works/']])];
   if (rel === '/notes/index.html') return [crumbs([['Koshin Studio', '/'], ['Notes', '/notes/']])];
   if (rel === '/profile/index.html') return [PERSON, crumbs([['Koshin Studio', '/'], ['Profile', '/profile/']])];
+  if (rel === '/stack/index.html') {
+    const tools = [].concat(...(stack.groups || []).map((g) => g.items || []));
+    return [
+      page('使っている道具'),
+      { '@type': 'ItemList', name: '使っている道具',
+        itemListElement: tools.map((t, i) => ({
+          '@type': 'ListItem', position: i + 1, name: t.name })) },
+      crumbs([['Koshin Studio', '/'], ['Stack', '/stack/']]),
+    ];
+  }
+  if (rel === '/contact/index.html') {
+    return [
+      { '@type': 'ContactPage', name: 'ご依頼・お問い合わせ', url: url, inLanguage: 'ja' },
+      { '@type': 'Service', serviceType: 'Web サイト制作',
+        provider: { '@id': SITE + '#studio' }, areaServed: 'JP',
+        offers: { '@type': 'Offer', priceCurrency: 'JPY',
+          priceSpecification: { '@type': 'PriceSpecification', minPrice: '50000',
+            priceCurrency: 'JPY', valueAddedTaxIncluded: false,
+            description: '1 ページあたり・税別' } } },
+      crumbs([['Koshin Studio', '/'], ['Contact', '/contact/']]),
+    ];
+  }
+  if (rel === '/privacy/index.html') {
+    return [page('あつかい（プライバシー）'),
+      crumbs([['Koshin Studio', '/'], ['あつかい', '/privacy/']])];
+  }
+  const gm = rel.match(/^\/works\/([^/]+)\/guide\.html$/);
+  if (gm && workBySlug[gm[1]]) {
+    const w = workBySlug[gm[1]];
+    return [
+      { '@type': 'WebPage', name: w.title + ' 遊び方', url: url, inLanguage: 'ja',
+        primaryImageOfPage: ogFor(rel),
+        about: { '@type': 'VideoGame', name: w.title, url: SITE + w.url } },
+      crumbs([['Koshin Studio', '/'], ['Works', '/works/'], [w.title, w.url],
+              ['遊び方', w.url + 'guide.html']]),
+    ];
+  }
   return null;
 }
 
