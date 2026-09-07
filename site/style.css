@@ -393,3 +393,11 @@ h2.sec span{font-family:var(--gothic);font-size:11px;letter-spacing:.24em;
 .ct-sub:hover{border-color:var(--gold);color:var(--gold)}
 .ct-soon{margin:0;color:var(--muted);font-size:14px}
 .ct-soon span{font-size:11.5px;color:var(--dim)}
+
+/* ---- 自作のロゴ字（site/tools/logotype.py で起こしたもの） ---- */
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.logo-xl{display:block}
+.ks-logo{width:min(78vw,760px);height:auto;display:block;margin:0 auto;
+  filter:drop-shadow(0 0 60px rgba(10,18,34,.9))}
+.ks-l1{color:var(--text)}

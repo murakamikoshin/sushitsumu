@@ -30,8 +30,8 @@
   var lock = document.querySelector('.lockup');
   if (G && lock && !calm) {
     var tl = G.timeline({ defaults: { ease: 'power3.out' } });
-    tl.from('.logo-xl .l1', { yPercent: 118, opacity: 0, duration: 1.05 })
-      .from('.logo-xl .l2', { yPercent: 118, opacity: 0, duration: 1.05 }, '-=0.86')
+    tl.from('.ks-l1', { yPercent: -22, opacity: 0, duration: 1.15 })
+      .from('.ks-l2', { yPercent: 22, opacity: 0, duration: 1.15 }, '-=0.95')
       .to('.hairline', { width: 'min(280px, 62%)', duration: .9, ease: 'power2.inOut' }, '-=0.5')
       .from('.tagline', { y: 16, opacity: 0, duration: .8 }, '-=0.55')
       .from('.hero-act > *', { y: 20, opacity: 0, duration: .7, stagger: .09 }, '-=0.45')
@@ -176,7 +176,7 @@
       }
       if (G && !calm) {
         G.fromTo(xl, { scale: .965 }, { scale: 1, duration: .85, ease: 'elastic.out(1,.42)' });
-        G.fromTo('.logo-xl .l2', { filter: 'brightness(2.4)' },
+        G.fromTo('.ks-l2', { filter: 'brightness(2.4)' },
           { filter: 'brightness(1)', duration: .8, ease: 'power2.out' });
       }
     }

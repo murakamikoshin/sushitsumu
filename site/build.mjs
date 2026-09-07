@@ -228,6 +228,10 @@ const put = (key, body) => {
     '<!--' + key + ':start-->\n' + body + '\n    <!--' + key + ':end-->'
   );
 };
+const logoSvg = existsSync(here + '/assets/logotype.svg')
+  ? readFileSync(here + '/assets/logotype.svg', 'utf8').replace(/\n\s*/g, ' ')
+  : '';
+put('logo', logoSvg);
 put('orbit', orbitHtml);
 put('kinds', kindHtml);
 put('featured', featHtml);
