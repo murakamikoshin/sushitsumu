@@ -1726,25 +1726,25 @@ var DROP_INTERVAL = 420;       // 次のネタが出るまで(ms)
 /* n は表を引かずに読めるようにした目印。画面に出す名前は
    言葉の表（TXT[lang].neta）から引く */
 var SUSHI = [
-  { n:'\u30b7\u30e3\u30ea', shape:'circle',  r:19,           col:'#ffffff' },
-  { n:'\u7389\u5b50', shape:'rrect',   w:49,  h:33,  ch:11, col:'#f7c53c' },
-  { n:'\u30a8\u30d3', shape:'rrect',   w:64,  h:35,  ch:16, col:'#ff9fb0' },
-  { n:'\u30b5\u30fc\u30e2\u30f3', shape:'ellipse', w:85,  h:47,         col:'#ff9245' },
-  { n:'\u30de\u30b0\u30ed', shape:'rrect',   w:91,  h:49,  ch:7,  col:'#d5323c' },
-  { n:'\u3044\u304f\u3089\u8ecd\u8266', shape:'rrect',   w:94,  h:67,  ch:14, col:'#a51f22', nori:true },
-  { n:'\u30a6\u30cb\u8ecd\u8266', shape:'rrect',   w:111, h:79,  ch:16, col:'#d79c33', nori:true },
-  { n:'\u5927\u30c8\u30ed', shape:'rrect',   w:149, h:83,  ch:29, col:'#f2a3ad' },
-  /* 穴子は元 247 幅。桶の内寸 336 の 74% を占め、伊勢海老(230)より、
-     金の桶(210)より太いという逆転が起きていた。横に置ける余りが 89px
-     しか残らず、サーモンより大きいものが一切並べられない。
-     横だけ 4/5 にしたところ（自動プレイ 100 戦）、穴子→伊勢海老の
-     歩留まりが 13.1% → 30.4%、中央値が 21,664 → 24,858 に伸びた。 */
-  { n:'\u3042\u306a\u3054\u4e00\u672c\u713c\u304d', shape:'rrect',   w:198, h:71,  ch:25, col:'#7a4a22', bar:true },
-  { n:'\u4f0a\u52e2\u6d77\u8001', shape:'rrect',   w:230, h:107, ch:34, col:'#a8324e' },
-  { n:'\u30b4\u30fc\u30eb\u30c7\u30f3\u3059\u3057\u6876', shape:'circle',  r:105,          col:'#e8b62c', gold:true }
+  { n:'\u30b7\u30e3\u30ea', shape:'circle',  r:15,           col:'#ffffff' },
+  { n:'\u7389\u5b50', shape:'rrect',   w:39,  h:26,  ch:9, col:'#f7c53c' },
+  { n:'\u30a8\u30d3', shape:'rrect',   w:51,  h:28,  ch:13, col:'#ff9fb0' },
+  { n:'\u30b5\u30fc\u30e2\u30f3', shape:'ellipse', w:68,  h:38,         col:'#ff9245' },
+  { n:'\u30de\u30b0\u30ed', shape:'rrect',   w:73,  h:39,  ch:6,  col:'#d5323c' },
+  { n:'\u3044\u304f\u3089\u8ecd\u8266', shape:'rrect',   w:75,  h:54,  ch:11, col:'#a51f22', nori:true },
+  { n:'\u30a6\u30cb\u8ecd\u8266', shape:'rrect',   w:89, h:63,  ch:13, col:'#d79c33', nori:true },
+  { n:'\u5927\u30c8\u30ed', shape:'rrect',   w:119, h:66,  ch:23, col:'#f2a3ad' },
+  /* 寸法はすべて、当初の 0.8 倍。桶（内寸 336）に対してネタが大きすぎて、
+     金の桶に一度も届かなかった（自動プレイ 100 戦で 0 回）。0.8 にすると
+     金の桶の直径が内寸のちょうど半分になり、10 戦に 1 回は出るようになる。
+     穴子だけは、それ以前に横幅を 4/5 にしてある。元は伊勢海老より、
+     金の桶より太いという逆転が起きていて、横に何も並べられなかった。 */
+  { n:'\u3042\u306a\u3054\u4e00\u672c\u713c\u304d', shape:'rrect',   w:158, h:57,  ch:20, col:'#7a4a22', bar:true },
+  { n:'\u4f0a\u52e2\u6d77\u8001', shape:'rrect',   w:184, h:86, ch:27, col:'#a8324e' },
+  { n:'\u30b4\u30fc\u30eb\u30c7\u30f3\u3059\u3057\u6876', shape:'circle',  r:84,          col:'#e8b62c', gold:true }
 ];
 function sushiName(i) { return netaName(i); }
-SUSHI[9].pad = 58;   // 触角が本体から大きくはみ出す   // 伊勢海老は触角と脚が本体からはみ出す
+SUSHI[9].pad = 46;   // 触角が本体から大きくはみ出す   // 伊勢海老は触角と脚が本体からはみ出す
 SUSHI.forEach(function (d) {
   if (d.shape === 'circle') { d.hw = d.r; d.hh = d.r; }
   else { d.hw = d.w / 2; d.hh = d.h / 2; }
@@ -1754,14 +1754,14 @@ var MERGE_SCORE = [8, 18, 36, 70, 130, 230, 380, 600, 950, 1500];
 var GOLDEN_BONUS = 8000;   // ゴールデン同士 → 消滅して大得点
 var GARI_SCORE   = 40;
 
-var GARI = { n:'\u30ac\u30ea', r:9, col:'#ffc7d4' };
+var GARI = { n:'\u30ac\u30ea', r:7, col:'#ffc7d4' };
 
 /* ランク判定
-   実測（自動プレイ 100 戦・穴子を細くした後）: お任せ 中央 24,858 /
-   最高 47,392。上二段（大将 50,000・伝説 85,000）は一度も出ていない。
-   無策でも上位になってしまっては値打ちが無いので、
-   その上に置いた。お品書きは点の出方が約1.8倍なので同率で伸ばす。 */
-var RANK_SCORE = [0, 4000, 10000, 18000, 30000, 50000, 85000];
+   実測（自動プレイ 70 戦・寸法 0.8 倍のあと）: お任せ 最低 32,659 /
+   中央 58,741 / 最高 103,630。金の桶を作れた 5 戦はいずれも 86,000 以上
+   だった。最上段はそこに合わせてある ＝「金の桶を出したら伝説」。
+   お品書きは点の出方が 1.63 倍（20 戦）。倍率は 1.8 のまま少し辛くしている。 */
+var RANK_SCORE = [0, 12000, 26000, 42000, 58000, 72000, 85000];
 function rankRow(i) { return (t('ranks') || TXT.en.ranks)[i]; }
 function rankName(i) { return rankRow(i)[0]; }
 function rankNote(i) { return rankRow(i)[1]; }
