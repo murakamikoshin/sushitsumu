@@ -490,3 +490,11 @@ header.site .logo{display:inline-flex;align-items:center;min-height:36px}
   border:1px solid var(--line);color:var(--dim);white-space:nowrap}
 .lv[data-l="主力"]{color:var(--sky);border-color:rgba(126,200,227,.42)}
 .lv[data-l="実務"]{color:var(--silver);border-color:rgba(200,214,230,.28)}
+
+/* ---- 現在地（パンくず） ---- */
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 22px;
+  font-size:12px;letter-spacing:.08em;color:var(--dim)}
+.crumbs a{color:var(--muted);text-decoration:none;padding:4px 0}
+.crumbs a:hover{color:var(--sky)}
+.crumbs i{font-style:normal;opacity:.5}
+.crumbs span[aria-current]{color:var(--text)}

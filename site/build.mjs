@@ -377,6 +377,36 @@ for (const file of pages) {
   html = html.replace(/<!--contact:start-->[\s\S]*?<!--contact:end-->/,
     '<!--contact:start-->' + ctHtml + '<!--contact:end-->');
 
+  /* パンくず（見る人にも、検索にも効く） */
+  const TRAIL = {
+    '/works/index.html': [['Works', '/works/']],
+    '/notes/index.html': [['Notes', '/notes/']],
+    '/stack/index.html': [['Stack', '/stack/']],
+    '/profile/index.html': [['Profile', '/profile/']],
+    '/contact/index.html': [['Contact', '/contact/']],
+    '/privacy/index.html': [['あつかい', '/privacy/']],
+  };
+  let trail = TRAIL[rel];
+  const wm2 = rel.match(/^\/works\/([^/]+)\//);
+  const nm2 = rel.match(/^\/notes\/([^/]+)\//);
+  if (wm2 && workBySlug[wm2[1]]) {
+    const w = workBySlug[wm2[1]];
+    trail = [['Works', '/works/']].concat(
+      rel.endsWith('/index.html') && rel === w.url + 'index.html'
+        ? [[w.title, w.url]] : [[w.title, w.url], ['遊び方', rel.replace('index.html', '')]]);
+  } else if (nm2 && noteBySlug[nm2[1]]) {
+    trail = [['Notes', '/notes/'], [noteBySlug[nm2[1]].title, noteBySlug[nm2[1]].url]];
+  }
+  html = html.replace(/\n?\s*<nav class="crumbs">[\s\S]*?<\/nav>/g, '');
+  if (trail) {
+    const items = [['Koshin Studio', '/']].concat(trail);
+    const cr = '<nav class="crumbs" aria-label="現在地">' + items.map((t, i) =>
+      i === items.length - 1
+        ? `<span aria-current="page">${esc(t[0])}</span>`
+        : `<a href="${t[1]}">${esc(t[0])}</a><i aria-hidden="true">›</i>`).join('') + '</nav>';
+    html = html.replace(/(<main[^>]*>\s*<div class="wrap">)/, `$1\n  ${cr}`);
+  }
+
   const ads = conf.ads || {};
   html = html.replace(/<div class="ad-slot"[^>]*>[\s\S]*?<\/div>\s*<!--\/ad-->/g, (m) => {
     const kind = (m.match(/data-slot="([^"]+)"/) || [, 'article'])[1];
