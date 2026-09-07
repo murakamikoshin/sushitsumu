@@ -43,6 +43,38 @@
     if (hl) hl.style.width = 'min(280px, 62%)';
   }
 
+  /* ---------- 声（出迎えと、その入切） ---------- */
+  (function () {
+    var V = window.KoshinVoice;
+    if (!V) return;
+    var hd = document.querySelector('header.site .wrap');
+    if (!hd || hd.querySelector('.voice-btn')) return;
+    var btn = document.createElement('button');
+    btn.className = 'voice-btn';
+    btn.type = 'button';
+    var ICON_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.6v12.8L7.2 14.5H4z"/>' +
+      '<path class="w1" d="M15.2 9.1a4 4 0 0 1 0 5.8"/><path class="w2" d="M17.6 6.6a7.4 7.4 0 0 1 0 10.8"/></svg>';
+    var ICON_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.6v12.8L7.2 14.5H4z"/>' +
+      '<path class="w1" d="M15.6 9.6l5 4.8M20.6 9.6l-5 4.8"/></svg>';
+    function paint() {
+      var on = V.wanted();
+      btn.innerHTML = (on ? ICON_ON : ICON_OFF) + '<i class="sr">' +
+        (on ? '出迎えの声を切る' : '出迎えの声を入れる') + '</i>';
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      btn.title = on ? '声を切る' : '声を入れる（押すと鳴ります）';
+      btn.classList.toggle('off', !on);
+    }
+    btn.addEventListener('click', function () {
+      var on = !V.wanted();
+      V.remember(on);
+      paint();
+      if (on) V.speak();
+    });
+    paint();
+    hd.appendChild(btn);
+    V.greet();
+  })();
+
   /* ---------- 小さい画面の品書き ---------- */
   (function () {
     var hd = document.querySelector('header.site .wrap');

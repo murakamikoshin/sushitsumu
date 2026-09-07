@@ -112,6 +112,7 @@ const foot = `
   <div class="sns-row">${socialHtml}</div>
   <nav><a href="/profile/">Profile</a><a href="/privacy/">あつかい</a></nav>
 </div></footer>
+<script src="/voice.js" defer></script>
 <script src="/motion.js" defer></script>
 </body>
 </html>
