@@ -176,10 +176,12 @@ blockquote{margin:26px 0;padding:4px 0 4px 22px;border-left:2px solid var(--shu)
 .note{font-size:13px;color:var(--dim);letter-spacing:.03em}
 ul{padding-left:1.3em}li{margin-bottom:6px}
 
-/* ---- 現れ方 ---- */
-.rv{opacity:0;transform:translateY(22px);
-  transition:opacity .9s var(--ease),transform .9s var(--ease)}
-.rv.on{opacity:1;transform:none}
+/* ---- 現れ方 ----
+   JS が動く時だけ隠す。動かない環境では最初から見えている状態にする
+   （ここを CSS だけで隠すと、JS が落ちた瞬間に本文が読めなくなる） */
+.rv{transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.js .rv{opacity:0;transform:translateY(22px)}
+.js .rv.on{opacity:1;transform:none}
 
 footer.site{border-top:1px solid var(--line);padding:34px 0 60px;
   font-size:12.5px;color:var(--dim);letter-spacing:.05em}
@@ -473,3 +475,18 @@ header.site .logo{display:inline-flex;align-items:center;min-height:36px}
   .stage{padding-top:158px}
   #orbit{height:150px}
 }
+
+/* ---- 使っている道具 ---- */
+.stack-g{margin:0 0 12px}
+.stack-g h2{margin-bottom:16px}
+.stack{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:2px}
+.si{display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:baseline;
+  padding:16px 16px;border-radius:6px;border:1px solid transparent;
+  transition:background .4s var(--ease),border-color .4s var(--ease)}
+.si:hover{background:rgba(255,255,255,.035);border-color:var(--line)}
+.si b{font-size:14.5px;letter-spacing:.04em;font-weight:600;color:var(--text)}
+.si p{grid-column:1/-1;margin:0;font-size:12.5px;color:var(--muted);line-height:1.8}
+.lv{font-size:10px;letter-spacing:.14em;padding:3px 9px;border-radius:99px;
+  border:1px solid var(--line);color:var(--dim);white-space:nowrap}
+.lv[data-l="主力"]{color:var(--sky);border-color:rgba(126,200,227,.42)}
+.lv[data-l="実務"]{color:var(--silver);border-color:rgba(200,214,230,.28)}

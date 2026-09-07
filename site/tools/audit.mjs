@@ -87,7 +87,21 @@ for (const size of SIZES) {
       }
     });
     await page.goto(`http://localhost:${PORT}${path}`, { waitUntil: 'load' });
-    await page.waitForTimeout(size.n === 'pc' ? 2600 : 1600);
+    await page.waitForTimeout(size.n === 'pc' ? 2200 : 1400);
+    /* 下まで送って、現れ方の仕掛けを全部起こす。
+       滑らかスクロール（Lenis）は window.scrollTo を押し戻すので、
+       本物の車輪の動きで送る。 */
+    const docH = await page.evaluate(() => document.body.scrollHeight);
+    const steps = Math.ceil(docH / (size.h * 0.6)) + 2;
+    for (let k = 0; k < steps; k++) {
+      await page.mouse.wheel(0, size.h * 0.6);
+      await page.waitForTimeout(160);
+    }
+    await page.waitForTimeout(700);
+    const stillHidden = await page.evaluate(() => [...document.querySelectorAll('.rv')]
+      .filter((el) => +getComputedStyle(el).opacity < 0.9)
+      .map((el) => el.tagName + '.' + (String(el.className).split(' ')[0] || '')).slice(0, 3));
+    for (const h of stillHidden) add('高', `${path} [${size.n}]`, `下まで送っても現れない要素: ${h}`);
 
     for (const e of errs) add('高', `${path} [${size.n}]`, e);
 
@@ -215,6 +229,24 @@ for (const size of SIZES) {
   if (!vis.logo) add('高', '/ [動きを止めた設定]', 'ロゴが出ていない');
   for (const e of errs) add('高', '/ [動きを止めた設定]', e);
   await page.screenshot({ path: `${SHOT}/calm.png` });
+  await ctx.close();
+}
+
+/* JS が動かない時 */
+{
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 860 }, locale: 'ja-JP',
+    javaScriptEnabled: false });
+  for (const path of PATHS) {
+    const page = await ctx.newPage();
+    await page.goto(`http://localhost:${PORT}${path}`);
+    const r = await page.evaluate ? null : null;
+    const txt = await page.textContent('main').catch(() => '');
+    const hidden = await page.$$eval('.rv', (els) =>
+      els.filter((el) => +getComputedStyle(el).opacity < 0.9).length).catch(() => 0);
+    if ((txt || '').trim().length < 60) add('高', `${path} [JS なし]`, '本文がほとんど出ていない');
+    if (hidden) add('高', `${path} [JS なし]`, `${hidden} 個の要素が透明のまま`);
+    await page.close();
+  }
   await ctx.close();
 }
 

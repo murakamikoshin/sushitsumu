@@ -71,33 +71,36 @@
     });
   })();
 
-  /* ---------- 現れ方（GSAP が無くても動く） ---------- */
+  /* ---------- 現れ方 ----------
+     ここは GSAP に任せない。Lenis と混ざると、条件次第で永久に現れない
+     ことがある（自動検査で 89 か所出た）。素の IntersectionObserver と
+     CSS の遷移だけで動かし、最後に取りこぼしを拾う保険も置く。 */
   var rv = document.querySelectorAll('.rv');
-  if (calm) {
+  function show(el) {
+    var d = Number(el.getAttribute('data-delay')) || 0;
+    if (calm || d === 0) el.classList.add('on');
+    else setTimeout(function () { el.classList.add('on'); }, d);
+  }
+  if (calm || !('IntersectionObserver' in window)) {
     for (var i = 0; i < rv.length; i++) rv[i].classList.add('on');
-  } else if (G && window.ScrollTrigger) {
-    for (var g = 0; g < rv.length; g++) {
-      (function (el) {
-        G.fromTo(el, { y: 26, opacity: 0 }, {
-          y: 0, opacity: 1, duration: .9, ease: 'power3.out',
-          delay: (Number(el.getAttribute('data-delay')) || 0) / 1000,
-          scrollTrigger: { trigger: el, start: 'top 88%', once: true }
-        });
-        el.classList.add('on');
-      })(rv[g]);
-    }
-  } else if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        setTimeout(function () { e.target.classList.add('on'); },
-          Number(e.target.getAttribute('data-delay')) || 0);
-        io.unobserve(e.target);
-      });
-    }, { rootMargin: '0px 0px -12% 0px', threshold: .06 });
-    for (var j = 0; j < rv.length; j++) io.observe(rv[j]);
   } else {
-    for (var k = 0; k < rv.length; k++) rv[k].classList.add('on');
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { show(e.target); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.01 });
+    for (var j2 = 0; j2 < rv.length; j2++) io.observe(rv[j2]);
+    /* 保険：画面に入っているのに現れていないものを、定期的に拾う */
+    setInterval(function () {
+      for (var k = 0; k < rv.length; k++) {
+        var el = rv[k];
+        if (el.classList.contains('on')) continue;
+        var b = el.getBoundingClientRect();
+        if (b.top < window.innerHeight + 80 && b.bottom > -80) show(el);
+      }
+    }, 900);
+    /* 最後の砦：読み込みから 6 秒たったら、残りは全部出す */
+    setTimeout(function () {
+      for (var m = 0; m < rv.length; m++) rv[m].classList.add('on');
+    }, 6000);
   }
 
   /* ---------- 代表作の絵：スクロールで奥行きを出す ---------- */
@@ -118,12 +121,7 @@
         scrollTrigger: { trigger: el, start: 'top 86%', once: true }
       });
     });
-    /* 締めの一行 */
-    var cl = document.querySelector('.closing-line');
-    if (cl) {
-      G.from(cl, { yPercent: 14, opacity: 0, duration: 1, ease: 'power3.out',
-        scrollTrigger: { trigger: cl, start: 'top 84%', once: true } });
-    }
+    /* 締めの一行は .rv に任せる（GSAP と二重にかけると出なくなる） */
   } else {
     document.querySelectorAll('[data-count]').forEach(function (el) {
       el.textContent = Number(el.getAttribute('data-count')).toLocaleString('ja-JP');

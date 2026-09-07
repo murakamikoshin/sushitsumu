@@ -77,6 +77,7 @@ const works = read('/data/works.json');
 const notes = read('/data/notes.json');
 const kinds = read('/data/kinds.json');
 const conf  = existsSync(here + '/data/site.json') ? read('/data/site.json') : { social: [], ads: {} };
+const stack = existsSync(here + '/data/stack.json') ? read('/data/stack.json') : { groups: [] };
 
 const head = (title, desc, extra = '') => `<!doctype html>
 <html lang="ja">
@@ -90,6 +91,7 @@ const head = (title, desc, extra = '') => `<!doctype html>
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:type" content="website">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script>document.documentElement.className+=" js"</script>
 <link rel="stylesheet" href="/style.css">${extra}
 </head>
 <body>
@@ -97,7 +99,7 @@ const head = (title, desc, extra = '') => `<!doctype html>
 
 <header class="site"><div class="wrap">
   <a class="logo" href="/">Koshin Studio</a>
-  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/profile/">Profile</a><a class="nav-cta" href="/contact/">Contact</a></nav>
+  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/stack/">Stack</a><a href="/profile/">Profile</a><a class="nav-cta" href="/contact/">Contact</a></nav>
 </div></header>
 `;
 const socialHtml = (conf.social || []).map((x) =>
@@ -146,6 +148,36 @@ ${works.map(workCard).join('\n')}
   <p class="soon rv" id="empty" hidden>こ の 種 類 は ま だ あ り ま せ ん</p>
   <p class="soon rv" style="margin-top:22px">次 の 作 品 を 用 意 し て い ま す</p>
 </div></main>` + foot);
+
+/* ---- 使っている道具 ---- */
+if (existsSync(here + '/stack/index.html')) {
+  const html = (stack.groups || []).map((g, gi) => `  <section class="stack-g">
+    <h2 class="rv">${esc(g.name)}</h2>
+    <div class="stack">
+${g.items.map((it, i) => `      <div class="si rv" data-delay="${i * 40}">
+        <b>${esc(it.n)}</b><span class="lv" data-l="${esc(it.level)}">${esc(it.level)}</span>
+        <p>${esc(it.d)}</p>
+      </div>`).join('\n')}
+    </div>
+  </section>`).join('\n');
+  const f = here + '/stack/index.html';
+  writeFileSync(f, readFileSync(f, 'utf8').replace(
+    /<!--stack:start-->[\s\S]*?<!--stack:end-->/,
+    '<!--stack:start-->\n' + html + '\n  <!--stack:end-->'));
+}
+
+/* ---- 記録の配信（RSS） ---- */
+writeFileSync(here + '/feed.xml',
+  '<?xml version="1.0" encoding="UTF-8"?>\n' +
+  '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n<channel>\n' +
+  `  <title>Koshin Studio — Notes</title>\n  <link>${SITE}/notes/</link>\n` +
+  '  <description>作りながら考えたことの記録</description>\n  <language>ja</language>\n' +
+  `  <atom:link href="${SITE}/feed.xml" rel="self" type="application/rss+xml"/>\n` +
+  notes.map((n) => `  <item>\n    <title>${esc(n.title)}</title>\n` +
+    `    <link>${SITE}${n.url}</link>\n    <guid isPermaLink="true">${SITE}${n.url}</guid>\n` +
+    `    <pubDate>${new Date(n.date + 'T00:00:00+09:00').toUTCString()}</pubDate>\n` +
+    `    <description>${esc(n.blurb)}</description>\n  </item>`).join('\n') +
+  '\n</channel>\n</rss>\n');
 
 /* ---- /notes/ ---- */
 const noteRow = (n, i) => `    <li class="rv" data-delay="${i * 70}"><a class="note-row" href="${n.url}">
@@ -255,7 +287,7 @@ function walk(dir, out = []) {
       if (['vendor', 'assets', 'data', 'tools'].includes(e.name)) continue;
       if (full.endsWith('/works/sushitsumu/play')) continue;
       walk(full, out);
-    } else if (e.name.endsWith('.html')) out.push(full);
+    } else if (e.name.endsWith('.html') && e.name !== '404.html') out.push(full);
   }
   return out;
 }
@@ -326,10 +358,11 @@ function ldFor(file, url) {
 }
 
 for (const file of pages) {
+  const rel = file.slice(here.length);
   let html = readFileSync(file, 'utf8');
   /* 脚の SNS 欄と、広告の枠を差し替える（data/site.json が元） */
-  html = html.replace(/<nav><a href="\/works\/">Works<\/a><a href="\/notes\/">Notes<\/a><a href="\/profile\/">Profile<\/a>(<a[^>]*>Contact<\/a>)?<\/nav>/g,
-    '<nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/profile/">Profile</a><a class="nav-cta" href="/contact/">Contact</a></nav>');
+  html = html.replace(/<nav><a href="\/works\/">Works<\/a><a href="\/notes\/">Notes<\/a>(<a href="\/stack\/">Stack<\/a>)?<a href="\/profile\/">Profile<\/a>(<a[^>]*>Contact<\/a>)?<\/nav>/g,
+    '<nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/stack/">Stack</a><a href="/profile/">Profile</a><a class="nav-cta" href="/contact/">Contact</a></nav>');
   html = html.replace(/<div class="sns-row">[\s\S]*?<\/div>/g, `<div class="sns-row">${socialHtml}</div>`);
   if (!/class="sns-row"/.test(html)) {
     html = html.replace('<footer class="site"><div class="wrap">\n  <span>© 2026 Koshin Studio</span>',
@@ -367,14 +400,21 @@ for (const file of pages) {
     `<meta property="og:site_name" content="Koshin Studio">`,
     `<meta property="og:locale" content="ja_JP">`,
     `<meta name="twitter:card" content="summary_large_image">`,
+    `<link rel="alternate" type="application/rss+xml" title="Koshin Studio — Notes" href="${SITE}/feed.xml">`,
     ld ? `<script type="application/ld+json">${JSON.stringify(
       { '@context': 'https://schema.org', '@graph': ld })}</script>` : '',
   ].filter(Boolean).join('\n');
   html = html.replace('</head>', head + '\n</head>');
-  if (!/og:image/.test(html)) {
-    html = html.replace('</head>',
-      `<meta property="og:image" content="${SITE}/assets/sushitsumu-wide.jpg">\n</head>`);
-  }
+  const ogName = 'og' + (rel === '/index.html' ? '_home' : rel.replace(/\/index\.html$/, '').replace(/\//g, '_')) + '.jpg';
+  const ogPath = existsSync(here + '/assets/og/' + ogName)
+    ? `${SITE}/assets/og/${ogName}` : `${SITE}/assets/sushitsumu-wide.jpg`;
+  html = html.replace(/\n?\s*<meta property="og:image"[^>]*>/g, '')
+             .replace(/\n?\s*<meta property="og:image:width"[^>]*>/g, '')
+             .replace(/\n?\s*<meta property="og:image:height"[^>]*>/g, '');
+  html = html.replace('</head>',
+    `<meta property="og:image" content="${ogPath}">\n` +
+    `<meta property="og:image:width" content="1200">\n` +
+    `<meta property="og:image:height" content="630">\n</head>`);
   writeFileSync(file, html);
 }
 
