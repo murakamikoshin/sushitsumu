@@ -420,10 +420,10 @@ var SUSHI = [
   { n:'ウニ軍艦',         shape:'rrect',   w:111, h:79,  ch:16, col:'#d79c33', nori:true },
   { n:'大トロ',           shape:'rrect',   w:149, h:83,  ch:29, col:'#f2a3ad' },
   { n:'あなご一本焼き',   shape:'rrect',   w:247, h:71,  ch:25, col:'#7a4a22', bar:true },
-  { n:'伊勢海老',         shape:'rrect',   w:192, h:128, ch:40, col:'#a8324e' },
+  { n:'伊勢海老',         shape:'rrect',   w:230, h:107, ch:34, col:'#a8324e' },
   { n:'ゴールデンすし桶', shape:'circle',  r:105,          col:'#e8b62c', gold:true }
 ];
-SUSHI[9].pad = 50;   // 伊勢海老は触角と脚が本体からはみ出す
+SUSHI[9].pad = 58;   // 触角が本体から大きくはみ出す   // 伊勢海老は触角と脚が本体からはみ出す
 SUSHI.forEach(function (d) {
   if (d.shape === 'circle') { d.hw = d.r; d.hh = d.r; }
   else { d.hw = d.w / 2; d.hh = d.h / 2; }
@@ -1382,180 +1382,249 @@ function drawItem(c, level) {
       break;
     }
 
-    /* 9. あなご一本焼き（タレの照り） */
+    /* 9. あなご一本焼き
+       等間隔の濃い縦線を入れると板の継ぎ目に見えて、木材になる。
+       焼き目は柔らかい斑に留め、皮は細い横筋で出す。
+       主役はタレの照りなので、上辺に沿って強い光を一本通す。 */
     case 8: {
-      // 下のシャリは細めに
-      riceBase(c, w * 0.62, h * 1.5);
-      var eg = lg(c, 0, -h * 0.5, 0, h * 0.45,
-        [[0, '#a9702f'], [0.4, '#7c4a1e'], [1, '#432610']]);
-      c.fillStyle = eg;
-      rr(c, -w / 2, -h * 0.5, w, h * 0.86, h * 0.34);
+      var top = -h * 0.34;
+      // シャリ（あなごの下に全長）
+      var rgd = c.createLinearGradient(0, h * 0.02, 0, h * 0.5);
+      rgd.addColorStop(0, '#fdfbf5');
+      rgd.addColorStop(0.55, '#f4f0e4');
+      rgd.addColorStop(1, '#dbd5c1');
+      c.fillStyle = rgd;
+      rr(c, -w * 0.47, h * 0.02, w * 0.94, h * 0.48, h * 0.2);
       c.fill();
+      c.strokeStyle = 'rgba(156,144,113,.55)';
+      c.lineWidth = 1;
+      c.stroke();
+      for (var gi = 0; gi < 12; gi++) {
+        c.save();
+        c.translate(-w * 0.42 + gi * (w * 0.077), h * 0.34 + (gi % 2 ? h * 0.08 : 0));
+        c.rotate((gi - 6) * 0.16);
+        c.fillStyle = 'rgba(255,255,255,.85)';
+        c.beginPath(); c.ellipse(0, 0, w * 0.016, h * 0.028, 0, 0, 6.2832); c.fill();
+        c.strokeStyle = 'rgba(176,166,138,.45)'; c.lineWidth = 0.6; c.stroke();
+        c.restore();
+      }
+
+      // あなごの身（上辺をゆるく波打たせ、両端は垂れる）
+      function anagoPath(cc) {
+        cc.beginPath();
+        cc.moveTo(-w / 2, h * 0.2);
+        cc.quadraticCurveTo(-w / 2 - h * 0.04, top + h * 0.16, -w * 0.42, top + h * 0.04);
+        var seg = 4, xa = -w * 0.42, sp = w * 0.84;
+        for (var q = 0; q < seg; q++) {
+          var x1 = xa + sp * q / seg, x2 = xa + sp * (q + 1) / seg;
+          cc.quadraticCurveTo((x1 + x2) / 2, top - (q % 2 ? h * 0.03 : h * 0.07),
+                              x2, top + (q % 2 ? h * 0.05 : h * 0.01));
+        }
+        cc.quadraticCurveTo(w / 2 + h * 0.04, top + h * 0.16, w / 2, h * 0.2);
+        cc.quadraticCurveTo(0, h * 0.38, -w / 2, h * 0.2);
+        cc.closePath();
+      }
+
+      anagoPath(c);
+      var eg = c.createLinearGradient(0, top, 0, h * 0.3);
+      eg.addColorStop(0, '#9a6529');
+      eg.addColorStop(0.34, '#6b3d15');
+      eg.addColorStop(0.78, '#48260c');
+      eg.addColorStop(1, '#2e1706');
+      c.fillStyle = eg;
+      c.fill();
+
       c.save();
-      rr(c, -w / 2, -h * 0.5, w, h * 0.86, h * 0.34);
+      anagoPath(c);
       c.clip();
-      // 焼き目
-      c.strokeStyle = 'rgba(28,14,4,.55)';
-      c.lineWidth = 2.2;
-      for (var n2 = -4; n2 <= 4; n2++) {
+      // 皮の細い横筋
+      c.strokeStyle = 'rgba(20,10,2,.16)';
+      c.lineWidth = 1;
+      for (var sk = 0; sk < 7; sk++) {
+        var sy = top + h * 0.08 + sk * h * 0.075;
         c.beginPath();
-        c.moveTo(n2 * (w * 0.115) - 4, -h * 0.5);
-        c.lineTo(n2 * (w * 0.115) + 4, h * 0.4);
+        c.moveTo(-w / 2, sy);
+        c.bezierCurveTo(-w * 0.2, sy + h * 0.02, w * 0.2, sy - h * 0.02, w / 2, sy);
         c.stroke();
       }
-      // タレの照り
-      c.fillStyle = 'rgba(255,228,175,.42)';
-      rr(c, -w * 0.45, -h * 0.4, w * 0.9, h * 0.16, h * 0.08);
-      c.fill();
-      c.restore();
-      c.strokeStyle = 'rgba(30,15,5,.65)'; c.lineWidth = 1.3;
-      rr(c, -w / 2, -h * 0.5, w, h * 0.86, h * 0.34);
-      c.stroke();
-      // 山椒
-      c.fillStyle = 'rgba(122,162,62,.9)';
-      for (var s2 = 0; s2 < 6; s2++) {
+      // 焼き目（柔らかい斑）
+      for (var ch2 = 0; ch2 < 7; ch2++) {
+        var cx2 = -w * 0.4 + ch2 * (w * 0.133) + (ch2 % 2 ? w * 0.02 : 0);
+        var cy2 = top + h * 0.3 + (ch2 % 3) * h * 0.1;
+        var cg = c.createRadialGradient(cx2, cy2, 1, cx2, cy2, w * 0.06);
+        cg.addColorStop(0, 'rgba(22,10,2,.42)');
+        cg.addColorStop(1, 'rgba(22,10,2,0)');
+        c.fillStyle = cg;
         c.beginPath();
-        c.arc(-w * 0.3 + s2 * (w * 0.12), -h * 0.1 + (s2 % 3 - 1) * h * 0.12, 1.4, 0, 6.2832);
+        c.ellipse(cx2, cy2, w * 0.06, h * 0.17, 0.3, 0, 6.2832);
+        c.fill();
+      }
+      // タレの照り（上辺に沿って一本）
+      var tg = c.createLinearGradient(0, top, 0, top + h * 0.2);
+      tg.addColorStop(0, 'rgba(255,220,158,.62)');
+      tg.addColorStop(0.55, 'rgba(255,196,120,.2)');
+      tg.addColorStop(1, 'rgba(255,196,120,0)');
+      c.fillStyle = tg;
+      c.beginPath();
+      c.moveTo(-w * 0.44, top + h * 0.16);
+      var seg2 = 4, xa2 = -w * 0.42, sp2 = w * 0.84;
+      c.lineTo(-w * 0.42, top + h * 0.05);
+      for (var q2 = 0; q2 < seg2; q2++) {
+        var a2 = xa2 + sp2 * q2 / seg2, b2 = xa2 + sp2 * (q2 + 1) / seg2;
+        c.quadraticCurveTo((a2 + b2) / 2, top - (q2 % 2 ? h * 0.02 : h * 0.06),
+                           b2, top + (q2 % 2 ? h * 0.06 : h * 0.02));
+      }
+      c.lineTo(w * 0.44, top + h * 0.16);
+      c.closePath();
+      c.fill();
+      // 腹側の明るい縁
+      c.strokeStyle = 'rgba(214,158,92,.3)';
+      c.lineWidth = h * 0.05;
+      c.beginPath();
+      c.moveTo(-w * 0.44, h * 0.22);
+      c.quadraticCurveTo(0, h * 0.34, w * 0.44, h * 0.22);
+      c.stroke();
+      c.restore();
+
+      anagoPath(c);
+      c.strokeStyle = 'rgba(28,14,4,.7)';
+      c.lineWidth = 1.4;
+      c.stroke();
+
+      // 山椒（控えめに）
+      c.fillStyle = 'rgba(126,158,72,.85)';
+      for (var s3 = 0; s3 < 3; s3++) {
+        c.beginPath();
+        c.arc(-w * 0.18 + s3 * (w * 0.18), top + h * 0.24 + (s3 % 2) * h * 0.12, 1.3, 0, 6.2832);
         c.fill();
       }
       break;
     }
 
-    /* 10. 伊勢海老（姿づくり）
-       胴を一枚の角丸で描くとダンゴムシに見える。
-       前から順に「触角・頭胸甲（盾形）・細くなる腹節・大きく開いた尾扇」を
-       別々に重ね、尾扇は必ず腹節より後ろへはみ出させる。 */
+    /* 10. 伊勢海老
+       縦横比 1.5 の箱に上から見た姿を詰めると、どう描いてもダンゴムシになる。
+       面積はそのままに胴を長くし（230x107）、体と同じくらい長い太い触角を
+       前方へ振ることで伊勢海老になる。 */
     case 9: {
-      // 120x80 を基準に描いてあるので、実寸に合わせて拡大する（縦横比は 1.5 で不変）
+      // 230x107 を基準に描いてあるので実寸へ合わせる（縦横比 2.15 は不変）
       c.save();
-      c.scale(w / 120, w / 120);
-      var hw = 60, hh = 40;
-      var SHELL_D = 'rgba(112,20,6,.85)';
-      var HEAD_BACK = -hw + 42;      // 頭胸甲の後端
-      var TAIL_X = hw - 26;          // 尾扇の付け根
+      c.scale(w / 230, w / 230);
+      var hh = 53.5;
+      var SHELL_D = 'rgba(104,20,4,.85)';
 
-      // 触角（前方へ大きく払う。根元を太く、先を細く）
-      c.lineCap = 'round';
-      [-1, 1].forEach(function (dir) {
-        var pts = [
-          [-hw + 16, dir * hh * 0.3],
-          [-hw - 6,  dir * hh * 0.5],
-          [-hw - 20, dir * hh * 0.85],
-          [-hw - 30, dir * hh * 1.16]
-        ];
-        var widths = [5.5, 3.6, 2];
-        for (var seg = 0; seg < 3; seg++) {
-          c.strokeStyle = seg === 0 ? '#de4e2c' : '#ec6a45';
-          c.lineWidth = widths[seg];
-          c.beginPath();
-          c.moveTo(pts[seg][0], pts[seg][1]);
-          c.lineTo(pts[seg + 1][0], pts[seg + 1][1]);
-          c.stroke();
-        }
-        c.strokeStyle = '#ef8163';
-        c.lineWidth = 1.7;
+      function feeler(x0, y0, x1, y1, x2, y2, wb, wt, col) {
         c.beginPath();
-        c.moveTo(-hw + 14, dir * hh * 0.16);
-        c.quadraticCurveTo(-hw - 14, dir * hh * 0.26, -hw - 26, dir * hh * 0.56);
+        c.moveTo(x0, y0 - wb / 2);
+        c.quadraticCurveTo(x1, y1 - wt, x2, y2 - wt / 2);
+        c.lineTo(x2, y2 + wt / 2);
+        c.quadraticCurveTo(x1, y1 + wt, x0, y0 + wb / 2);
+        c.closePath();
+        c.fillStyle = col;
+        c.fill();
+        c.strokeStyle = SHELL_D;
+        c.lineWidth = 1.2;
         c.stroke();
+      }
+
+      // 触角（この一対が伊勢海老の顔）
+      [-1, 1].forEach(function (d) {
+        feeler(-92, d * 14, -132, d * 34, -166, d * 50, 17, 4, '#e2542c');
+        feeler(-97, d * 5, -134, d * 10, -156, d * 6, 7, 2.4, '#ef7a52');
       });
 
-      // 歩脚（頭胸甲の下から外へ、やや後ろへ流す）
+      // 歩脚
       c.strokeStyle = '#c8391c';
-      c.lineWidth = 3.2;
-      for (var lg2 = 0; lg2 < 3; lg2++) {
-        var lx = -hw + 16 + lg2 * 13;
-        [-1, 1].forEach(function (dir) {
-          c.beginPath();
-          c.moveTo(lx, dir * hh * 0.6);
-          c.quadraticCurveTo(lx + 4, dir * hh * 0.95, lx + 11, dir * (hh + 7));
-          c.stroke();
+      c.lineCap = 'round';
+      for (var lg2 = 0; lg2 < 4; lg2++) {
+        var lx = -80 + lg2 * 13;
+        [-1, 1].forEach(function (d) {
+          c.lineWidth = 4;
+          c.beginPath(); c.moveTo(lx, d * 26); c.lineTo(lx + 10, d * 38); c.stroke();
+          c.lineWidth = 3;
+          c.beginPath(); c.moveTo(lx + 10, d * 38); c.lineTo(lx + 24, d * 44); c.stroke();
         });
       }
       c.lineCap = 'butt';
 
-      // 尾扇（5枚。腹節より後ろへしっかりはみ出させる）
+      // 尾扇
       for (var t = -2; t <= 2; t++) {
         c.save();
-        c.translate(TAIL_X, 0);
-        c.rotate(t * 0.42);
-        c.fillStyle = lg(c, 0, 0, 30, 0, [[0, '#c9381a'], [1, '#ffb392']]);
+        c.translate(52, 0);
+        c.rotate(t * 0.52);
+        c.fillStyle = lg(c, 0, 0, 46, 0, [[0, '#c2340f'], [1, '#ffb190']]);
         c.beginPath();
-        c.moveTo(0, -hh * 0.17);
-        c.quadraticCurveTo(22, -hh * 0.3, 30, 0);
-        c.quadraticCurveTo(22, hh * 0.3, 0, hh * 0.17);
+        c.moveTo(0, -12);
+        c.quadraticCurveTo(34, -16, 46, 0);
+        c.quadraticCurveTo(34, 16, 0, 12);
         c.closePath();
         c.fill();
-        c.strokeStyle = SHELL_D; c.lineWidth = 1.4; c.stroke();
+        c.strokeStyle = SHELL_D; c.lineWidth = 1.5; c.stroke();
         c.restore();
       }
 
-      // 腹節（後ろほど細く。後ろから前へ重ねる）
-      for (var sgm = 4; sgm >= 0; sgm--) {
-        var sx = HEAD_BACK + 6 + sgm * 13;
-        var sh2 = hh * (0.88 - sgm * 0.105);
+      // 腹節
+      for (var sg = 4; sg >= 0; sg--) {
+        var sx = -22 + sg * 18;
+        var sh2 = 41 - sg * 3.6;
         var sgd = c.createLinearGradient(0, -sh2, 0, sh2);
-        sgd.addColorStop(0, '#ff8a5c');
-        sgd.addColorStop(0.42, '#e2431f');
-        sgd.addColorStop(1, '#9d1f0b');
+        sgd.addColorStop(0, '#ff9666');
+        sgd.addColorStop(0.34, '#e84a22');
+        sgd.addColorStop(0.78, '#b32a0e');
+        sgd.addColorStop(1, '#7d1a06');
         c.fillStyle = sgd;
-        rr(c, sx - 11, -sh2, 24, sh2 * 2, 10);
+        rr(c, sx - 15, -sh2, 32, sh2 * 2, 13);
         c.fill();
-        c.strokeStyle = SHELL_D; c.lineWidth = 1.5; c.stroke();
-        c.fillStyle = 'rgba(255,255,255,.22)';
-        rr(c, sx - 7, -sh2 + 4, 16, 5, 2.5);
+        c.strokeStyle = SHELL_D; c.lineWidth = 1.6; c.stroke();
+        c.fillStyle = 'rgba(255,255,255,.24)';
+        rr(c, sx - 9, -sh2 + 6, 20, 6, 3);
         c.fill();
       }
 
-      // 頭胸甲（前が狭い盾形）
+      // 頭胸甲（前を丸く狭め、後ろを広く）
       var hg = c.createLinearGradient(0, -hh, 0, hh);
-      hg.addColorStop(0, '#ff8352');
-      hg.addColorStop(0.45, '#dd3f1c');
-      hg.addColorStop(1, '#951c08');
+      hg.addColorStop(0, '#ff9061');
+      hg.addColorStop(0.36, '#e2481f');
+      hg.addColorStop(0.8, '#ab2409');
+      hg.addColorStop(1, '#791805');
       c.fillStyle = hg;
       c.beginPath();
-      c.moveTo(-hw + 6, -hh * 0.34);
-      c.quadraticCurveTo(-hw + 2, -hh * 0.62, -hw + 18, -hh * 0.7);
-      c.lineTo(HEAD_BACK - 4, -hh * 0.93);
-      c.quadraticCurveTo(HEAD_BACK + 6, 0, HEAD_BACK - 4, hh * 0.93);
-      c.lineTo(-hw + 18, hh * 0.7);
-      c.quadraticCurveTo(-hw + 2, hh * 0.62, -hw + 6, hh * 0.34);
+      c.moveTo(-98, -20);
+      c.quadraticCurveTo(-100, -14, -104, -8);
+      c.lineTo(-97, 0);
+      c.lineTo(-104, 8);
+      c.quadraticCurveTo(-100, 14, -98, 20);
+      c.quadraticCurveTo(-105, 26, -98, 20);
+      c.moveTo(-98, -20);
+      c.quadraticCurveTo(-102, -32, -88, -35);
+      c.lineTo(-40, -43);
+      c.quadraticCurveTo(-26, 0, -40, 43);
+      c.lineTo(-88, 35);
+      c.quadraticCurveTo(-102, 32, -98, 20);
+      c.quadraticCurveTo(-105, 0, -98, -20);
       c.closePath();
       c.fill();
-      c.strokeStyle = SHELL_D; c.lineWidth = 1.8; c.stroke();
+      c.strokeStyle = SHELL_D; c.lineWidth = 2; c.stroke();
 
       // 甲羅のトゲ
-      c.fillStyle = '#ffb492';
-      for (var sp = 0; sp < 6; sp++) {
+      c.fillStyle = '#ffb695';
+      for (var sp = 0; sp < 10; sp++) {
+        var col2 = sp % 5;
         c.beginPath();
-        c.arc(-hw + 16 + (sp % 3) * 11,
-              (sp < 3 ? -1 : 1) * hh * (0.3 + (sp % 3) * 0.14), 2.4, 0, 6.2832);
+        c.arc(-92 + col2 * 12, (sp < 5 ? -1 : 1) * (13 + col2 * 3.4), 2.6, 0, 6.2832);
         c.fill();
       }
-      // 額角（前方へ突き出す一対のトゲ）
-      c.fillStyle = '#ff7a4f';
-      [-1, 1].forEach(function (dir) {
-        c.beginPath();
-        c.moveTo(-hw + 10, dir * hh * 0.1);
-        c.lineTo(-hw - 8, dir * hh * 0.06);
-        c.lineTo(-hw + 12, dir * hh * 0.34);
-        c.closePath();
-        c.fill();
-        c.strokeStyle = SHELL_D; c.lineWidth = 1.1; c.stroke();
-      });
+      c.strokeStyle = 'rgba(255,190,160,.4)';
+      c.lineWidth = 2.4;
+      c.beginPath(); c.moveTo(-92, 0); c.lineTo(-46, 0); c.stroke();
 
       // 目（前端に小さく）
-      [-1, 1].forEach(function (dir) {
-        c.strokeStyle = '#c8391c'; c.lineWidth = 2.6;
-        c.beginPath();
-        c.moveTo(-hw + 14, dir * hh * 0.4);
-        c.lineTo(-hw + 7, dir * hh * 0.5);
-        c.stroke();
+      [-1, 1].forEach(function (d) {
         c.fillStyle = '#1b0b08';
-        c.beginPath(); c.arc(-hw + 5, dir * hh * 0.52, 3.4, 0, 6.2832); c.fill();
+        c.beginPath(); c.arc(-94, d * 11, 4.2, 0, 6.2832); c.fill();
         c.fillStyle = 'rgba(255,255,255,.9)';
-        c.beginPath(); c.arc(-hw + 4, dir * hh * 0.52 - 1.2, 1.2, 0, 6.2832); c.fill();
+        c.beginPath(); c.arc(-95.4, d * 11 - 1.4, 1.5, 0, 6.2832); c.fill();
       });
+
       c.restore();
       break;
     }
