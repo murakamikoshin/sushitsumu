@@ -43,6 +43,34 @@
     if (hl) hl.style.width = 'min(280px, 62%)';
   }
 
+  /* ---------- 小さい画面の品書き ---------- */
+  (function () {
+    var hd = document.querySelector('header.site .wrap');
+    var nav = hd && hd.querySelector('nav');
+    if (!nav || hd.querySelector('.menu-btn')) return;
+    var btn = document.createElement('button');
+    btn.className = 'menu-btn';
+    btn.type = 'button';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', 'sitenav');
+    btn.innerHTML = '<span></span><span></span><span></span><i class="sr">品書きを開く</i>';
+    nav.id = 'sitenav';
+    hd.appendChild(btn);
+    function set(open) {
+      document.body.classList.toggle('nav-open', open);
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.querySelector('i').textContent = open ? '品書きを閉じる' : '品書きを開く';
+    }
+    btn.addEventListener('click', function () {
+      set(!document.body.classList.contains('nav-open'));
+    });
+    nav.addEventListener('click', function (e) { if (e.target.tagName === 'A') set(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 620) set(false);
+    });
+  })();
+
   /* ---------- 現れ方（GSAP が無くても動く） ---------- */
   var rv = document.querySelectorAll('.rv');
   if (calm) {
@@ -110,27 +138,53 @@
     var lockEl = document.querySelector('.lockup');
     function place(now) {
       var box = orbit.getBoundingClientRect();
-      /* ロゴの実寸を測って、札がそこへ食い込まない半径にする */
       var lb = lockEl ? lockEl.getBoundingClientRect() : { width: 0, height: 0 };
       var cw = orbs[0] ? orbs[0].offsetWidth : 120;
       var ch = orbs[0] ? orbs[0].offsetHeight : 150;
-      /* ロゴの箱（札の半分ぶん膨らませたもの）。ここへは絶対に入れない */
+      /* ロゴの箱（札の半分ぶん膨らませたもの）。ここへは入れない */
       var Wc = lb.width / 2 + cw / 2 + 26;
       var Hc = lb.height / 2 + ch / 2 + 34;
-      var rx = Math.min(box.width / 2 - cw / 2 - 6, Math.max(box.width * 0.30, Wc));
-      var ry = Math.min(box.height / 2 - ch / 2 - 4, Math.max(box.height * 0.22, Hc));
+      var rxCap = box.width / 2 - cw / 2 - 8;
+      var ryCap = box.height / 2 - ch / 2 - 6;
+
+      /* 輪がロゴを避けきれないほど狭い画面では、横に流れる帯にする */
+      if (rxCap < Wc) {
+        if (!calm) ang += 0.00055 * spin;
+        var span = n * (cw + 22);
+        for (var m = 0; m < n; m++) {
+          var u = ((m / n + ang) % 1 + 1) % 1;
+          var px2 = u * span - span / 2;
+          /* 端で消えないよう、はみ出したぶんを反対側へ回す */
+          var half = box.width / 2 + cw;
+          while (px2 > half) px2 -= span;
+          while (px2 < -half) px2 += span;
+          var edge = Math.min(1, (box.width / 2 + cw / 2 - Math.abs(px2)) / (cw * 1.1));
+          var e2 = orbs[m];
+          e2.style.transform = 'translate3d(' + px2.toFixed(1) + 'px,' +
+            (-box.height / 2 + ch / 2 + 4 + Math.sin(now / 1500 + m) * 4).toFixed(1) + 'px,0) scale(' +
+            (0.86 + 0.1 * Math.max(0, edge)).toFixed(3) + ')';
+          e2.style.opacity = Math.max(0, Math.min(1, edge)).toFixed(3);
+          e2.style.zIndex = '20';
+          e2.style.filter = 'none';
+        }
+        return;
+      }
+
+      var rx = Math.min(rxCap, Math.max(box.width * 0.30, Wc));
+      var ry = Math.min(ryCap, Math.max(box.height * 0.22, Hc));
       if (!calm) ang += 0.0022 * spin;
       for (var i = 0; i < n; i++) {
         var a = ang + (i / n) * Math.PI * 2;
         var z = Math.cos(a);
         var x = Math.sin(a) * rx;
         var y = -z * ry;
-        /* 楕円の上では、斜めの位置がロゴの角に噛む。噛むぶんだけ外へ押し出す */
         y += Math.sin(now / 1400 + i) * 5;
         if (Math.abs(x) < Wc && Math.abs(y) < Hc) {
           var need = Math.min(Wc / Math.max(1, Math.abs(x)), Hc / Math.max(1, Math.abs(y)));
           x *= need; y *= need;
         }
+        x = Math.max(-rxCap, Math.min(rxCap, x));
+        y = Math.max(-ryCap, Math.min(ryCap, y));
         var s2 = 0.58 + 0.42 * (z + 1) / 2;
         var o = 0.26 + 0.74 * (z + 1) / 2;
         var el = orbs[i];

@@ -138,6 +138,7 @@ writeFileSync(here + '/works/index.html',
   <div class="rule"></div>
   <p class="lead">作ったものの一覧です。増えたらここに並びます。</p>
 
+  <h2 class="sr">作品の一覧</h2>
   <div class="chips rv">${chips}</div>
   <ul class="works" id="worklist">
 ${works.map(workCard).join('\n')}
@@ -159,6 +160,7 @@ writeFileSync(here + '/notes/index.html',
   <h1>Notes</h1>
   <div class="rule"></div>
   <p class="lead">作りながら考えたことの記録。<br>勘で直す前に、まず測る——という話が多いです。</p>
+  <h2 class="sr">記録の一覧</h2>
   <ul class="notes">
 ${notes.map(noteRow).join('\n')}
   </ul>

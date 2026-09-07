@@ -25,7 +25,7 @@
      好奇心：水色を一点だけ、光る所に置く。目が向く先はここだけにする */
   --ink0:#070c17; --ink1:#0d1526; --ink2:#152136;
   --line:rgba(170,205,236,.14);
-  --text:#e9eef6; --muted:#93a4bb; --dim:#64748c;
+  --text:#e9eef6; --muted:#9db0c8; --dim:#8496ae;
   --blue:#2f6fd0;            /* 主役。押す所 */
   --blue-d:#1b4a95;          /* 影 */
   --sky:#7ec8e3;             /* 差し色。光る所 */
@@ -401,3 +401,75 @@ h2.sec span{font-family:var(--gothic);font-size:11px;letter-spacing:.24em;
 .ks-logo{width:min(78vw,760px);height:auto;display:block;margin:0 auto;
   filter:drop-shadow(0 0 60px rgba(10,18,34,.9))}
 .ks-l1{color:var(--text)}
+
+/* ============================================================
+   直し（自動テストで出たもの）
+   ============================================================ */
+
+/* はみ出し防止の総当り */
+pre,code,table,.scroll{max-width:100%}
+pre{white-space:pre-wrap;word-break:break-word}
+.feat-media{max-width:100vw;overflow:hidden}
+#orbit{overflow:visible}
+.hero,.stage{max-width:100%}
+
+/* 脚と帯のリンクは、指で押せる大きさに */
+footer.site nav a,footer.site .sns{padding:7px 2px;display:inline-flex;align-items:center;min-height:32px}
+header.site nav a{padding:8px 2px;display:inline-flex;align-items:center;min-height:34px}
+
+/* ---- 小さい画面の品書き ---- */
+.menu-btn{display:none;margin-left:auto;background:transparent;border:1px solid var(--line);
+  border-radius:8px;width:44px;height:38px;cursor:pointer;padding:0;
+  flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.menu-btn span{display:block;width:19px;height:1.5px;background:var(--text);
+  transition:transform .35s var(--ease),opacity .25s var(--ease)}
+body.nav-open .menu-btn span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+body.nav-open .menu-btn span:nth-child(2){opacity:0}
+body.nav-open .menu-btn span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+
+@media(max-width:620px){
+  header.site .wrap{gap:10px}
+  header.site .logo{font-size:14px;letter-spacing:.14em}
+  .menu-btn{display:flex}
+  header.site nav{position:fixed;left:0;right:0;top:60px;margin:0;
+    flex-direction:column;gap:0;align-items:stretch;
+    background:rgba(9,15,28,.97);backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--line);
+    max-height:0;overflow:hidden;transition:max-height .42s var(--ease)}
+  body.nav-open header.site nav{max-height:340px}
+  header.site nav a{padding:16px 24px;font-size:14px;letter-spacing:.14em;
+    border-bottom:1px solid var(--line);min-height:52px}
+  header.site nav a.nav-cta{border-radius:0;border:0;border-bottom:1px solid var(--line);
+    background:rgba(126,200,227,.1)}
+  .stage{height:clamp(430px,58vh,540px)}
+  .hero{padding-top:66px}
+  .ks-logo{width:min(86vw,420px)}
+}
+@media(max-width:400px){
+  .orb{width:74px;margin:-37px 0 0 -37px}
+  .orb picture,.orb img,.orb-mark{height:74px}
+  .orb-mark{font-size:16px}
+}
+
+/* 押せる大きさを確保（帯のロゴと、単独で置くリンク） */
+header.site .logo{display:inline-flex;align-items:center;min-height:36px}
+.note-row,.work,.kind,.price-row{min-height:44px}
+
+/* 狭い画面：札は輪ではなく、ロゴの上を横に流れる帯にする */
+@media(max-width:620px){
+  .stage{height:auto;min-height:0;display:block;padding:132px 0 8px}
+  #orbit{position:absolute;left:0;right:0;top:0;height:124px;overflow:hidden}
+  .orb{top:50%}
+  .lockup{position:relative}
+  .tagline{font-size:12.5px;letter-spacing:.12em;line-height:2}
+  .hero{min-height:auto;padding-bottom:34px}
+  .hero-act{margin-top:30px;width:100%}
+  .hero-act .btn{flex:1 1 auto;text-align:center;padding:15px 20px;font-size:15px}
+  .cue{margin-top:20px}
+}
+
+/* 狭い画面：札の帯が上で切れていたので、高さを取る */
+@media(max-width:620px){
+  .stage{padding-top:158px}
+  #orbit{height:150px}
+}

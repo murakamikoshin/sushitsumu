@@ -86,7 +86,7 @@ def K():
         serif_stem(70),
         # 上へ伸びる細い腕。四隅は「左上→右上→右下→左下」の順に置く
         # （順序を違えると、ねじれた四角形になって形が崩れる）
-        quad((120, j + 58), (722, CAP - SRH), (668, CAP - SRH), (120, j - 6)),
+        quad((120, j + 74), (726, CAP - SRH), (642, CAP - SRH), (120, j - 10)),
         # 下へ伸びる太い脚
         quad((120, j + 18), (216, j + 18), (790, SRH), (676, SRH)),
         # 先のうろこ
@@ -191,16 +191,26 @@ GAP = 150
 H = CAP * 2 + GAP
 
 svg = f'''<svg class="ks-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" role="img" aria-label="Koshin Studio" preserveAspectRatio="xMidYMid meet">
-  <g transform="translate(0,{H}) scale(1,-1)">
-    <g class="ks-l1" fill="currentColor" transform="translate({(W-w1)/2},{CAP+GAP})">{l1}</g>
-    <g class="ks-l2" fill="url(#ksGrad)" transform="translate({(W-w2)/2},0)">{l2}</g>
-  </g>
   <defs>
-    <linearGradient id="ksGrad" x1="0" y1="0" x2="1" y2="0.35">
-      <stop offset="0%" stop-color="#e6f2fa"/><stop offset="38%" stop-color="#7ec8e3"/>
-      <stop offset="68%" stop-color="#2f6fd0"/><stop offset="100%" stop-color="#b9e6f5"/>
+    <!-- グラデーションは、字ごとの座標系で解決されると先頭の色しか拾わない。
+         だから文字は「マスク」にして、色は一枚の矩形に塗る。 -->
+    <linearGradient id="ksGrad" gradientUnits="userSpaceOnUse" x1="{(W-w2)/2}" y1="0" x2="{(W-w2)/2+w2}" y2="0">
+      <stop offset="0%" stop-color="#eef6fc"/><stop offset="24%" stop-color="#9adcf0"/>
+      <stop offset="54%" stop-color="#4f95e0"/><stop offset="80%" stop-color="#2a63c4"/>
+      <stop offset="100%" stop-color="#7ec8e3"/>
     </linearGradient>
+    <mask id="ksMask" maskUnits="userSpaceOnUse" x="0" y="0" width="{W}" height="{H}">
+      <g fill="#fff" transform="translate(0,{H}) scale(1,-1)">
+        <g transform="translate({(W-w2)/2},0)">{l2}</g>
+      </g>
+    </mask>
   </defs>
+  <g class="ks-l1" fill="currentColor" transform="translate(0,{H}) scale(1,-1)">
+    <g transform="translate({(W-w1)/2},{CAP+GAP})">{l1}</g>
+  </g>
+  <g class="ks-l2">
+    <rect x="0" y="{H-CAP-1}" width="{W}" height="{CAP+2}" fill="url(#ksGrad)" mask="url(#ksMask)"/>
+  </g>
 </svg>
 '''
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'assets', 'logotype.svg')

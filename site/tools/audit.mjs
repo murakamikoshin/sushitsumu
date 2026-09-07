@@ -1,0 +1,261 @@
+/* ============================================================
+   サイト全体を機械で見て回る
+
+     ・全ページ × 4 つの画面幅で、崩れと不具合を探す
+     ・コンソールのエラー、読み込めなかったもの
+     ・リンク切れ（内部）
+     ・横にはみ出していないか
+     ・文字と背景の明暗差（WCAG）
+     ・見出しの並び、画像の代替文字、押せる物の大きさ
+     ・動きを止めた設定での見え方
+     ・重さ
+
+       node site/tools/audit.mjs
+   ============================================================ */
+import { chromium } from 'playwright-core';
+import { createServer } from 'node:http';
+import { readFileSync, existsSync, statSync, readdirSync, mkdirSync } from 'node:fs';
+
+const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const SHOT = process.env.SHOT_DIR || '/tmp/claude-0/audit';
+mkdirSync(SHOT, { recursive: true });
+const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const PORT = 8791;
+
+const TYPES = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8',
+  '.js':'text/javascript; charset=utf-8', '.png':'image/png', '.webp':'image/webp',
+  '.jpg':'image/jpeg', '.svg':'image/svg+xml', '.woff2':'font/woff2', '.xml':'application/xml',
+  '.txt':'text/plain; charset=utf-8', '.json':'application/json' };
+
+const srv = createServer((q, r) => {
+  let p = ROOT + decodeURIComponent(q.url.split('?')[0]);
+  if (existsSync(p) && statSync(p).isDirectory()) p += '/index.html';
+  if (!existsSync(p) || statSync(p).isDirectory()) { r.writeHead(404); return r.end('404'); }
+  r.writeHead(200, { 'Content-Type': TYPES[p.slice(p.lastIndexOf('.'))] || 'application/octet-stream' });
+  r.end(readFileSync(p));
+}).listen(PORT);
+
+/* ページを集める */
+function pages(dir = ROOT, out = []) {
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const full = dir + '/' + e.name;
+    if (e.isDirectory()) {
+      if (['vendor', 'assets', 'data', 'tools', 'node_modules', '.git'].includes(e.name)) continue;
+      if (full.endsWith('/works/sushitsumu/play')) continue;
+      pages(full, out);
+    } else if (e.name === 'index.html') out.push(full.slice(ROOT.length).replace(/index\.html$/, ''));
+  }
+  return out;
+}
+const PATHS = ['/'].concat(pages().filter((p) => p !== '/')).sort();
+const SIZES = [
+  { n: 'sp',  w: 390,  h: 844,  mobile: true },
+  { n: 'tab', w: 768,  h: 1024, mobile: true },
+  { n: 'pc',  w: 1280, h: 860,  mobile: false },
+  { n: 'wide',w: 1920, h: 1080, mobile: false },
+];
+
+const issues = [];
+const add = (sev, where, what) => issues.push({ sev, where, what });
+
+/* 明暗差（WCAG 2.1） */
+const lum = ([r, g, b]) => {
+  const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+};
+
+const browser = await chromium.launch({ executablePath: CHROME });
+let totalBytes = 0;
+const seenRes = new Set();
+
+for (const size of SIZES) {
+  const ctx = await browser.newContext({
+    viewport: { width: size.w, height: size.h }, deviceScaleFactor: 1,
+    locale: 'ja-JP', isMobile: size.mobile, hasTouch: size.mobile,
+  });
+  for (const path of PATHS) {
+    const page = await ctx.newPage();
+    const errs = [];
+    page.on('pageerror', (e) => errs.push('JS: ' + e.message));
+    page.on('console', (m) => { if (m.type() === 'error') errs.push('CONSOLE: ' + m.text()); });
+    page.on('response', (r) => {
+      const u = r.url();
+      if (r.status() >= 400) errs.push(`HTTP ${r.status()}: ${u}`);
+      if (!seenRes.has(u) && u.startsWith('http://localhost')) {
+        seenRes.add(u);
+        r.body().then((b) => { totalBytes += b.length; }).catch(() => {});
+      }
+    });
+    await page.goto(`http://localhost:${PORT}${path}`, { waitUntil: 'load' });
+    await page.waitForTimeout(size.n === 'pc' ? 2600 : 1600);
+
+    for (const e of errs) add('高', `${path} [${size.n}]`, e);
+
+    const r = await page.evaluate(() => {
+      const out = { overflow: null, small: [], noalt: [], heads: [], contrast: [], links: [], dupIds: [] };
+      /* 横にはみ出し */
+      const de = document.documentElement;
+      if (de.scrollWidth > de.clientWidth + 1) {
+        const wide = [...document.querySelectorAll('*')].filter((el) => {
+          const b = el.getBoundingClientRect();
+          return b.right > de.clientWidth + 1 && b.width > 0 && getComputedStyle(el).position !== 'fixed';
+        }).slice(0, 4).map((el) => el.tagName + '.' + (String(el.className).split(' ')[0] || ''));
+        out.overflow = { doc: de.scrollWidth, view: de.clientWidth, by: wide };
+      }
+      /* 押せる物の大きさ */
+      const inlineInText = (el) => {
+        if (getComputedStyle(el).display !== 'inline') return false;
+        const par = el.parentElement;
+        if (!par) return false;
+        /* 前後に文字があるなら、文の中のリンク */
+        return (par.textContent || '').trim().length > (el.textContent || '').trim().length + 2;
+      };
+      for (const el of document.querySelectorAll('a[href], button, input, [role="button"]')) {
+        const b = el.getBoundingClientRect();
+        if (b.width === 0 || b.height === 0) continue;
+        if (inlineInText(el)) continue;
+        if (b.height < 24 || b.width < 24) {
+          out.small.push(`${el.tagName}${el.className ? '.' + String(el.className).split(' ')[0] : ''} ${Math.round(b.width)}x${Math.round(b.height)} "${(el.textContent || '').trim().slice(0, 14)}"`);
+        }
+      }
+      /* 画像の代替文字 */
+      for (const im of document.querySelectorAll('img')) {
+        if (!im.hasAttribute('alt')) out.noalt.push(im.getAttribute('src') || '(src なし)');
+      }
+      /* 見出しの並び */
+      out.heads = [...document.querySelectorAll('h1,h2,h3,h4')].map((h) => h.tagName);
+      /* 明暗差 */
+      const hidden = (el) => {
+        const c = getComputedStyle(el);
+        if (c.clipPath === 'inset(50%)' || /rect\(0px,? 0px,? 0px,? 0px\)/.test(c.clip)) return true;
+        const b = el.getBoundingClientRect();
+        return b.width <= 1 || b.height <= 1;
+      };
+      const pick = [...document.querySelectorAll('p,li,span,a,h1,h2,h3,td,th,b,i,time')]
+        .filter((el) => el.textContent.trim() && el.offsetParent !== null && !hidden(el))
+        .slice(0, 90);
+      const bgOf = (el) => {
+        let n = el;
+        while (n && n !== document.documentElement) {
+          const c = getComputedStyle(n).backgroundColor;
+          const m = c.match(/[\d.]+/g);
+          if (m && (m.length < 4 || Number(m[3]) > 0.55)) return [+m[0], +m[1], +m[2]];
+          n = n.parentElement;
+        }
+        return [7, 12, 23];
+      };
+      for (const el of pick) {
+        const cs = getComputedStyle(el);
+        const fg = (cs.color.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+        if (fg.length < 3) continue;
+        const fs = parseFloat(cs.fontSize), bold = +cs.fontWeight >= 700;
+        out.contrast.push({
+          fg, bg: bgOf(el), fs, big: fs >= 24 || (fs >= 18.66 && bold),
+          t: el.textContent.trim().slice(0, 22),
+          sel: el.tagName + (el.className ? '.' + String(el.className).split(' ')[0] : ''),
+        });
+      }
+      /* リンク */
+      out.links = [...document.querySelectorAll('a[href]')].map((a) => a.getAttribute('href'));
+      /* id の重複 */
+      const ids = {};
+      for (const el of document.querySelectorAll('[id]')) ids[el.id] = (ids[el.id] || 0) + 1;
+      out.dupIds = Object.entries(ids).filter(([, n]) => n > 1).map(([k]) => k);
+      return out;
+    });
+
+    if (r.overflow) add('高', `${path} [${size.n}]`,
+      `横にはみ出し ${r.overflow.doc} > ${r.overflow.view}（${r.overflow.by.join(', ')}）`);
+    for (const s of new Set(r.small)) add('中', `${path} [${size.n}]`, `押しにくい: ${s}`);
+    for (const a of r.noalt) add('中', `${path} [${size.n}]`, `alt が無い画像: ${a}`);
+    for (const d of r.dupIds) add('中', `${path} [${size.n}]`, `id の重複: ${d}`);
+    for (const c of r.contrast) {
+      const L1 = lum(c.fg), L2 = lum(c.bg);
+      const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+      const need = c.big ? 3 : 4.5;
+      if (ratio < need) add(ratio < need - 1 ? '高' : '低', `${path} [${size.n}]`,
+        `明暗差 ${ratio.toFixed(2)}（要 ${need}）${c.sel} ${c.fs}px「${c.t}」`);
+    }
+    /* 見出しの飛び */
+    let prev = 0;
+    for (const h of r.heads) {
+      const lvl = +h[1];
+      if (prev && lvl > prev + 1) add('低', `${path} [${size.n}]`, `見出しが飛んでいる h${prev} → h${lvl}`);
+      prev = lvl;
+    }
+    if (size.n === 'pc') {
+      /* リンク切れ */
+      for (const href of new Set(r.links)) {
+        if (!href || /^(https?:|mailto:|tel:|#)/.test(href)) continue;
+        const res = await page.request.get(`http://localhost:${PORT}${href}`).catch(() => null);
+        if (!res || res.status() >= 400) add('高', path, `リンク切れ: ${href}`);
+      }
+    }
+    await page.screenshot({ path: `${SHOT}/${size.n}${path.replace(/\//g, '_') || '_'}.png`, fullPage: size.n === 'pc' });
+    await page.close();
+  }
+  await ctx.close();
+}
+
+/* 動きを止めた設定 */
+{
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 860 }, locale: 'ja-JP',
+    reducedMotion: 'reduce' });
+  const page = await ctx.newPage();
+  const errs = [];
+  page.on('pageerror', (e) => errs.push('JS: ' + e.message));
+  await page.goto(`http://localhost:${PORT}/`);
+  await page.waitForTimeout(1600);
+  const vis = await page.evaluate(() => {
+    const hidden = [...document.querySelectorAll('.rv')].filter((el) =>
+      +getComputedStyle(el).opacity < 0.9).length;
+    return { hidden, logo: !!document.querySelector('.ks-logo') };
+  });
+  if (vis.hidden) add('高', '/ [動きを止めた設定]', `${vis.hidden} 個の要素が透明のままで読めない`);
+  if (!vis.logo) add('高', '/ [動きを止めた設定]', 'ロゴが出ていない');
+  for (const e of errs) add('高', '/ [動きを止めた設定]', e);
+  await page.screenshot({ path: `${SHOT}/calm.png` });
+  await ctx.close();
+}
+
+/* 鍵盤で辿れるか */
+{
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 860 }, locale: 'ja-JP' });
+  const page = await ctx.newPage();
+  await page.goto(`http://localhost:${PORT}/`);
+  await page.waitForTimeout(1200);
+  const seq = [];
+  for (let i = 0; i < 12; i++) {
+    await page.keyboard.press('Tab');
+    seq.push(await page.evaluate(() => {
+      const a = document.activeElement;
+      const o = getComputedStyle(a).outlineStyle;
+      return { tag: a.tagName, t: (a.textContent || '').trim().slice(0, 16), outline: o };
+    }));
+  }
+  const noRing = seq.filter((s) => s.outline === 'none').length;
+  if (noRing > 2) add('中', '/ [鍵盤]', `${noRing}/12 の行き先で、いまどこに居るかの枠が出ない`);
+  await ctx.close();
+}
+
+await browser.close();
+srv.close();
+
+/* ---- まとめ ---- */
+const order = { '高': 0, '中': 1, '低': 2 };
+issues.sort((a, b) => order[a.sev] - order[b.sev]);
+const byWhat = new Map();
+for (const i of issues) {
+  const k = i.sev + '|' + i.what.replace(/\[\w+\]/, '');
+  if (!byWhat.has(k)) byWhat.set(k, { ...i, where: [i.where] });
+  else byWhat.get(k).where.push(i.where);
+}
+console.log(`\n=== ${PATHS.length} ページ × ${SIZES.length} 幅 を見ました ===`);
+console.log(`読み込んだもの 合計 ${(totalBytes / 1024).toFixed(0)} KB\n`);
+if (!byWhat.size) console.log('見つかった問題: なし');
+for (const v of byWhat.values()) {
+  const w = v.where.length > 3 ? `${v.where.slice(0, 3).join(' / ')} ほか ${v.where.length - 3}` : v.where.join(' / ');
+  console.log(`[${v.sev}] ${v.what}\n      ${w}`);
+}
+console.log(`\n高 ${issues.filter(i=>i.sev==='高').length} / 中 ${issues.filter(i=>i.sev==='中').length} / 低 ${issues.filter(i=>i.sev==='低').length}`);
+console.log(`画面の写しは ${SHOT}`);
