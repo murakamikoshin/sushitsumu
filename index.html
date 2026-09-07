@@ -246,6 +246,21 @@ body.titling .hud { opacity: 0; pointer-events: none; }
 .hint { font-size: 11px; color: #9a8a72; margin-top: 22px; line-height: 2.05; letter-spacing: .04em; }
 .err  { color: var(--shu); font-size: 12.5px; line-height: 2; }
 
+/* ---- 遊び方の選択 ---- */
+.modeRow { display: flex; flex-direction: column; gap: 9px; margin-top: 22px; }
+.modeBtn {
+  font-family: var(--mincho); font-size: 15px; letter-spacing: .26em; text-indent: .26em;
+  color: #fff; background: var(--shu); border: 0; border-radius: 2px;
+  padding: 13px 10px; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,.22);
+  transition: opacity .14s ease;
+}
+.modeBtn.alt { background: #1f3b57; }
+.modeBtn:active { opacity: .72; }
+.modeBtn small {
+  display: block; margin-top: 5px; font-size: 9.5px; letter-spacing: .1em;
+  text-indent: .1em; opacity: .8;
+}
+
 /* ---- 番付（オンラインランキング） ---- */
 /* 共有データベースが使えない配布（単体の index.html など）では丸ごと隠す */
 body:not(.has-rank) .needs-rank { display: none !important; }
@@ -355,7 +370,10 @@ body:not(.has-rank) .needs-rank { display: none !important; }
         <h1>すし積む</h1>
         <div class="rule"></div>
         <div class="sub">江戸前合体遊戯</div>
-        <button class="btn" id="startBtn">暖簾を潜る</button>
+        <div class="modeRow">
+          <button class="modeBtn" id="startBtn">お 任 せ<small>心ゆくまで積む</small></button>
+          <button class="modeBtn alt" id="startOrderBtn">お 品 書 き<small>注文どおりに握って祝儀を稼ぐ</small></button>
+        </div>
         <button class="btn ghost small needs-rank" id="openRank">番 付 を 見 る</button>
         <p class="hint">
           指でなぞって位置を決め、離せば落ちる。<br>
@@ -398,6 +416,10 @@ body:not(.has-rank) .needs-rank { display: none !important; }
         <div class="rtabs">
           <button class="rtab is-on" id="tabDay">本 日</button>
           <button class="rtab" id="tabAll">総 合</button>
+        </div>
+        <div class="rtabs">
+          <button class="rtab is-on" id="tabNormal">お 任 せ</button>
+          <button class="rtab" id="tabOrder">お 品 書 き</button>
         </div>
         <ol class="rlist" id="rlist"></ol>
         <div class="rankNote" id="rankScope"></div>
@@ -766,6 +788,7 @@ function flushOps() {
       Body.setVelocity(nb, { x: 0, y: -1.6 });
 
       addScore(MERGE_SCORE[op.level]);
+      orderMade(op.level + 1);
       addFloat(mx, my - SUSHI[op.level + 1].hh - 6, '+' + fmt(MERGE_SCORE[op.level]),
                op.level + 1 >= 7 ? '#c8402f' : 'rgba(58,40,16,.95)');
       var col = SUSHI[op.level + 1].col;
@@ -2167,6 +2190,7 @@ function loop(now) {
     if (acc > STEP * 4) acc = 0;
     flushOps();
     sweepStrays();
+    orderTick(dt);
     checkGameOver(dt / 1000);
   }
   stepParticles();
@@ -2236,6 +2260,7 @@ function render() {
     ctx.restore();
   }
 
+  drawOrder();
   drawPreview();
 
   // パーティクル
@@ -2305,7 +2330,8 @@ function gameOver() {
   pointerDown = false;
   var r = rankOf(score);
   document.getElementById('rankName').textContent = r.name;
-  document.getElementById('rankNote').textContent = r.note;
+  document.getElementById('rankNote').textContent =
+    (gameMode === 'order' ? '［お品書き］ ' : '') + r.note;
   document.getElementById('finalScore').textContent = fmt(score);
   document.getElementById('finalHi').textContent = fmt(hiScore);
   document.getElementById('overModal').hidden = false;
@@ -2339,6 +2365,7 @@ function resetGame() {
   previewX = W / 2; previewY = DROP_Y;
   pointerDown = false; dropLock = false;
   lastPtr = { x: W / 2, y: DROP_Y + FINGER_OFFSET_Y };
+  order = null; orderWait = 0; orderMult = 1; orderStreak = 0; maxLevelMade = 2;
   current = null; next = null;
   state = 'ready';
   acc = 0;
@@ -2347,13 +2374,19 @@ function resetGame() {
 }
 
 document.body.classList.add('titling');
-document.getElementById('startBtn').addEventListener('click', function (e) {
-  e.preventDefault();
+function beginGame(mode) {
   unlockAudio();
+  gameMode = mode;
   document.body.classList.remove('titling');
   document.getElementById('titleModal').hidden = true;
   resize();
   resetGame();
+}
+document.getElementById('startBtn').addEventListener('click', function (e) {
+  e.preventDefault(); beginGame('normal');
+});
+document.getElementById('startOrderBtn').addEventListener('click', function (e) {
+  e.preventDefault(); beginGame('order');
 });
 document.getElementById('retryBtn').addEventListener('click', function (e) {
   e.preventDefault();
@@ -2363,7 +2396,172 @@ document.getElementById('retryBtn').addEventListener('click', function (e) {
 });
 
 /* ============================================================
-   17. オンライン番付
+   17. お品書き（注文モード）
+   大将が注文を出し、その通りのネタを合体で作れば祝儀が付く。
+   続けて捌くほど「のれん」倍率が上がり、落とすと一に戻る。
+   注文の木札は、暖簾と桶のあいだの壁に掛ける。
+   ============================================================ */
+var gameMode = 'normal';     // normal | order
+var order = null;            // {level, need, done, span, until}
+var orderMult = 1;
+var orderStreak = 0;
+var orderWait = 0;           // 次の注文までの間(ms)
+var maxLevelMade = 2;        // これまでに作れた最大レベル(0基点)
+
+var ORDER_CHEERS = ['へい、お待ち！', 'あいよ、上がり！', 'ありがとうございます！'];
+
+function orderReward(L) { return MERGE_SCORE[L - 1] * 6; }
+
+function newOrder() {
+  // 作れる見込みのある範囲から選ぶ。届かない注文は出さない
+  var top = Math.min(maxLevelMade + 1, SUSHI.length - 2);
+  var lo = Math.max(1, top - 2);
+  var L = lo + Math.floor(Math.random() * (top - lo + 1));
+  var need = L <= 3 ? 2 + Math.floor(Math.random() * 2)
+           : L <= 6 ? 1 + Math.floor(Math.random() * 2)
+           : 1;
+  var sec = 18 + L * 4 + (need - 1) * 10;
+  order = { level: L, need: need, done: 0, span: sec * 1000, until: performance.now() + sec * 1000 };
+}
+
+function orderTick(dtMs) {
+  if (gameMode !== 'order' || state === 'title' || state === 'over') return;
+  if (orderWait > 0) {
+    orderWait -= dtMs;
+    if (orderWait <= 0) newOrder();
+    return;
+  }
+  if (!order) { newOrder(); return; }
+  if (performance.now() > order.until) {
+    showPop('相すみません…', 1);
+    beep(190, 0.32, 'sawtooth');
+    orderStreak = 0;
+    orderMult = 1;
+    order = null;
+    orderWait = 900;
+  }
+}
+
+/* 合体で level が出来たときに呼ぶ */
+function orderMade(level) {
+  if (level > maxLevelMade) maxLevelMade = level;
+  if (gameMode !== 'order' || !order || level !== order.level) return;
+  order.done++;
+  if (order.done < order.need) { beep(980, 0.07, 'triangle'); return; }
+
+  var bonus = Math.round(orderReward(order.level) * order.need * orderMult);
+  addScore(bonus);
+  addFloat(W / 2, BARREL_TOP - 46, '+' + fmt(bonus), '#c8402f');
+  orderStreak++;
+  orderMult = Math.min(3, 1 + orderStreak * 0.5);
+  showPop(orderStreak >= 4 ? 'よっ、日本一！'
+        : ORDER_CHEERS[Math.min(orderStreak, ORDER_CHEERS.length) - 1], 1);
+  beep(1180, 0.18, 'square');
+  burst(W / 2, BARREL_TOP - 34, ['#c8402f', '#ffd76a', '#fffaf0'], 34, 5.5);
+  order = null;
+  orderWait = 1100;
+}
+
+/* 注文の木札（壁に掛ける） */
+function drawOrder() {
+  if (gameMode !== 'order') return;
+  var PW = 224, PH = 78;
+  var px = (W - PW) / 2, py = BARREL_TOP - 98;   // 待機中のネタと重ならない位置
+
+  // 掛け紐
+  ctx.strokeStyle = 'rgba(70,45,16,.5)';
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.moveTo(px + PW * 0.5 - 20, py - 12);
+  ctx.lineTo(px + PW * 0.5, py + 2);
+  ctx.lineTo(px + PW * 0.5 + 20, py - 12);
+  ctx.stroke();
+
+  // 木札
+  var wg = ctx.createLinearGradient(0, py, 0, py + PH);
+  wg.addColorStop(0, '#f3e0bd');
+  wg.addColorStop(0.5, '#e3caa0');
+  wg.addColorStop(1, '#c8a878');
+  ctx.fillStyle = wg;
+  rr(ctx, px, py, PW, PH, 6);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(96,66,26,.6)';
+  ctx.lineWidth = 1.4;
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,250,232,.55)';
+  ctx.lineWidth = 1;
+  rr(ctx, px + 3.5, py + 3.5, PW - 7, PH - 7, 4);
+  ctx.stroke();
+
+  ctx.textBaseline = 'middle';
+
+  if (!order) {
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(90,62,24,.75)';
+    ctx.font = '600 15px ' + F_MIN;
+    ctx.fillText('次 の ご 注 文 を お 待 ち …', px + PW / 2, py + PH / 2);
+    return;
+  }
+
+  // ネタ
+  var sp = sprites[order.level];
+  var k = Math.min(52 / sp.w, 46 / sp.h);
+  ctx.save();
+  ctx.translate(px + 36, py + 32);
+  ctx.scale(k, k);
+  paintSprite(ctx, sp);
+  ctx.restore();
+
+  // 一行目：見出しと、のれん倍率
+  ctx.textAlign = 'left';
+  ctx.fillStyle = 'rgba(120,86,38,.85)';
+  ctx.font = '600 9.5px ' + F_MIN;
+  ctx.fillText('ご 注 文', px + 70, py + 15);
+  if (orderMult > 1) {
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#c8402f';
+    ctx.font = '700 12px ' + F_GO;
+    ctx.fillText('のれん x' + orderMult.toFixed(1), px + PW - 12, py + 15);
+  }
+
+  // 二行目：品名。長い名前は札からはみ出すので自動で縮める
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#4a3212';
+  var nm = SUSHI[order.level].n;
+  var avail = PW - 70 - 14, fs = 17;
+  ctx.font = '600 ' + fs + 'px ' + F_MIN;
+  while (fs > 11 && ctx.measureText(nm).width > avail) {
+    fs -= 1;
+    ctx.font = '600 ' + fs + 'px ' + F_MIN;
+  }
+  ctx.fillText(nm, px + 70, py + 36);
+
+  // 三行目：貫数を丸で数える
+  for (var i = 0; i < order.need; i++) {
+    var cx = px + 75 + i * 15, cy = py + 55;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5, 0, 6.2832);
+    ctx.fillStyle = i < order.done ? '#c8402f' : 'rgba(120,86,38,.22)';
+    ctx.fill();
+  }
+  ctx.fillStyle = 'rgba(120,86,38,.85)';
+  ctx.font = '600 10px ' + F_MIN;
+  ctx.fillText(order.need + '貫', px + 75 + order.need * 15 + 3, py + 56);
+
+  // 残り時間
+  var left = Math.max(0, order.until - performance.now());
+  var ratio = Math.max(0, Math.min(1, left / order.span));
+  var bx = px + 70, bw = PW - 82;
+  ctx.fillStyle = 'rgba(120,86,38,.2)';
+  rr(ctx, bx, py + PH - 16, bw, 5, 2.5);
+  ctx.fill();
+  ctx.fillStyle = ratio < 0.25 ? '#c8402f' : '#8a6a2c';
+  rr(ctx, bx, py + PH - 16, Math.max(2, bw * ratio), 5, 2.5);
+  ctx.fill();
+}
+
+/* ============================================================
+   18. オンライン番付
    共有データベースはアーティファクトとして公開した時だけ使える。
    単体の index.html には window.claude が無いので、その場合は
    番付の UI ごと隠して、これまで通り端末内のハイスコアだけで動かす。
@@ -2372,6 +2570,7 @@ var RANK_SHOW = 20;      // 一覧に出す人数
 var RANK_SCAN = 100;     // 自分の順位を数えるために見る範囲
 var rankDb = null;
 var rankMode = 'day';
+var rankKind = 'normal';     // どちらの遊び方の番付か
 var rankBusy = false;
 
 /* 日付は日本時間で切る。閲覧者の時計に任せると日替わりがばらつく */
@@ -2410,6 +2609,8 @@ var rlistEl   = document.getElementById('rlist');
 var rankScope = document.getElementById('rankScope');
 var tabDay    = document.getElementById('tabDay');
 var tabAll    = document.getElementById('tabAll');
+var tabNormal = document.getElementById('tabNormal');
+var tabOrder  = document.getElementById('tabOrder');
 
 function initRanking() {
   if (!window.claude || typeof window.claude.use !== 'function') return;
@@ -2421,29 +2622,43 @@ function initRanking() {
   })['catch'](function () {});
 }
 
+function rankFields(kind) {
+  return kind === 'order'
+    ? { all: 'bestO', day: 'dayBestO' }
+    : { all: 'best',  day: 'dayBest'  };
+}
 function topQuery(n) {
+  var f = rankFields(rankKind);
   var col = rankDb.collection('scores');
   return rankMode === 'day'
-    ? col.where('day', '==', jstDay()).orderBy('dayBest', 'desc').limit(n)
-    : col.orderBy('best', 'desc').limit(n);
+    ? col.where('day', '==', jstDay()).orderBy(f.day, 'desc').limit(n)
+    : col.orderBy(f.all, 'desc').limit(n);
 }
 function scoreOf(row) {
-  return Number(rankMode === 'day' ? row.dayBest : row.best) || 0;
+  var f = rankFields(rankKind);
+  return Number(rankMode === 'day' ? row[f.day] : row[f.all]) || 0;
 }
 
 /* 一人一文書。文書数が青天井にならないよう、自己ベストだけを持たせる */
-function submitScore(name, sc) {
+function submitScore(name, sc, kind) {
   if (!rankDb) return Promise.reject({ code: 'unavailable' });
   var today = jstDay();
+  var f = rankFields(kind);
   var ref = rankDb.doc('scores/' + playerId());
   return ref.get().then(function (snap) {
     var cur = (snap && snap.exists && snap.data()) || {};
-    var best = Math.max(Number(cur.best) || 0, sc);
-    var dayBest = (cur.day === today) ? Math.max(Number(cur.dayBest) || 0, sc) : sc;
-    return ref.set({
-      name: name, best: best, day: today, dayBest: dayBest,
-      updatedAt: new Date().toISOString()
-    });
+    var sameDay = (cur.day === today);
+    // set は全置換なので、触らない側の記録も持ち回す
+    var body = {
+      name: name, day: today, updatedAt: new Date().toISOString(),
+      best:     Number(cur.best)  || 0,
+      bestO:    Number(cur.bestO) || 0,
+      dayBest:  sameDay ? (Number(cur.dayBest)  || 0) : 0,
+      dayBestO: sameDay ? (Number(cur.dayBestO) || 0) : 0
+    };
+    body[f.all] = Math.max(body[f.all], sc);
+    body[f.day] = Math.max(body[f.day], sc);
+    return ref.set(body);
   });
 }
 
@@ -2460,6 +2675,7 @@ function myRank() {
 
 function afterSubmit() {
   var keep = rankMode;
+  rankKind = gameMode;
   rankMode = 'day';
   return myRank().then(function (d) {
     rankMode = 'all';
@@ -2488,7 +2704,7 @@ function doSubmit() {
   lsSet('sushitsumu.name', name);
   rankBusy = true;
   sendNote.textContent = '送っています…';
-  submitScore(name, score).then(afterSubmit)['catch'](function (e) {
+  submitScore(name, score, gameMode).then(afterSubmit)['catch'](function (e) {
     sendNote.textContent = (e && e.code === 'quota_exceeded')
       ? '番付が満杯で登録できませんでした。'
       : '番付に繋がりませんでした。通信を確かめて、もう一度お試しください。';
@@ -2535,23 +2751,28 @@ function loadRank() {
   if (!rankDb) return;
   tabDay.classList.toggle('is-on', rankMode === 'day');
   tabAll.classList.toggle('is-on', rankMode === 'all');
-  rankScope.textContent = rankMode === 'day'
-    ? '本日（日本時間 ' + jstDay() + '）の上位'
-    : 'これまでの上位';
+  tabNormal.classList.toggle('is-on', rankKind === 'normal');
+  tabOrder.classList.toggle('is-on', rankKind === 'order');
+  rankScope.textContent =
+    (rankKind === 'order' ? 'お品書き' : 'お任せ') + '・' +
+    (rankMode === 'day' ? '本日（日本時間 ' + jstDay() + '）' : 'これまで') + 'の上位';
   rankMessage('読み込んでいます…');
   topQuery(RANK_SHOW).get().then(renderRank)['catch'](function () {
     rankMessage('番付を読み込めませんでした。');
   });
 }
 
-function openRankModal(mode) {
+function openRankModal(mode, kind) {
   rankMode = mode || 'day';
+  rankKind = kind || gameMode;
   rankModal.hidden = false;
   loadRank();
 }
 
 tabDay.addEventListener('click', function () { rankMode = 'day'; loadRank(); });
 tabAll.addEventListener('click', function () { rankMode = 'all'; loadRank(); });
+tabNormal.addEventListener('click', function () { rankKind = 'normal'; loadRank(); });
+tabOrder.addEventListener('click', function () { rankKind = 'order'; loadRank(); });
 document.getElementById('closeRank').addEventListener('click', function () {
   rankModal.hidden = true;
 });
@@ -2563,7 +2784,7 @@ document.getElementById('openRank').addEventListener('click', function () { open
 document.getElementById('openRank2').addEventListener('click', function () { openRankModal('day'); });
 
 /* ============================================================
-   18. 起動
+   19. 起動
    ============================================================ */
 initRanking();
 buildSprites();
