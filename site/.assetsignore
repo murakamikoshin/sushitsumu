@@ -15,5 +15,6 @@ data
 # 撮ったままの絵（配る形は assets/shots に出してある）
 assets/shots/raw
 
-# 元の PNG（重い。webp と jpg を配っている）
-assets/*.png
+# 元の PNG（重い。webp と jpg を配っている）。
+# 直下だけ。assets/icon/ の PNG は配る
+/assets/*.png

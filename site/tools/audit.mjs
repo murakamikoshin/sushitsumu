@@ -27,7 +27,8 @@ const PORT = 8791;
 const TYPES = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8',
   '.js':'text/javascript; charset=utf-8', '.png':'image/png', '.webp':'image/webp',
   '.jpg':'image/jpeg', '.svg':'image/svg+xml', '.woff2':'font/woff2', '.xml':'application/xml',
-  '.txt':'text/plain; charset=utf-8', '.json':'application/json' };
+  '.txt':'text/plain; charset=utf-8', '.json':'application/json',
+  '.webmanifest':'application/manifest+json', '.ico':'image/x-icon' };
 
 const srv = createServer((q, r) => {
   let p = ROOT + decodeURIComponent(q.url.split('?')[0]);
