@@ -125,6 +125,7 @@ const lum = ([r, g, b]) => {
 
 const browser = await chromium.launch({ executablePath: CHROME });
 let totalBytes = 0;
+const worst = { lcp: 0, cls: 0 };
 const seenRes = new Set();
 
 for (const size of SIZES) {
@@ -145,8 +146,33 @@ for (const size of SIZES) {
         r.body().then((b) => { totalBytes += b.length; }).catch(() => {});
       }
     });
+    /* 読み込みの間に、いちばん大きい絵がいつ出たか（LCP）と、
+       出たあとに文章がどれだけ飛んだか（CLS）を数える。
+       絵の寸法を書き忘れると、ここに出る */
+    await page.addInitScript(() => {
+      window.__lcp = 0; window.__cls = 0;
+      try {
+        new PerformanceObserver((l) => {
+          for (const e of l.getEntries()) window.__lcp = e.startTime;
+        }).observe({ type: 'largest-contentful-paint', buffered: true });
+        new PerformanceObserver((l) => {
+          for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
+        }).observe({ type: 'layout-shift', buffered: true });
+      } catch (e) { /* 対応していない所では見送る */ }
+    });
     await page.goto(`http://localhost:${PORT}${path}`, { waitUntil: 'load' });
     await page.waitForTimeout(size.n === 'pc' ? 2200 : 1400);
+    const vitals = await page.evaluate(() => ({ lcp: window.__lcp || 0, cls: window.__cls || 0 }));
+    if (vitals.cls > 0.1) {
+      add('中', `${path} [${size.n}]`,
+        `読み込み中に文章が飛ぶ（CLS ${vitals.cls.toFixed(3)}）。絵か枠の寸法が抜けている`);
+    }
+    if (vitals.lcp > 2500) {
+      add('中', `${path} [${size.n}]`,
+        `いちばん大きいものが出るまで ${(vitals.lcp / 1000).toFixed(1)} 秒（手元で 2.5 秒超）`);
+    }
+    worst.lcp = Math.max(worst.lcp, vitals.lcp);
+    worst.cls = Math.max(worst.cls, vitals.cls);
     /* 下まで送って、現れ方の仕掛けを全部起こす。
        滑らかスクロール（Lenis）は window.scrollTo を押し戻すので、
        本物の車輪の動きで送る。 */
@@ -387,7 +413,8 @@ for (const i of issues) {
   else byWhat.get(k).where.push(i.where);
 }
 console.log(`\n=== ${PATHS.length} ページ × ${SIZES.length} 幅 を見ました ===`);
-console.log(`読み込んだもの 合計 ${(totalBytes / 1024).toFixed(0)} KB\n`);
+console.log(`読み込んだもの 合計 ${(totalBytes / 1024).toFixed(0)} KB`);
+console.log(`いちばん遅かった LCP ${(worst.lcp / 1000).toFixed(2)} 秒 / いちばん飛んだ CLS ${worst.cls.toFixed(3)}\n`);
 if (!byWhat.size) console.log('見つかった問題: なし');
 for (const v of byWhat.values()) {
   const w = v.where.length > 3 ? `${v.where.slice(0, 3).join(' / ')} ほか ${v.where.length - 3}` : v.where.join(' / ');
