@@ -45,7 +45,12 @@ function pages(dir = ROOT, out = []) {
       if (['vendor', 'assets', 'data', 'tools', 'node_modules', '.git'].includes(e.name)) continue;
       if (full.endsWith('/works/sushitsumu/play')) continue;
       pages(full, out);
-    } else if (e.name === 'index.html') out.push(full.slice(ROOT.length).replace(/index\.html$/, ''));
+    } else if (e.name === 'index.html') {
+      out.push(full.slice(ROOT.length).replace(/index\.html$/, ''));
+    } else if (e.name.endsWith('.html') && e.name !== '404.html') {
+      /* 遊び方のように、index.html ではない頁も見る */
+      out.push(full.slice(ROOT.length));
+    }
   }
   return out;
 }
@@ -71,7 +76,8 @@ const lum = ([r, g, b]) => {
    きちんと入れ替わらないと、組むたびに増えていく（パンくずが 14 個に
    なっていた）。二度組んで、一文字でも変わったら報せる。 */
 {
-  const files = pages().map((p) => ROOT + (p === '/' ? '/index.html' : p + 'index.html'));
+  const files = pages().map((p) => ROOT + (p === '/' ? '/index.html'
+    : (p.endsWith('/') ? p + 'index.html' : p)));
   const snap = () => files.map((f) =>
     existsSync(f) ? createHash('sha1').update(readFileSync(f)).digest('hex') : '');
   const before = snap();
@@ -128,7 +134,8 @@ for (const size of SIZES) {
     for (const e of errs) add('高', `${path} [${size.n}]`, e);
 
     const r = await page.evaluate(() => {
-      const out = { overflow: null, small: [], noalt: [], heads: [], contrast: [], links: [], dupIds: [] };
+      const out = { overflow: null, small: [], noalt: [], nosize: [], badsize: [],
+                    heads: [], contrast: [], links: [], dupIds: [] };
       /* 横にはみ出し */
       const de = document.documentElement;
       if (de.scrollWidth > de.clientWidth + 1) {
@@ -176,9 +183,19 @@ for (const size of SIZES) {
         }
       }
 
-      /* 画像の代替文字 */
+      /* 画像の代替文字と、書いてある寸法が本物と合っているか。
+         合っていないと、読み込む前に空ける場所を間違えて、
+         絵が出た瞬間に文章が飛ぶ */
       for (const im of document.querySelectorAll('img')) {
         if (!im.hasAttribute('alt')) out.noalt.push(im.getAttribute('src') || '(src なし)');
+        const w = parseInt(im.getAttribute('width') || '0', 10);
+        const h = parseInt(im.getAttribute('height') || '0', 10);
+        if (!w || !h) { out.nosize.push(im.getAttribute('src') || '(src なし)'); continue; }
+        const nw = im.naturalWidth, nh = im.naturalHeight;
+        if (!nw || !nh) continue;                    /* まだ読めていない */
+        if (Math.abs(w / h - nw / nh) > 0.02) {
+          out.badsize.push(`${im.getAttribute('src')} 書いてある ${w}x${h} / 本物 ${nw}x${nh}`);
+        }
       }
       /* 見出しの並び */
       out.heads = [...document.querySelectorAll('h1,h2,h3,h4')].map((h) => h.tagName);
@@ -235,6 +252,8 @@ for (const size of SIZES) {
     for (const s of new Set(r.small)) add('中', `${path} [${size.n}]`, `押しにくい: ${s}`);
     for (const s of new Set(r.puffy)) add('高', `${path} [${size.n}]`, `不自然に膨らんだ部品: ${s}`);
     for (const a of r.noalt) add('中', `${path} [${size.n}]`, `alt が無い画像: ${a}`);
+    for (const a of r.nosize) add('低', `${path} [${size.n}]`, `寸法が書いていない画像: ${a}`);
+    for (const a of r.badsize) add('中', `${path} [${size.n}]`, `寸法が合っていない画像: ${a}`);
     for (const d of r.dupIds) add('中', `${path} [${size.n}]`, `id の重複: ${d}`);
     for (const d of r.dupes) add('高', `${path} [${size.n}]`, `二重に出ている: ${d}`);
     for (const c of r.contrast) {

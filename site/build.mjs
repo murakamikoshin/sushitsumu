@@ -141,7 +141,7 @@ const chips = ['<button class="chip on" data-f="all">All<i>すべて</i></button
     `<button class="chip" data-f="${k}">${kinds[k].label}<i>${kinds[k].ja}</i></button>`)).join('');
 
 writeFileSync(here + '/works/index.html',
-  head('Works — ブラウザゲーム・アプリ・Web サイトの制作一覧 — Koshin Studio', '作ったものの一覧。ブラウザゲーム、スマートフォンのアプリ、Web サイト。') +
+  head('Works — ブラウザゲーム・アプリ・Web サイトの制作一覧 — Koshin Studio', 'これまでに作ったものの一覧。ブラウザゲーム、スマートフォンのアプリ、Web サイト、3D モデル。分野で絞り込めます。') +
 `<main><div class="wrap">
   <h1>Works</h1>
   <div class="rule"></div>

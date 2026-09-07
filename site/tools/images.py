@@ -35,7 +35,7 @@ for src, name, widths in JOBS:
 
 # 画面の周りは暗く落としてあるので、明るい所だけに切り詰める。
 # 縦（'y'）なら上下の余白を、横（'x'）なら左右の余白を落とす。
-TRIM = {'title': 'y', 'desktop': 'x'}
+TRIM = {'title': 'xy', 'dex': 'y', 'desktop': 'x'}
 BRIGHT = 78          # これより明るい点が一つでもあれば「中身がある」とみなす
 PAD = 0.02           # 切り口に少しだけ余白を残す
 
@@ -77,8 +77,8 @@ if os.path.isdir(raw):
         if not os.path.exists(src):
             continue
         im = Image.open(src).convert('RGB')
-        if name in TRIM:
-            im = trim(im, TRIM[name])
+        for axis in TRIM.get(name, ''):
+            im = trim(im, axis)
         h = round(im.height * w / im.width)
         r = im.resize((w, h), Image.LANCZOS)
         r.save(os.path.join(shots, name + '.webp'), 'WEBP', quality=80, method=6)
