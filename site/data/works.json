@@ -8,6 +8,11 @@
     "url": "/works/sushitsumu/",
     "cover": "/assets/sushitsumu-square.png",
     "blurb": "シャリから始めて、同じネタ同士をぶつけて育てる落ち物パズル。行き着く先は金のすし桶。ブラウザだけで遊べます。",
-    "tags": ["ブラウザ", "14 言語", "オンライン番付"]
+    "tags": [
+      "ブラウザ",
+      "14 言語",
+      "オンライン番付"
+    ],
+    "featured": true
   }
 ]

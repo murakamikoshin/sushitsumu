@@ -3,16 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Koshin Studio</title>
-<meta name="description" content="ひとりで作ったものを置いています。ブラウザで開いたらすぐ遊べるものを中心に。">
+<title>Koshin Studio — ゲーム、アプリ、サイト、3D</title>
+<meta name="description" content="ゲーム、アプリ、Web サイト、3D モデル。ひとりで、ぜんぶ作っています。ブラウザで開いたらすぐ動くものを中心に。">
 <meta name="theme-color" content="#080d16">
 <meta property="og:title" content="Koshin Studio">
-<meta property="og:description" content="ひとりで作ったものを置いています。">
+<meta property="og:description" content="ゲーム、アプリ、サイト、3D。ひとりで、ぜんぶ。">
 <meta property="og:type" content="website">
+<meta property="og:image" content="/assets/sushitsumu-wide.jpg">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preload" as="image" href="/assets/sushitsumu-square.webp" type="image/webp">
 <link rel="stylesheet" href="/style.css">
+<link rel="canonical" href="https://koshin-studio.pages.dev/">
+<meta property="og:url" content="https://koshin-studio.pages.dev/">
+<meta property="og:site_name" content="Koshin Studio">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://koshin-studio.pages.dev#studio","name":"Koshin Studio","url":"https://koshin-studio.pages.dev","description":"ゲーム、アプリ、Web サイト、3D モデルを個人で制作しています。","founder":{"@type":"Person","name":"Koshin Murakami"}},{"@type":"WebSite","url":"https://koshin-studio.pages.dev","name":"Koshin Studio","publisher":{"@id":"https://koshin-studio.pages.dev#studio"},"inLanguage":"ja"},{"@type":"ItemList","name":"作ったもの","itemListElement":[{"@type":"ListItem","position":1,"url":"https://koshin-studio.pages.dev/works/sushitsumu/","name":"すし積む"}]}]}</script>
 </head>
-<body>
+<body class="home">
 <canvas id="motes"></canvas>
 
 <header class="site"><div class="wrap">
@@ -21,49 +29,140 @@
 </div></header>
 
 <main>
-  <section class="hero"><div class="wrap">
-    <p class="kicker">KOSHIN STUDIO</p>
-    <h1 class="mark">積み上げる。</h1>
-    <p class="say">ひとりで作ったものを置いています。<br>
-      導入も、登録も要らない。URL を開いたら、もう始まっている。<br>
-      そういうものだけを作っています。</p>
-    <p class="scrollcue"><i></i>SCROLL</p>
+
+  <!-- ================= ファーストビュー ================= -->
+  <section class="hero" id="hero">
+    <div class="stage">
+      <div class="orbit" id="orbit"><!--orbit:start-->
+      <a class="orb has-img" href="/works/sushitsumu/" style="--i:0">
+        <picture><source srcset="/assets/sushitsumu-square.webp" type="image/webp"><img src="/assets/sushitsumu-square.jpg" alt="すし積む" width="360" height="360" loading="eager" decoding="async"></picture>
+        <span class="orb-cap">すし積む</span>
+      </a>
+      <a class="orb" href="/works/#game" style="--i:1">
+        <span class="orb-mark">Games</span>
+        <span class="orb-cap">ゲーム</span>
+      </a>
+      <a class="orb" href="/works/#app" style="--i:2">
+        <span class="orb-mark">Apps</span>
+        <span class="orb-cap">アプリ</span>
+      </a>
+      <a class="orb" href="/works/#site" style="--i:3">
+        <span class="orb-mark">Sites</span>
+        <span class="orb-cap">サイト</span>
+      </a>
+      <a class="orb" href="/works/#cg" style="--i:4">
+        <span class="orb-mark">3D</span>
+        <span class="orb-cap">3Dモデル</span>
+      </a>
+    <!--orbit:end--></div>
+
+      <div class="lockup">
+        <h1 class="logo-xl" aria-label="Koshin Studio">
+          <span class="l1" aria-hidden="true">KOSHIN</span>
+          <span class="l2" aria-hidden="true">STUDIO</span>
+        </h1>
+        <div class="hairline"></div>
+        <p class="tagline">ゲーム、アプリ、サイト、3D。<b>ひとりで、ぜんぶ。</b></p>
+      </div>
+    </div>
+
+    <div class="hero-act">
+      <a class="btn" href="/works/">作ったものを見る</a>
+      <a class="btn ghost" href="/works/sushitsumu/play/">いま すぐ 遊ぶ</a>
+    </div>
+    <div class="cue" aria-hidden="true"><i></i>SCROLL</div>
+  </section>
+
+  <!-- ================= 何を作るか ================= -->
+  <section class="band" id="what"><div class="wrap">
+    <h2 class="sec">作っているもの<span>4 つの分野</span></h2>
+    <div class="kinds big"><!--kinds:start-->
+      <a class="kind rv" data-delay="0" href="/works/#game">
+        <span class="kind-n">01</span>
+        <h3>Games<i>ゲーム</i></h3>
+        <p>あそぶもの</p>
+        <span class="kind-count">1 点</span>
+      </a>
+      <a class="kind rv" data-delay="70" href="/works/#app">
+        <span class="kind-n">02</span>
+        <h3>Apps<i>アプリ</i></h3>
+        <p>つかうもの</p>
+        <span class="kind-count">準備中</span>
+      </a>
+      <a class="kind rv" data-delay="140" href="/works/#site">
+        <span class="kind-n">03</span>
+        <h3>Sites<i>サイト</i></h3>
+        <p>読ませるもの</p>
+        <span class="kind-count">準備中</span>
+      </a>
+      <a class="kind rv" data-delay="210" href="/works/#cg">
+        <span class="kind-n">04</span>
+        <h3>3D<i>3Dモデル</i></h3>
+        <p>かたちを起こす</p>
+        <span class="kind-count">準備中</span>
+      </a>
+    <!--kinds:end--></div>
   </div></section>
 
-  <section id="works"><div class="wrap">
-    <h2 class="rv">作ったもの</h2>
-    <ul class="works">
-      <!--works:start-->
-      <li class="rv" data-kind="game" data-delay="0"><a class="work" href="/works/sushitsumu/">
-        <img src="/assets/sushitsumu-square.png" alt="すし積むの表紙" width="800" height="800" loading="lazy">
-        <div>
-          <h3>すし積む</h3>
-          <p>シャリから始めて、同じネタ同士をぶつけて育てる落ち物パズル。行き着く先は金のすし桶。ブラウザだけで遊べます。</p>
-          <div class="tags"><span class="tag kind">ゲーム</span><span class="tag">ブラウザ</span><span class="tag">14 言語</span><span class="tag">オンライン番付</span><span class="tag">2026</span></div>
-        </div>
-      </a></li>
-    <!--works:end-->
-    </ul>
-    <p class="rv" data-delay="140" style="margin-top:26px"><a class="btn ghost" href="/works/">Works をすべて見る</a></p>
+  <!-- ================= 代表作 ================= -->
+  <section class="band feat" id="featured"><!--featured:start-->
+    <div class="feat-media rv">
+      <picture>
+        <source srcset="/assets/sushitsumu-wide.webp 960w, /assets/sushitsumu-wide@2x.webp 1600w"
+                sizes="(max-width: 900px) 100vw, 900px" type="image/webp">
+        <img src="/assets/sushitsumu-wide.jpg" alt="すし積む" width="960" height="540" loading="lazy" decoding="async">
+      </picture>
+    </div>
+    <div class="wrap feat-body">
+      <p class="eyebrow rv">代表作 / ゲーム</p>
+      <h2 class="rv" data-delay="60">すし積む</h2>
+      <p class="rv" data-delay="100" style="max-width:32em;color:var(--muted)">シャリから始めて、同じネタ同士をぶつけて育てる落ち物パズル。行き着く先は金のすし桶。ブラウザだけで遊べます。</p>
+      <div class="stats rv" data-delay="140">
+        <div><b data-count="11">0</b><span>段のネタ</span></div>
+        <div><b data-count="14">0</b><span>言語</span></div>
+        <div><b data-count="262">0</b><span>戦を自動で検証</span></div>
+      </div>
+      <p class="rv" data-delay="180" style="margin-top:30px">
+        <a class="btn" href="/works/sushitsumu/play/">遊 ぶ</a>
+        <a class="btn ghost" href="/works/sushitsumu/" style="margin-left:10px">くわしく</a>
+      </p>
+    </div>
+    <!--featured:end--></section>
+
+  <!-- ================= 記録 ================= -->
+  <section class="band" id="notes-teaser"><div class="wrap">
+    <h2 class="sec">制作の記録<span>Notes</span></h2>
+    <ul class="notes"><!--notes:start-->
+    <li class="rv" data-delay="0"><a class="note-row" href="/notes/anago/">
+      <time datetime="2026-09-07">2026.09.07</time>
+      <div><h3>穴子がデカすぎた話</h3><p>落ち物パズルの最後の一手に、どうしても届かない。勘で直す前に、自動プレイで三百戦以上の統計を取って原因を突き止めた記録。</p>
+      <div class="tags"><span class="tag">すし積む</span></div></div>
+    </a></li>
+    <!--notes:end--></ul>
+    <p class="rv" style="margin-top:26px"><a class="btn ghost" href="/notes/">Notes をすべて読む</a></p>
   </div></section>
 
-  <section><div class="wrap">
-    <h2 class="rv">作り方について</h2>
-    <p class="rv">ここに置いてあるものは、だいたい一人で、手元で動かしながら作っています。重たい導入を挟まず、開いた瞬間に始まること。それだけは崩さないようにしています。</p>
-    <p class="rv" data-delay="60">遊びの釣り合いは、勘で決めません。<strong>自動で何百回も遊ばせて、数字を取ってから</strong>直します。どこで詰まっているのかは、たいてい思っていた場所とは違うところにあります。</p>
-    <blockquote class="rv" data-delay="120">感覚は当たっていた。<br>でも、原因は思っていたところになかった。</blockquote>
-    <p class="rv" data-delay="160">「すし積む」では、最後の一手にどうしても届かない理由を三百戦以上の統計で突き止め、寸法を組み直しました。その一部始終は
-      <a href="/notes/anago/">穴子がデカすぎた話</a>に書いています。</p>
-    <p class="rv" data-delay="200" style="margin-top:34px">
-      <a class="btn ghost" href="/notes/">Notes を読む</a>
+  <!-- ================= 締め ================= -->
+  <section class="band closing"><div class="wrap">
+    <h2 class="closing-line rv">つくる。<br>ためす。<br><b>数える。</b></h2>
+    <p class="rv" style="max-width:30em;color:var(--muted)">勘で決めずに、動かして数字を取ってから直します。だから、直したところは必ず良くなっています。</p>
+    <p class="rv" style="margin-top:34px">
+      <a class="btn" href="/works/">Works</a>
+      <a class="btn ghost" href="/profile/" style="margin-left:10px">Profile</a>
     </p>
   </div></section>
+
 </main>
 
 <footer class="site"><div class="wrap">
   <span>© 2026 Koshin Studio</span>
+  <div class="sns-row"><a class="sns" href="https://github.com/murakamikoshin" rel="me noopener" target="_blank">GitHub<i>@murakamikoshin</i></a></div>
   <nav><a href="/profile/">Profile</a><a href="/privacy/">あつかい</a></nav>
 </div></footer>
+
+<script src="/vendor/gsap.min.js" defer></script>
+<script src="/vendor/ScrollTrigger.min.js" defer></script>
+<script src="/vendor/lenis.min.js" defer></script>
 <script src="/motion.js" defer></script>
 </body>
 </html>

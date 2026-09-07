@@ -1,0 +1,13 @@
+{
+  "name": "Koshin Studio",
+  "tagline": "ゲーム、アプリ、サイト、3D。ひとりで、ぜんぶ。",
+  "social": [
+    { "label": "GitHub", "url": "https://github.com/murakamikoshin", "handle": "@murakamikoshin" }
+  ],
+  "ads": {
+    "enabled": false,
+    "client": "",
+    "slots": { "article": "", "footer": "" },
+    "note": "AdSense に通ったら enabled を true にして client と slots を埋める。枠の場所は build.mjs が入れる。"
+  }
+}

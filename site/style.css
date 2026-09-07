@@ -1,4 +1,21 @@
 /* ============================================================
+   書体
+   Noto Serif JP（SIL Open Font License 1.1）から、このサイトに出てくる
+   字だけを取り出して積んである（site/tools/fonts.py）。全部入りは 1.4MB
+   だが、これで 1 ウェイト 150KB ほど。文章を足したら作り直すこと。
+   ============================================================ */
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;
+  src:url("/vendor/fonts/koshin-la-400.woff2") format("woff2");
+  unicode-range:U+0000-00FF,U+2000-206F}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;
+  src:url("/vendor/fonts/koshin-jp-400.woff2") format("woff2")}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;
+  src:url("/vendor/fonts/koshin-la-600.woff2") format("woff2");
+  unicode-range:U+0000-00FF,U+2000-206F}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;
+  src:url("/vendor/fonts/koshin-jp-600.woff2") format("woff2")}
+
+/* ============================================================
    Koshin Studio
    藍の闇に、和紙の白。動きは静かに、粒は米のように。
    書体は漢字を持つものまで並べる（端末に無いだけで字が出ない事故を防ぐ）
@@ -8,7 +25,7 @@
   --line:rgba(232,222,200,.13);
   --text:#ece6d8; --muted:#9d9483; --dim:#6f6a60;
   --shu:#d8543f; --gold:#e8b62c; --ai:#7fa8d8;
-  --mincho:"Hiragino Mincho ProN","Hiragino Mincho Pro","Yu Mincho","YuMincho",
+  --mincho:"Koshin Mincho","Hiragino Mincho ProN","Hiragino Mincho Pro","Yu Mincho","YuMincho",
     "Noto Serif JP","Noto Serif CJK JP","Source Han Serif JP","MS PMincho",
     "Songti SC","SimSun",serif,"Hiragino Sans","Yu Gothic","Noto Sans JP","Meiryo",sans-serif;
   --gothic:"Helvetica Neue",Helvetica,Arial,"Hiragino Sans","Hiragino Kaku Gothic ProN",
@@ -207,3 +224,119 @@ footer.site a:hover{color:var(--gold)}
 .kind h3 i{font-style:normal;font-size:11.5px;letter-spacing:.14em;color:var(--gold)}
 .kind p{font-size:13.5px;color:var(--muted);margin:0;line-height:1.9}
 @media(max-width:660px){.kinds{grid-template-columns:1fr}}
+
+/* ============================================================
+   ファーストビュー
+   大きなロゴを真ん中に据え、作ったものがその周りを回る。
+   位置は motion.js が毎フレーム計算する（奥のものは小さく淡く）。
+   ============================================================ */
+.home main{padding-bottom:0}
+.hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:76px 20px 40px;position:relative;text-align:center}
+.stage{position:relative;width:100%;max-width:1000px;
+  height:clamp(470px,68vh,700px);display:grid;place-items:center}
+
+.orbit{position:absolute;inset:0;pointer-events:none}
+.orb{position:absolute;left:50%;top:50%;width:120px;
+  margin:-60px 0 0 -60px;pointer-events:auto;text-decoration:none;color:inherit;
+  border-radius:8px;overflow:hidden;will-change:transform,opacity;
+  background:linear-gradient(150deg,rgba(255,255,255,.09),rgba(255,255,255,.025));
+  border:1px solid var(--line);box-shadow:0 18px 44px -20px #000;
+  transition:border-color .4s var(--ease),box-shadow .4s var(--ease)}
+.orb:hover{border-color:var(--gold);box-shadow:0 22px 54px -18px rgba(232,182,44,.55)}
+.orb picture,.orb img{display:block;width:100%;height:120px;object-fit:cover}
+.orb-mark{display:grid;place-items:center;height:120px;
+  font-family:Georgia,"Times New Roman",serif;font-size:26px;letter-spacing:.1em;
+  color:var(--text);opacity:.94}
+.orb-cap{display:block;padding:8px 6px;font-size:10.5px;letter-spacing:.14em;
+  color:var(--muted);border-top:1px solid var(--line);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:640px){
+  .orb{width:88px;margin:-44px 0 0 -44px}
+  .orb picture,.orb img,.orb-mark{height:88px}
+  .orb-mark{font-size:19px}
+  .orb-cap{font-size:9px;padding:6px 4px}
+}
+
+.lockup{position:relative;z-index:50;pointer-events:none}
+.logo-xl{margin:0;display:grid;gap:0;font-family:Georgia,"Times New Roman",serif;
+  font-weight:400;line-height:.92}
+.logo-xl span{display:block;font-size:clamp(40px,9.2vw,102px);letter-spacing:.16em;
+  text-indent:.16em}
+.logo-xl .l1{color:var(--text);text-shadow:0 0 60px rgba(10,16,26,.9)}
+.logo-xl .l2{background:linear-gradient(100deg,#f6d98a 8%,#e8b62c 42%,#b98a1c 70%,#f6d98a 96%);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.hairline{width:0;height:1px;margin:22px auto 16px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.tagline{margin:0;font-family:var(--mincho);font-size:clamp(13px,2.5vw,16px);
+  letter-spacing:.2em;color:var(--muted)}
+.tagline b{color:var(--text);font-weight:600}
+
+.hero-act{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;
+  margin-top:clamp(24px,5vh,54px);position:relative;z-index:60}
+.cue{margin-top:26px;font-size:10.5px;letter-spacing:.34em;color:var(--dim);
+  position:relative;z-index:60}
+.cue i{display:block;width:1px;height:34px;background:var(--dim);margin:0 auto 12px;
+  transform-origin:top;animation:pulse 2.4s ease-in-out infinite}
+
+/* ---- 帯 ---- */
+.band{padding:clamp(70px,11vh,130px) 0;position:relative}
+h2.sec{display:flex;align-items:baseline;gap:18px;font-family:var(--mincho);
+  font-size:clamp(21px,3.6vw,30px);letter-spacing:.14em;margin:0 0 40px}
+h2.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+h2.sec span{font-family:var(--gothic);font-size:11px;letter-spacing:.24em;
+  color:var(--gold);order:3;flex:0 0 auto}
+
+/* ---- 分野（大きいほう） ---- */
+.kinds.big{grid-template-columns:repeat(4,1fr);gap:14px}
+.kinds.big .kind{position:relative;text-decoration:none;padding:26px 20px 22px;
+  display:flex;flex-direction:column;gap:9px;min-height:190px}
+.kind-n{font-family:Georgia,serif;font-size:12px;letter-spacing:.2em;color:var(--gold);
+  opacity:.72}
+.kinds.big .kind h3{margin:0;flex-direction:column;align-items:flex-start;gap:3px;
+  font-size:23px}
+.kinds.big .kind p{flex:1}
+.kind-count{font-size:11px;letter-spacing:.14em;color:var(--dim);
+  border-top:1px solid var(--line);padding-top:11px}
+@media(max-width:900px){.kinds.big{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:460px){.kinds.big{grid-template-columns:1fr}
+  .kinds.big .kind{min-height:0;flex-direction:row;align-items:center;flex-wrap:wrap}}
+
+/* ---- 代表作 ---- */
+.feat{padding-top:0;overflow:hidden}
+.feat-media{position:relative;margin:0 0 -70px;transform-origin:center top}
+.feat-media img{width:100%;max-height:62vh;object-fit:cover;
+  -webkit-mask-image:linear-gradient(180deg,#000 42%,transparent 99%);
+  mask-image:linear-gradient(180deg,#000 42%,transparent 99%)}
+.feat-body{position:relative;z-index:2}
+.eyebrow{font-size:11px;letter-spacing:.28em;color:var(--gold);margin:0 0 12px}
+.feat-body h2{font-family:var(--mincho);font-size:clamp(30px,6vw,52px);
+  letter-spacing:.1em;margin:0 0 18px;border:0;padding:0;display:block}
+.stats{display:flex;flex-wrap:wrap;gap:34px;margin:32px 0 0}
+.stats div{display:flex;flex-direction:column;gap:2px}
+.stats b{font-family:Georgia,serif;font-size:clamp(30px,5.4vw,44px);color:var(--text);
+  font-weight:400;font-variant-numeric:tabular-nums;line-height:1}
+.stats span{font-size:11.5px;letter-spacing:.14em;color:var(--dim)}
+
+/* ---- 締め ---- */
+.closing{text-align:left}
+.closing-line{font-family:var(--mincho);font-size:clamp(32px,7.4vw,64px);
+  letter-spacing:.12em;line-height:1.45;margin:0 0 26px;border:0;padding:0;display:block}
+.closing-line b{color:var(--gold);font-weight:600}
+
+#burst{position:fixed;inset:0;z-index:70;pointer-events:none}
+.logo-xl{-webkit-tap-highlight-color:transparent;user-select:none}
+
+/* ---- SNS ---- */
+.sns-row{display:flex;gap:16px;flex-wrap:wrap}
+.sns{display:inline-flex;align-items:baseline;gap:7px;text-decoration:none;color:var(--muted);
+  font-size:12.5px;letter-spacing:.08em;border-bottom:1px solid transparent;
+  transition:color .35s var(--ease),border-color .35s var(--ease)}
+.sns:hover{color:var(--gold);border-color:var(--gold)}
+.sns i{font-style:normal;font-size:11px;color:var(--dim)}
+
+/* ---- 広告の枠（data/site.json で入りを決める。ふだんは何も出ない） ---- */
+.ad-slot{margin:44px 0;min-height:0}
+.ad-slot[hidden]{display:none}
+.ad-slot::before{content:"広告";display:block;font-size:10px;letter-spacing:.24em;
+  color:var(--dim);margin-bottom:8px}

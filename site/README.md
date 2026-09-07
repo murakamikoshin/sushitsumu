@@ -19,6 +19,21 @@ HTML と CSS と、外部 library を入れない JavaScript が一枚ずつ。
 - `site/data/*.json` から `works/index.html` と `notes/index.html` を書き出す
 - トップの抜粋（`<!--works:start-->` の間）を差し替える
 
+## 手を入れる場所（設定は data/ に集めてある）
+
+| したいこと | いじる場所 |
+|---|---|
+| 作品を足す | `data/works.json` |
+| 記録を足す | `data/notes.json` |
+| 分野を足す・名前を変える | `data/kinds.json` |
+| SNS を足す | `data/site.json` の `social` |
+| 広告を出す | `data/site.json` の `ads`（`enabled: true` と client / slot） |
+| 公開先の URL | `build.mjs` の `SITE`（または環境変数 `SITE_URL`） |
+| 書体を作り直す | `python3 tools/fonts.py`（文章を足したら必ず） |
+| 絵を作り直す | `python3 tools/images.py` |
+
+どれも触ったあとは `node build.mjs`。
+
 ## 作品を足す
 
 `site/data/works.json` に一つ足して、`node site/build.mjs`。

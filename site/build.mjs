@@ -7,6 +7,9 @@
    ============================================================ */
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 
+/* 公開先。独自ドメインを繋いだら、ここだけ書き換える */
+const SITE = process.env.SITE_URL || 'https://koshin-studio.pages.dev';
+
 const here = import.meta.dirname;
 
 /* ゲーム本体（sushitsumu）の在り処。
@@ -73,6 +76,7 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 const works = read('/data/works.json');
 const notes = read('/data/notes.json');
 const kinds = read('/data/kinds.json');
+const conf  = existsSync(here + '/data/site.json') ? read('/data/site.json') : { social: [], ads: {} };
 
 const head = (title, desc, extra = '') => `<!doctype html>
 <html lang="ja">
@@ -96,9 +100,14 @@ const head = (title, desc, extra = '') => `<!doctype html>
   <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/profile/">Profile</a></nav>
 </div></header>
 `;
+const socialHtml = (conf.social || []).map((x) =>
+  `<a class="sns" href="${x.url}" rel="me noopener" target="_blank">${esc(x.label)}<i>${esc(x.handle || '')}</i></a>`
+).join('');
+
 const foot = `
 <footer class="site"><div class="wrap">
   <span>© 2026 Koshin Studio</span>
+  <div class="sns-row">${socialHtml}</div>
   <nav><a href="/profile/">Profile</a><a href="/privacy/">あつかい</a></nav>
 </div></footer>
 <script src="/motion.js" defer></script>
@@ -155,12 +164,216 @@ ${notes.map(noteRow).join('\n')}
   </ul>
 </div></main>` + foot);
 
-/* ---- トップの抜粋 ---- */
-const home = readFileSync(here + '/index.html', 'utf8');
-const marked = home.replace(
-  /<!--works:start-->[\s\S]*?<!--works:end-->/,
-  `<!--works:start-->\n${works.slice(0, 3).map(workCard).join('\n')}\n    <!--works:end-->`
-);
-writeFileSync(here + '/index.html', marked);
+/* ---- トップ ---- */
+const kindKeys = Object.keys(kinds);
 
-console.log(`site: works ${works.length} / notes ${notes.length} 件を書き出しました`);
+/* まわりを回るもの：作品の表紙が先、足りない分は分野の札で埋める */
+const orbitCells = []
+  .concat(works.map((w) => ({
+    href: w.url, img: w.cover, label: w.title, sub: kinds[w.kind].ja,
+  })))
+  .concat(kindKeys.map((k) => ({
+    href: '/works/#' + k, label: kinds[k].label, sub: kinds[k].ja, note: kinds[k].note,
+  })));
+
+const orbitHtml = orbitCells.map((c, i) => `      <a class="orb${c.img ? ' has-img' : ''}" href="${c.href}" style="--i:${i}">
+        ${c.img
+          ? `<picture><source srcset="${c.img.replace(/\.\w+$/, '.webp')}" type="image/webp"><img src="${c.img.replace(/\.\w+$/, '.jpg')}" alt="${esc(c.label)}" width="360" height="360" loading="eager" decoding="async"></picture>`
+          : `<span class="orb-mark">${esc(c.label)}</span>`}
+        <span class="orb-cap">${esc(c.img ? c.label : c.sub)}</span>
+      </a>`).join('\n');
+
+/* 分野の札（本文側） */
+const kindHtml = kindKeys.map((k, i) => {
+  const n = works.filter((w) => w.kind === k).length;
+  return `      <a class="kind rv" data-delay="${i * 70}" href="/works/#${k}">
+        <span class="kind-n">${String(i + 1).padStart(2, '0')}</span>
+        <h3>${kinds[k].label}<i>${kinds[k].ja}</i></h3>
+        <p>${kinds[k].note}</p>
+        <span class="kind-count">${n ? n + ' 点' : '準備中'}</span>
+      </a>`;
+}).join('\n');
+
+/* 代表作 */
+const f = works.find((w) => w.featured) || works[0];
+const featHtml = f ? `    <div class="feat-media rv">
+      <picture>
+        <source srcset="/assets/sushitsumu-wide.webp 960w, /assets/sushitsumu-wide@2x.webp 1600w"
+                sizes="(max-width: 900px) 100vw, 900px" type="image/webp">
+        <img src="/assets/sushitsumu-wide.jpg" alt="${esc(f.title)}" width="960" height="540" loading="lazy" decoding="async">
+      </picture>
+    </div>
+    <div class="wrap feat-body">
+      <p class="eyebrow rv">代表作 / ${kinds[f.kind].ja}</p>
+      <h2 class="rv" data-delay="60">${esc(f.title)}</h2>
+      <p class="rv" data-delay="100" style="max-width:32em;color:var(--muted)">${esc(f.blurb)}</p>
+      <div class="stats rv" data-delay="140">
+        <div><b data-count="11">0</b><span>段のネタ</span></div>
+        <div><b data-count="14">0</b><span>言語</span></div>
+        <div><b data-count="262">0</b><span>戦を自動で検証</span></div>
+      </div>
+      <p class="rv" data-delay="180" style="margin-top:30px">
+        <a class="btn" href="/works/sushitsumu/play/">遊 ぶ</a>
+        <a class="btn ghost" href="${f.url}" style="margin-left:10px">くわしく</a>
+      </p>
+    </div>` : '';
+
+/* 記録の抜粋 */
+const noteTeaser = notes.slice(0, 2).map(noteRow).join('\n');
+
+let home = readFileSync(here + '/index.html', 'utf8');
+const put = (key, body) => {
+  home = home.replace(
+    new RegExp('<!--' + key + ':start-->[\\s\\S]*?<!--' + key + ':end-->'),
+    '<!--' + key + ':start-->\n' + body + '\n    <!--' + key + ':end-->'
+  );
+};
+put('orbit', orbitHtml);
+put('kinds', kindHtml);
+put('featured', featHtml);
+put('notes', noteTeaser);
+writeFileSync(here + '/index.html', home);
+
+
+/* ============================================================
+   さがしてもらうための下ごしらえ
+     ・正規 URL（canonical）と og:url を全ページに入れる
+     ・構造化データ（JSON-LD）を、ページの種類に応じて入れる
+     ・sitemap.xml と robots.txt を書き出す
+   手で書いたページにも後から差し込むので、ページを足しても勝手に付く。
+   ============================================================ */
+function walk(dir, out = []) {
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const full = dir + '/' + e.name;
+    if (e.isDirectory()) {
+      if (['vendor', 'assets', 'data', 'tools'].includes(e.name)) continue;
+      if (full.endsWith('/works/sushitsumu/play')) continue;
+      walk(full, out);
+    } else if (e.name.endsWith('.html')) out.push(full);
+  }
+  return out;
+}
+
+const pages = walk(here).sort();
+const urlOf = (f) => {
+  let u = f.slice(here.length).replace(/\/index\.html$/, '/');
+  if (!u.endsWith('/') && u.endsWith('.html')) u = u;
+  return SITE + (u === '' ? '/' : u);
+};
+
+const workBySlug = Object.fromEntries(works.map((w) => [w.slug, w]));
+const noteBySlug = Object.fromEntries(notes.map((n) => [n.slug, n]));
+
+const PERSON = {
+  '@type': 'Organization', '@id': SITE + '#studio', name: 'Koshin Studio',
+  url: SITE, description: 'ゲーム、アプリ、Web サイト、3D モデルを個人で制作しています。',
+  founder: { '@type': 'Person', name: 'Koshin Murakami' },
+};
+
+function ldFor(file, url) {
+  const rel = file.slice(here.length);
+  const crumbs = (trail) => ({
+    '@type': 'BreadcrumbList',
+    itemListElement: trail.map((t, i) => ({
+      '@type': 'ListItem', position: i + 1, name: t[0], item: SITE + t[1],
+    })),
+  });
+  if (rel === '/index.html') {
+    return [
+      PERSON,
+      { '@type': 'WebSite', url: SITE, name: 'Koshin Studio', publisher: { '@id': SITE + '#studio' },
+        inLanguage: 'ja' },
+      { '@type': 'ItemList', name: '作ったもの',
+        itemListElement: works.map((w, i) => ({
+          '@type': 'ListItem', position: i + 1, url: SITE + w.url, name: w.title })) },
+    ];
+  }
+  const wm = rel.match(/^\/works\/([^/]+)\/index\.html$/);
+  if (wm && workBySlug[wm[1]]) {
+    const w = workBySlug[wm[1]];
+    const type = w.kind === 'game' ? 'VideoGame' : 'SoftwareApplication';
+    return [
+      { '@type': type, name: w.title, url: SITE + w.url, description: w.blurb,
+        inLanguage: 'ja', image: SITE + '/assets/sushitsumu-wide.jpg',
+        applicationCategory: w.kind === 'game' ? 'GameApplication' : 'UtilitiesApplication',
+        operatingSystem: 'Web', datePublished: w.year,
+        author: { '@id': SITE + '#studio' }, publisher: { '@id': SITE + '#studio' },
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'JPY' } },
+      crumbs([['Koshin Studio', '/'], ['Works', '/works/'], [w.title, w.url]]),
+    ];
+  }
+  const nm = rel.match(/^\/notes\/([^/]+)\/index\.html$/);
+  if (nm && noteBySlug[nm[1]]) {
+    const nn = noteBySlug[nm[1]];
+    return [
+      { '@type': 'BlogPosting', headline: nn.title, url: SITE + nn.url, description: nn.blurb,
+        datePublished: nn.date, dateModified: nn.date, inLanguage: 'ja',
+        author: { '@id': SITE + '#studio' }, publisher: { '@id': SITE + '#studio' },
+        mainEntityOfPage: SITE + nn.url },
+      crumbs([['Koshin Studio', '/'], ['Notes', '/notes/'], [nn.title, nn.url]]),
+    ];
+  }
+  if (rel === '/works/index.html') return [crumbs([['Koshin Studio', '/'], ['Works', '/works/']])];
+  if (rel === '/notes/index.html') return [crumbs([['Koshin Studio', '/'], ['Notes', '/notes/']])];
+  if (rel === '/profile/index.html') return [PERSON, crumbs([['Koshin Studio', '/'], ['Profile', '/profile/']])];
+  return null;
+}
+
+for (const file of pages) {
+  let html = readFileSync(file, 'utf8');
+  /* 脚の SNS 欄と、広告の枠を差し替える（data/site.json が元） */
+  html = html.replace(/<div class="sns-row">[\s\S]*?<\/div>/g, `<div class="sns-row">${socialHtml}</div>`);
+  if (!/class="sns-row"/.test(html)) {
+    html = html.replace('<footer class="site"><div class="wrap">\n  <span>© 2026 Koshin Studio</span>',
+      `<footer class="site"><div class="wrap">\n  <span>© 2026 Koshin Studio</span>\n  <div class="sns-row">${socialHtml}</div>`);
+  }
+  const ads = conf.ads || {};
+  html = html.replace(/<div class="ad-slot"[^>]*>[\s\S]*?<\/div>\s*<!--\/ad-->/g, (m) => {
+    const kind = (m.match(/data-slot="([^"]+)"/) || [, 'article'])[1];
+    const id = (ads.slots || {})[kind];
+    const inner = ads.enabled && ads.client && id
+      ? `<ins class="adsbygoogle" style="display:block" data-ad-client="${ads.client}" data-ad-slot="${id}" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>`
+      : '';
+    return `<div class="ad-slot" data-slot="${kind}"${inner ? '' : ' hidden'}>${inner}</div>\n<!--/ad-->`;
+  });
+  const url = urlOf(file);
+  html = html.replace(/\n?\s*<link rel="canonical"[^>]*>/g, '')
+             .replace(/\n?\s*<meta property="og:url"[^>]*>/g, '')
+             .replace(/\n?\s*<meta name="twitter:card"[^>]*>/g, '')
+             .replace(/\n?\s*<meta property="og:site_name"[^>]*>/g, '')
+             .replace(/\n?\s*<meta property="og:locale"[^>]*>/g, '')
+             .replace(/\n?\s*<script type="application\/ld\+json">[\s\S]*?<\/script>/g, '');
+  const ld = ldFor(file, url);
+  const head = [
+    `<link rel="canonical" href="${url}">`,
+    `<meta property="og:url" content="${url}">`,
+    `<meta property="og:site_name" content="Koshin Studio">`,
+    `<meta property="og:locale" content="ja_JP">`,
+    `<meta name="twitter:card" content="summary_large_image">`,
+    ld ? `<script type="application/ld+json">${JSON.stringify(
+      { '@context': 'https://schema.org', '@graph': ld })}</script>` : '',
+  ].filter(Boolean).join('\n');
+  html = html.replace('</head>', head + '\n</head>');
+  if (!/og:image/.test(html)) {
+    html = html.replace('</head>',
+      `<meta property="og:image" content="${SITE}/assets/sushitsumu-wide.jpg">\n</head>`);
+  }
+  writeFileSync(file, html);
+}
+
+writeFileSync(here + '/sitemap.xml',
+  '<?xml version="1.0" encoding="UTF-8"?>\n' +
+  '<urlset xmlns="http://www.sitemap.org/schemas/sitemap/0.9">\n'.replace('sitemap.org', 'sitemaps.org') +
+  pages.map((f) => {
+    const rel = f.slice(here.length);
+    const pri = rel === '/index.html' ? '1.0'
+      : /^\/(works|notes)\/index\.html$/.test(rel) ? '0.8' : '0.6';
+    return `  <url><loc>${urlOf(f)}</loc><priority>${pri}</priority></url>`;
+  }).join('\n') + '\n</urlset>\n');
+
+writeFileSync(here + '/robots.txt',
+  'User-agent: *\nAllow: /\n\nSitemap: ' + SITE + '/sitemap.xml\n');
+
+console.log(`site: ${pages.length} ページに canonical と構造化データ、sitemap.xml を書きました`);
+
+console.log(`site: works ${works.length} / notes ${notes.length} / 分野 ${kindKeys.length} を書き出しました`);
