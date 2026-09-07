@@ -187,10 +187,17 @@ body.titling .hud { opacity: 0; pointer-events: none; }
   backdrop-filter: blur(7px);
   z-index: 20;
   padding: 18px;
+  /* 背の低い窓（横持ちや、埋め込み枠が浅い時）では札がはみ出す。
+     margin:auto で寄せておくと、溢れても頭が切れずに送れる */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 .modal[hidden] { display: none !important; }
 .card {
   position: relative;
+  margin: auto;
+  flex: 0 0 auto;
   width: min(86%, 318px);
   background: var(--washi);
   color: #1d1a15;
@@ -319,23 +326,42 @@ body:not(.has-rank) .needs-rank { display: none !important; }
 .rEmpty { font-size: 12px; color: #9a8a72; padding: 26px 0; text-align: center; line-height: 2; }
 
 /* ---- 横向き（ランドスケープ）警告 ---- */
+/* ---- 言葉えらび ---- */
+.langGrid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 7px;
+  margin: 4px 0 18px;
+}
+.langGrid button {
+  font-family: var(--mincho); font-size: 12px; letter-spacing: .06em;
+  padding: 9px 6px; border: 1px solid rgba(185,148,95,.7); border-radius: 2px;
+  background: transparent; color: #6d6154; cursor: pointer;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.langGrid button.is-on { background: var(--shu); border-color: var(--shu); color: #fff; }
+
 /* ---- 欧文のとき ----
    和文は字間を大きく開けると格好がつくが、同じ値を欧文に当てると
    ただ間の抜けた字並びになる。英語の時だけ詰め直す。 */
-body.en .card h1 { letter-spacing: .1em; text-indent: .1em; font-size: 34px; }
-body.en .card h2 { letter-spacing: .18em; text-indent: .18em; font-size: 17px; }
-body.en .sub    { letter-spacing: .2em;  text-indent: .2em;  font-size: 9px; }
-body.en .lbl    { letter-spacing: .2em;  text-indent: .2em; }
-body.en .scoreRow .k { letter-spacing: .16em; text-indent: .16em; }
-body.en .btn, body.en .modeBtn, body.en .rtab,
-body.en .sndBtn { letter-spacing: .12em; text-indent: .12em; }
-body.en .modeBtn { font-size: 14px; }
-body.en .modeBtn small { letter-spacing: .04em; text-indent: .04em; font-size: 9px; }
-body.en .btn.small { letter-spacing: .08em; text-indent: .08em; }
-body.en .rankName { letter-spacing: .04em; text-indent: .04em; font-size: 25px; }
-body.en .hint { line-height: 1.85; }
-body.en #rotate p { letter-spacing: .14em; text-indent: .14em; }
-body.en .pop { letter-spacing: .06em; text-indent: .06em; }
+/* 題名は日本語のときだけ和字。それ以外は SUSHI TSUMU なので詰める */
+body:not(.lang-ja) .card h1 { font-size: 26px; letter-spacing: .1em; text-indent: .1em; white-space: nowrap; }
+
+/* 欧文（ラテン文字・キリル文字）は和文の字間だとただ間が抜ける */
+body.lat .card h2 { letter-spacing: .16em; text-indent: .16em; font-size: 16px; }
+body.lat .sub    { letter-spacing: .18em; text-indent: .18em; font-size: 8.5px; }
+body.lat .lbl    { letter-spacing: .18em; text-indent: .18em; }
+body.lat .scoreRow .k { letter-spacing: .14em; text-indent: .14em; }
+body.lat .btn, body.lat .modeBtn, body.lat .rtab,
+body.lat .sndBtn { letter-spacing: .1em; text-indent: .1em; }
+body.lat .modeBtn { font-size: 13.5px; }
+body.lat .modeBtn small { letter-spacing: .03em; text-indent: .03em; font-size: 9px; }
+body.lat .btn.small { letter-spacing: .06em; text-indent: .06em; font-size: 11px; }
+body.lat .rtab { font-size: 10.5px; padding: 7px 10px; }
+body.lat .rankName { letter-spacing: .03em; text-indent: .03em; font-size: 23px; }
+body.lat .hint { line-height: 1.8; font-size: 10.5px; }
+body.lat #rotate p { letter-spacing: .12em; text-indent: .12em; font-size: 13px; }
+body.lat .pop { letter-spacing: .04em; text-indent: .04em; font-size: clamp(21px, 6vw, 34px); }
+body.lat .sndBtn { font-size: 9px; padding: 4px 7px; }
+body.lat .rankNote { font-size: 10.5px; }
 
 /* 広告の幕。広告そのものは SDK が上に被せるので、裏を隠すだけの役 */
 #adCurtain {
@@ -382,7 +408,7 @@ body.en .pop { letter-spacing: .06em; text-indent: .06em; }
       <div class="score" id="scoreEl">0</div>
       <div class="hi"><span data-t="lblHi">高得点</span> <b id="hiEl">0</b></div>
       <button class="sndBtn" id="sndBtn" type="button">音 入</button>
-      <button class="sndBtn" id="langBtn" type="button" data-t="langBtn">EN</button>
+      <button class="sndBtn" id="langBtn" type="button" aria-label="Language">EN</button>
     </div>
     <div class="hud-r">
       <div class="lbl" data-t="lblNext">つぎ</div>
@@ -397,7 +423,7 @@ body.en .pop { letter-spacing: .06em; text-indent: .06em; }
     <!-- タイトル -->
     <div class="modal" id="titleModal">
       <div class="card">
-        <h1>すし積む</h1>
+        <h1 data-t="title">すし積む</h1>
         <div class="rule"></div>
         <div class="sub" data-t="sub">江戸前合体遊戯</div>
         <div class="modeRow">
@@ -435,6 +461,16 @@ body.en .pop { letter-spacing: .06em; text-indent: .06em; }
           <button class="btn ghost needs-rank" id="openRank2" data-t="rankShort">番 付</button>
           <button class="btn" id="retryBtn" data-t="retry">もう一丁</button>
         </div>
+      </div>
+    </div>
+
+    <!-- 言葉えらび -->
+    <div class="modal" id="langModal" hidden>
+      <div class="card">
+        <h2 data-t="langTitle">言葉</h2>
+        <div class="rule"></div>
+        <div class="langGrid" id="langGrid"></div>
+        <button class="btn" id="closeLang" data-t="close">閉 じ る</button>
       </div>
     </div>
 
@@ -549,116 +585,671 @@ var Engine    = Matter.Engine,
 
 /* ============================================================
    1.5 言葉
-   海外のポータルにも出すので、読ませる文は全部ここに集める。
-   暖簾の「すし積む」と桶の「寿」だけは訳さない。あれは看板であって
-   文章ではないし、それを消したらこの店の顔が無くなる。
+   海外のポータルに出すので、読ませる文は全部ここに集める。
+   足りない言葉は英語へ、英語にも無ければ日本語へ落ちる。
+
+   ネタの名前は、日本語以外では原則ローマ字のまま置く。向こうの
+   寿司屋の品書きもだいたいこの綴りで通っていて、その方が伝わる。
+   文字の違う言語（露・韓・中）だけ neta を上書きしている。
    ============================================================ */
-var TXT = {
-  ja: {
-    langBtn:'EN',
-    sub:'江戸前合体遊戯',
-    lblScore:'スコア', lblHi:'高得点', lblNext:'つぎ',
-    sndOn:'音 入', sndOff:'音 切',
-    modeFree:'お 任 せ', modeFreeSub:'心ゆくまで積む',
-    modeOrder:'お 品 書 き', modeOrderSub:'注文で祝儀、連鎖で加増',
-    openRank:'番 付 を 見 る', rankShort:'番 付',
-    hint1:'指でなぞって位置を決め、離せば落ちる。',
-    hint2:'同じネタが触れ合えば合体。',
-    hint3:'「ガリ」は触れたネタを一つ消す。',
-    over:'しまい', namePh:'名前（12文字まで）', send:'載 せ る', retry:'もう一丁',
-    rankTitle:'番付', tabDay:'本 日', tabAll:'総 合',
-    tabNormal:'お 任 せ', tabOrder:'お 品 書 き', close:'閉 じ る',
-    libTitle:'準備中', libBody:'物理エンジンを初期化できませんでした。ページを再読み込みしてください。',
-    adTitle:'広告', adBody:'このあと、すぐに再開します',
-    rotate:'画面を縦にして<br>お楽しみください',
+var LANGS = [
+  { c:'ja', n:'日本語',           s:'日本語' },
+  { c:'en', n:'English',          s:'EN' },
+  { c:'es', n:'Español',          s:'ES' },
+  { c:'pt', n:'Português',        s:'PT' },
+  { c:'fr', n:'Français',         s:'FR' },
+  { c:'de', n:'Deutsch',          s:'DE' },
+  { c:'it', n:'Italiano',         s:'IT' },
+  { c:'pl', n:'Polski',           s:'PL' },
+  { c:'tr', n:'Türkçe',           s:'TR' },
+  { c:'ru', n:'Русский',          s:'RU' },
+  { c:'id', n:'Bahasa Indonesia', s:'ID' },
+  { c:'vi', n:'Tiếng Việt',       s:'VI' },
+  { c:'ko', n:'한국어',            s:'한국어' },
+  { c:'zh', n:'简体中文',          s:'中文' }
+];
 
-    danger:'の れ ん 際', gari:'ガ リ',
-    gariPop:'お口直し！', jackpot:'大 入 袋 ！', megaChain:'大 連 鎖 ！',
-    newBest:'自己最高！',
-    chainSuffix:' 連 ！', chainFloat:'連鎖 ',
-    orderHead:'ご 注 文', orderWait:'次 の ご 注 文 を お 待 ち …',
-    noren:'のれん x', pieces:'貫', orderFail:'相すみません…',
-    bestChain:'　最高 ', modeTag:'［お品書き］ ',
+var TXT = {};
 
-    loading:'読み込んでいます…', sending:'送っています…',
-    needName:'名前を入れてください。', anon:'名無し',
-    place:'位', outside:'位圏外',
-    emptyDay:'本日はまだ誰も握っていません。一番乗りをどうぞ。',
-    emptyAll:'まだ誰も番付に載っていません。',
-    loadFail:'番付を読み込めませんでした。',
-    errFull:'番付が満杯で登録できませんでした。',
-    errBusy:'混み合っています。少し置いてからお試しください。',
-    errMismatch:'記録の辻褄が合わなかったため、載せられませんでした。',
-    errTooLong:'一戦が長すぎて記録しきれませんでした。番付には載せられません。',
-    errNet:'番付に繋がりませんでした。通信を確かめて、もう一度お試しください。',
-    scopeFree:'お任せ', scopeOrder:'お品書き',
-    scopeDay:'本日（日本時間 ', scopeDayEnd:'）', scopeAll:'これまで', scopeTail:'の上位',
-    dot:'・'
-  },
-  en: {
-    langBtn:'日本語',
-    sub:'SUSHI TSUMU \u00b7 AN EDOMAE MERGE PUZZLE',
-    lblScore:'SCORE', lblHi:'BEST', lblNext:'NEXT',
-    sndOn:'SOUND ON', sndOff:'SOUND OFF',
-    modeFree:'OMAKASE', modeFreeSub:'Stack to your heart\u2019s content',
-    modeOrder:'ORDERS', modeOrderSub:'Tips for orders, more for chains',
-    openRank:'LEADERBOARD', rankShort:'BOARD',
-    hint1:'Drag to aim, release to drop.',
-    hint2:'Matching neta merge on contact.',
-    hint3:'A piece of \u201cgari\u201d removes one neta it touches.',
-    over:'THAT\u2019S A WRAP', namePh:'Name (up to 12)', send:'POST', retry:'ONE MORE',
-    rankTitle:'LEADERBOARD', tabDay:'TODAY', tabAll:'ALL TIME',
-    tabNormal:'OMAKASE', tabOrder:'ORDERS', close:'CLOSE',
-    libTitle:'NOT READY', libBody:'The physics engine could not start. Please reload the page.',
-    adTitle:'AD', adBody:'Back to the game in a moment',
-    rotate:'Please turn your device<br>upright to play',
-
-    danger:'OVER THE LINE', gari:'GARI',
-    gariPop:'Palate cleansed!', jackpot:'JACKPOT!', megaChain:'MEGA CHAIN!',
-    newBest:'NEW BEST!',
-    chainSuffix:' CHAIN!', chainFloat:'-chain ',
-    orderHead:'ORDER', orderWait:'Awaiting the next order\u2026',
-    noren:'Noren x', pieces:' pcs', orderFail:'Sorry, chef\u2026',
-    bestChain:'\u2003\u00b7 best chain ', bestChainTail:'', modeTag:'[Orders] ',
-
-    loading:'Loading\u2026', sending:'Sending\u2026',
-    needName:'Please enter a name.', anon:'Anonymous',
-    place:'', outside:'', placePre:'#', outsidePre:'outside top ',
-    emptyDay:'Nobody has served today. Be the first.',
-    emptyAll:'Nobody is on the board yet.',
-    loadFail:'Could not load the leaderboard.',
-    errFull:'The leaderboard is full, so the score was not posted.',
-    errBusy:'Busy right now. Please try again shortly.',
-    errMismatch:'The play record did not check out, so the score was not posted.',
-    errTooLong:'That run was too long to record, so it cannot be posted.',
-    errNet:'Could not reach the leaderboard. Check your connection and try again.',
-    scopeFree:'Omakase', scopeOrder:'Orders',
-    scopeDay:'today (JST ', scopeDayEnd:')', scopeAll:'all time', scopeTail:'',
-    dot:' \u00b7 '
-  }
+TXT.ja = {
+  title:'すし積む', noren:['す','し','積','む'],
+  sub:'江戸前合体遊戯',
+  lblScore:'スコア', lblHi:'高得点', lblNext:'つぎ',
+  sndOn:'音 入', sndOff:'音 切', langTitle:'言葉',
+  modeFree:'お 任 せ', modeFreeSub:'心ゆくまで積む',
+  modeOrder:'お 品 書 き', modeOrderSub:'注文で祝儀、連鎖で加増',
+  openRank:'番 付 を 見 る', rankShort:'番 付',
+  hint1:'指でなぞって位置を決め、離せば落ちる。',
+  hint2:'同じネタが触れ合えば合体。',
+  hint3:'「ガリ」は触れたネタを一つ消す。',
+  over:'しまい', namePh:'名前（12文字まで）', send:'載 せ る', retry:'もう一丁',
+  rankTitle:'番付', tabDay:'本 日', tabAll:'総 合',
+  tabNormal:'お 任 せ', tabOrder:'お 品 書 き', close:'閉 じ る',
+  libTitle:'準備中', libBody:'物理エンジンを初期化できませんでした。<br>ページを再読み込みしてください。',
+  adTitle:'広告', adBody:'このあと、すぐに再開します',
+  rotate:'画面を縦にして<br>お楽しみください',
+  danger:'の れ ん 際', gari:'ガ リ',
+  gariPop:'お口直し！', jackpot:'大 入 袋 ！', megaChain:'大 連 鎖 ！', newBest:'自己最高！',
+  chainSuffix:' 連 ！', chainFloat:'連鎖 ', chainKanji:true,
+  orderHead:'ご 注 文', orderWait:'次 の ご 注 文 を お 待 ち …',
+  noren2:'のれん x', pieces:'貫', orderFail:'相すみません…',
+  bestChain:'　最高 ', bestChainTail:'連鎖', modeTag:'［お品書き］ ',
+  loading:'読み込んでいます…', sending:'送っています…',
+  needName:'名前を入れてください。', anon:'名無し',
+  today:'本日', allTime:'総合', placePre:'', place:'位', outsidePre:'', outside:'位圏外',
+  gap:'　',
+  emptyDay:'本日はまだ誰も握っていません。一番乗りをどうぞ。',
+  emptyAll:'まだ誰も番付に載っていません。',
+  loadFail:'番付を読み込めませんでした。',
+  errFull:'番付が満杯で登録できませんでした。',
+  errBusy:'混み合っています。少し置いてからお試しください。',
+  errMismatch:'記録の辻褄が合わなかったため、載せられませんでした。',
+  errTooLong:'一戦が長すぎて記録しきれませんでした。番付には載せられません。',
+  errNet:'番付に繋がりませんでした。通信を確かめて、もう一度お試しください。',
+  scopeFree:'お任せ', scopeOrder:'お品書き', dot:'・',
+  scopeDay:'本日（日本時間 ', scopeDayEnd:'）', scopeAll:'これまで', scopeTail:'の上位',
+  neta:['シャリ','玉子','エビ','サーモン','マグロ','いくら軍艦','ウニ軍艦','大トロ','あなご一本焼き','伊勢海老','ゴールデンすし桶'],
+  shouts:['へい大将！','極上！','いよっ、名人！','これぞ江戸前！','大将、いい仕事！','あがりでィ！'],
+  cheers:['へい、お待ち！','あいよ、上がり！','ありがとうございます！'], cheerTop:'よっ、日本一！',
+  ranks:[['見習い職人','まずは飯炊き三年から。'],['追い回し','手つきが良くなってきた。'],
+         ['若手職人','いい仕事、してますね。'],['中堅職人','常連がつき始めた腕前。'],
+         ['花板','厨房を任される男。'],['大将','その握り、値千金。'],
+         ['伝説のすし職人','へい、お待ち。—— 神域。']]
 };
 
-/* 掛け声。レベル8以上を作った時に飛ぶ */
-var SHOUT = {
-  ja: ['へい大将！', '極上！', 'いよっ、名人！', 'これぞ江戸前！', '大将、いい仕事！', 'あがりでィ！'],
-  en: ['Order up!', 'Sublime!', 'Nice hands!', 'That\u2019s Edomae!', 'Beautiful work!', 'Here you go!']
-};
-/* 注文をこなした時の礼。続けるほど威勢が良くなる */
-var CHEER = {
-  ja: ['へい、お待ち！', 'あいよ、上がり！', 'ありがとうございます！'],
-  en: ['Order up!', 'Here you are!', 'Much obliged!'],
-  jaTop: 'よっ、日本一！',
-  enTop: 'Best in Japan!'
+TXT.en = {
+  title:'SUSHI TSUMU', noren:['SU','SHI','TSU','MU'],
+  sub:'AN EDOMAE MERGE PUZZLE',
+  lblScore:'SCORE', lblHi:'BEST', lblNext:'NEXT',
+  sndOn:'SOUND ON', sndOff:'SOUND OFF', langTitle:'LANGUAGE',
+  modeFree:'OMAKASE', modeFreeSub:'Stack to your heart’s content',
+  modeOrder:'ORDERS', modeOrderSub:'Tips for orders, more for chains',
+  openRank:'LEADERBOARD', rankShort:'BOARD',
+  hint1:'Drag to aim, release to drop.',
+  hint2:'Matching neta merge on contact.',
+  hint3:'A piece of “gari” removes one neta it touches.',
+  over:'THAT’S A WRAP', namePh:'Name (up to 12)', send:'POST', retry:'ONE MORE',
+  rankTitle:'LEADERBOARD', tabDay:'TODAY', tabAll:'ALL TIME',
+  tabNormal:'OMAKASE', tabOrder:'ORDERS', close:'CLOSE',
+  libTitle:'NOT READY', libBody:'The physics engine could not start.<br>Please reload the page.',
+  adTitle:'AD', adBody:'Back to the game in a moment',
+  rotate:'Please turn your device<br>upright to play',
+  danger:'OVER THE LINE', gari:'GARI',
+  gariPop:'Palate cleansed!', jackpot:'JACKPOT!', megaChain:'MEGA CHAIN!', newBest:'NEW BEST!',
+  chainSuffix:' CHAIN!', chainFloat:'-chain ', chainKanji:false,
+  orderHead:'ORDER', orderWait:'Awaiting the next order…',
+  noren2:'Noren x', pieces:' pcs', orderFail:'Sorry, chef…',
+  bestChain:' · best chain ', bestChainTail:'', modeTag:'[Orders] ',
+  loading:'Loading…', sending:'Sending…',
+  needName:'Please enter a name.', anon:'Anonymous',
+  today:'Today', allTime:'All time', placePre:'#', place:'', outsidePre:'outside top ', outside:'',
+  gap:' · ',
+  emptyDay:'Nobody has served today. Be the first.',
+  emptyAll:'Nobody is on the board yet.',
+  loadFail:'Could not load the leaderboard.',
+  errFull:'The leaderboard is full, so the score was not posted.',
+  errBusy:'Busy right now. Please try again shortly.',
+  errMismatch:'The play record did not check out, so the score was not posted.',
+  errTooLong:'That run was too long to record, so it cannot be posted.',
+  errNet:'Could not reach the leaderboard. Check your connection and try again.',
+  scopeFree:'Omakase', scopeOrder:'Orders', dot:' · ',
+  scopeDay:'today (JST ', scopeDayEnd:')', scopeAll:'all time', scopeTail:'',
+  neta:['Shari','Tamago','Ebi','Salmon','Maguro','Ikura Gunkan','Uni Gunkan','Otoro','Anago','Ise-ebi','Golden Oke'],
+  shouts:['Order up!','Sublime!','Nice hands!','That’s Edomae!','Beautiful work!','Here you go!'],
+  cheers:['Order up!','Here you are!','Much obliged!'], cheerTop:'Best in Japan!',
+  ranks:[['Apprentice','Three years just to learn the rice.'],['Prep Hand','Those hands are learning.'],
+         ['Junior Itamae','Nice work back there.'],['Sushi Chef','The regulars are asking for you.'],
+         ['Head Chef','The counter is yours to run.'],['Taisho','That nigiri is worth its weight in gold.'],
+         ['Legendary Itamae','Here you are. — Untouchable.']]
 };
 
+TXT.es = {
+  title:'SUSHI TSUMU', sub:'UN ROMPECABEZAS EDOMAE',
+  lblScore:'PUNTOS', lblHi:'RÉCORD', lblNext:'SIGUIENTE',
+  sndOn:'SONIDO', sndOff:'SILENCIO', langTitle:'IDIOMA',
+  modeFree:'OMAKASE', modeFreeSub:'Apila cuanto quieras',
+  modeOrder:'PEDIDOS', modeOrderSub:'Propina por pedido, más por cadena',
+  openRank:'CLASIFICACIÓN', rankShort:'RANKING',
+  hint1:'Arrastra para apuntar y suelta para soltar.',
+  hint2:'Los neta iguales se fusionan al tocarse.',
+  hint3:'Un trozo de “gari” elimina un neta que toque.',
+  over:'SE ACABÓ', namePh:'Nombre (máx. 12)', send:'ENVIAR', retry:'OTRA MÁS',
+  rankTitle:'CLASIFICACIÓN', tabDay:'HOY', tabAll:'GENERAL',
+  tabNormal:'OMAKASE', tabOrder:'PEDIDOS', close:'CERRAR',
+  libTitle:'NO LISTO', libBody:'No se pudo iniciar el motor de física.<br>Recarga la página, por favor.',
+  adTitle:'ANUNCIO', adBody:'Volvemos al juego en un momento',
+  rotate:'Gira el dispositivo<br>en vertical para jugar',
+  danger:'PASANDO LA CORTINA', gari:'GARI',
+  gariPop:'¡Paladar limpio!', jackpot:'¡PREMIO GORDO!', megaChain:'¡MEGACADENA!', newBest:'¡NUEVO RÉCORD!',
+  chainSuffix:' EN CADENA!', chainFloat:' en cadena ', chainKanji:false,
+  orderHead:'PEDIDO', orderWait:'Esperando el siguiente pedido…',
+  noren2:'Noren x', pieces:' u.', orderFail:'Lo siento, jefe…',
+  bestChain:' · mejor cadena ', bestChainTail:'', modeTag:'[Pedidos] ',
+  loading:'Cargando…', sending:'Enviando…',
+  needName:'Escribe un nombre.', anon:'Anónimo',
+  today:'Hoy', allTime:'General', placePre:'#', place:'', outsidePre:'fuera del top ', outside:'',
+  emptyDay:'Hoy no ha servido nadie todavía. Sé el primero.',
+  emptyAll:'Todavía no hay nadie en la clasificación.',
+  loadFail:'No se pudo cargar la clasificación.',
+  errFull:'La clasificación está llena, no se registró la puntuación.',
+  errBusy:'Hay mucho tráfico. Inténtalo de nuevo en un momento.',
+  errMismatch:'El registro de la partida no cuadra, así que no se publicó.',
+  errTooLong:'La partida fue demasiado larga para registrarla; no se puede publicar.',
+  errNet:'No se pudo conectar con la clasificación. Revisa tu conexión e inténtalo otra vez.',
+  scopeFree:'Omakase', scopeOrder:'Pedidos',
+  scopeDay:'hoy (JST ', scopeDayEnd:')', scopeAll:'general', scopeTail:'',
+  shouts:['¡Marchando!','¡Excelente!','¡Qué manos!','¡Esto es Edomae!','¡Buen trabajo!','¡Aquí tiene!'],
+  cheers:['¡Marchando!','¡Aquí tiene!','¡Muchas gracias!'], cheerTop:'¡El mejor de Japón!',
+  ranks:[['Aprendiz','Tres años solo para el arroz.'],['Ayudante','Esas manos van aprendiendo.'],
+         ['Itamae Junior','Buen trabajo ahí detrás.'],['Chef de Sushi','Los clientes ya preguntan por ti.'],
+         ['Jefe de Cocina','La barra es tuya.'],['Taisho','Ese nigiri vale su peso en oro.'],
+         ['Itamae Legendario','Aquí tiene. — Intocable.']]
+};
+
+TXT.pt = {
+  title:'SUSHI TSUMU', sub:'UM QUEBRA-CABEÇA EDOMAE',
+  lblScore:'PONTOS', lblHi:'RECORDE', lblNext:'PRÓXIMO',
+  sndOn:'SOM', sndOff:'SEM SOM', langTitle:'IDIOMA',
+  modeFree:'OMAKASE', modeFreeSub:'Empilhe à vontade',
+  modeOrder:'PEDIDOS', modeOrderSub:'Gorjeta por pedido, mais por combo',
+  openRank:'CLASSIFICAÇÃO', rankShort:'RANKING',
+  hint1:'Arraste para mirar e solte para soltar.',
+  hint2:'Neta iguais se juntam ao se tocarem.',
+  hint3:'Um pedaço de “gari” apaga um neta que encostar.',
+  over:'ACABOU', namePh:'Nome (até 12)', send:'ENVIAR', retry:'MAIS UMA',
+  rankTitle:'CLASSIFICAÇÃO', tabDay:'HOJE', tabAll:'GERAL',
+  tabNormal:'OMAKASE', tabOrder:'PEDIDOS', close:'FECHAR',
+  libTitle:'NÃO PRONTO', libBody:'Não foi possível iniciar o motor de física.<br>Recarregue a página.',
+  adTitle:'ANÚNCIO', adBody:'Voltamos ao jogo num instante',
+  rotate:'Vire o aparelho<br>na vertical para jogar',
+  danger:'PASSANDO DA CORTINA', gari:'GARI',
+  gariPop:'Paladar limpo!', jackpot:'PRÊMIO MÁXIMO!', megaChain:'MEGACOMBO!', newBest:'NOVO RECORDE!',
+  chainSuffix:' EM COMBO!', chainFloat:' em combo ', chainKanji:false,
+  orderHead:'PEDIDO', orderWait:'Aguardando o próximo pedido…',
+  noren2:'Noren x', pieces:' un.', orderFail:'Desculpe, chef…',
+  bestChain:' · melhor combo ', bestChainTail:'', modeTag:'[Pedidos] ',
+  loading:'Carregando…', sending:'Enviando…',
+  needName:'Digite um nome.', anon:'Anônimo',
+  today:'Hoje', allTime:'Geral', placePre:'#', place:'', outsidePre:'fora do top ', outside:'',
+  emptyDay:'Ninguém serviu hoje ainda. Seja o primeiro.',
+  emptyAll:'Ainda não há ninguém na classificação.',
+  loadFail:'Não foi possível carregar a classificação.',
+  errFull:'A classificação está cheia; a pontuação não foi registrada.',
+  errBusy:'Muito movimento agora. Tente de novo daqui a pouco.',
+  errMismatch:'O registro da partida não bateu, então a pontuação não foi publicada.',
+  errTooLong:'A partida foi longa demais para registrar; não dá para publicar.',
+  errNet:'Não foi possível conectar à classificação. Confira sua conexão e tente de novo.',
+  scopeFree:'Omakase', scopeOrder:'Pedidos',
+  scopeDay:'hoje (JST ', scopeDayEnd:')', scopeAll:'geral', scopeTail:'',
+  shouts:['Saindo!','Excelente!','Que mãos!','Isso é Edomae!','Belo trabalho!','Aqui está!'],
+  cheers:['Saindo!','Aqui está!','Muito obrigado!'], cheerTop:'O melhor do Japão!',
+  ranks:[['Aprendiz','Três anos só para o arroz.'],['Auxiliar','Essas mãos estão aprendendo.'],
+         ['Itamae Júnior','Bom trabalho aí atrás.'],['Chef de Sushi','Os clientes já pedem por você.'],
+         ['Chefe de Cozinha','O balcão é seu.'],['Taisho','Esse nigiri vale ouro.'],
+         ['Itamae Lendário','Aqui está. — Intocável.']]
+};
+
+TXT.fr = {
+  title:'SUSHI TSUMU', sub:'UN CASSE-TÊTE EDOMAE',
+  lblScore:'SCORE', lblHi:'RECORD', lblNext:'SUIVANT',
+  sndOn:'SON', sndOff:'MUET', langTitle:'LANGUE',
+  modeFree:'OMAKASE', modeFreeSub:'Empilez à votre guise',
+  modeOrder:'COMMANDES', modeOrderSub:'Pourboire par commande, plus en chaîne',
+  openRank:'CLASSEMENT', rankShort:'CLASSEMENT',
+  hint1:'Glissez pour viser, relâchez pour lâcher.',
+  hint2:'Les neta identiques fusionnent au contact.',
+  hint3:'Un morceau de « gari » efface un neta qu’il touche.',
+  over:'SERVICE TERMINÉ', namePh:'Nom (12 max)', send:'ENVOYER', retry:'ENCORE UNE',
+  rankTitle:'CLASSEMENT', tabDay:'AUJOURD’HUI', tabAll:'GÉNÉRAL',
+  tabNormal:'OMAKASE', tabOrder:'COMMANDES', close:'FERMER',
+  libTitle:'PAS PRÊT', libBody:'Le moteur physique n’a pas pu démarrer.<br>Rechargez la page.',
+  adTitle:'PUBLICITÉ', adBody:'Retour au jeu dans un instant',
+  rotate:'Tournez l’appareil<br>à la verticale pour jouer',
+  danger:'AU RAS DU NOREN', gari:'GARI',
+  gariPop:'Palais nettoyé !', jackpot:'GROS LOT !', megaChain:'MÉGA-CHAÎNE !', newBest:'NOUVEAU RECORD !',
+  chainSuffix:' EN CHAÎNE !', chainFloat:' en chaîne ', chainKanji:false,
+  orderHead:'COMMANDE', orderWait:'En attente de la prochaine commande…',
+  noren2:'Noren x', pieces:' pc', orderFail:'Désolé, chef…',
+  bestChain:' · meilleure chaîne ', bestChainTail:'', modeTag:'[Commandes] ',
+  loading:'Chargement…', sending:'Envoi…',
+  needName:'Entrez un nom.', anon:'Anonyme',
+  today:'Aujourd’hui', allTime:'Général', placePre:'#', place:'', outsidePre:'hors du top ', outside:'',
+  emptyDay:'Personne n’a servi aujourd’hui. À vous l’honneur.',
+  emptyAll:'Personne au classement pour l’instant.',
+  loadFail:'Impossible de charger le classement.',
+  errFull:'Le classement est plein, le score n’a pas été enregistré.',
+  errBusy:'Trop de monde en ce moment. Réessayez dans un instant.',
+  errMismatch:'Le relevé de la partie ne concorde pas, le score n’a pas été publié.',
+  errTooLong:'La partie était trop longue pour être enregistrée ; impossible de la publier.',
+  errNet:'Impossible de joindre le classement. Vérifiez votre connexion et réessayez.',
+  scopeFree:'Omakase', scopeOrder:'Commandes',
+  scopeDay:'aujourd’hui (JST ', scopeDayEnd:')', scopeAll:'général', scopeTail:'',
+  shouts:['Ça marche !','Sublime !','Quelles mains !','Ça, c’est Edomae !','Beau travail !','Et voilà !'],
+  cheers:['Ça marche !','Et voilà !','Merci beaucoup !'], cheerTop:'Le meilleur du Japon !',
+  ranks:[['Apprenti','Trois ans rien que pour le riz.'],['Commis','Ces mains apprennent.'],
+         ['Itamae Junior','Du bon travail, là-derrière.'],['Chef Sushi','Les habitués vous réclament.'],
+         ['Chef de Cuisine','Le comptoir est à vous.'],['Taisho','Ce nigiri vaut de l’or.'],
+         ['Itamae Légendaire','Et voilà. — Intouchable.']]
+};
+
+TXT.de = {
+  title:'SUSHI TSUMU', sub:'EIN EDOMAE-MERGE-PUZZLE',
+  lblScore:'PUNKTE', lblHi:'REKORD', lblNext:'NÄCHSTE',
+  sndOn:'TON AN', sndOff:'TON AUS', langTitle:'SPRACHE',
+  modeFree:'OMAKASE', modeFreeSub:'Stapeln, so viel Sie mögen',
+  modeOrder:'BESTELLUNGEN', modeOrderSub:'Trinkgeld pro Bestellung, mehr für Ketten',
+  openRank:'BESTENLISTE', rankShort:'LISTE',
+  hint1:'Ziehen zum Zielen, loslassen zum Fallenlassen.',
+  hint2:'Gleiche Neta verschmelzen bei Berührung.',
+  hint3:'Ein Stück „Gari“ entfernt ein Neta, das es berührt.',
+  over:'FEIERABEND', namePh:'Name (max. 12)', send:'EINTRAGEN', retry:'NOCH EINE',
+  rankTitle:'BESTENLISTE', tabDay:'HEUTE', tabAll:'GESAMT',
+  tabNormal:'OMAKASE', tabOrder:'BESTELLUNGEN', close:'SCHLIESSEN',
+  libTitle:'NICHT BEREIT', libBody:'Die Physik-Engine konnte nicht starten.<br>Bitte laden Sie die Seite neu.',
+  adTitle:'WERBUNG', adBody:'Gleich geht es weiter',
+  rotate:'Bitte das Gerät<br>hochkant halten',
+  danger:'AN DER NOREN-KANTE', gari:'GARI',
+  gariPop:'Gaumen erfrischt!', jackpot:'HAUPTGEWINN!', megaChain:'MEGAKETTE!', newBest:'NEUER REKORD!',
+  chainSuffix:'ER-KETTE!', chainFloat:'er-Kette ', chainKanji:false,
+  orderHead:'BESTELLUNG', orderWait:'Warte auf die nächste Bestellung…',
+  noren2:'Noren x', pieces:' St.', orderFail:'Verzeihung, Chef…',
+  bestChain:' · beste Kette ', bestChainTail:'', modeTag:'[Bestellungen] ',
+  loading:'Lädt…', sending:'Wird gesendet…',
+  needName:'Bitte einen Namen eingeben.', anon:'Namenlos',
+  today:'Heute', allTime:'Gesamt', placePre:'#', place:'', outsidePre:'außerhalb der Top ', outside:'',
+  emptyDay:'Heute hat noch niemand serviert. Machen Sie den Anfang.',
+  emptyAll:'Noch niemand auf der Bestenliste.',
+  loadFail:'Bestenliste konnte nicht geladen werden.',
+  errFull:'Die Bestenliste ist voll, die Punktzahl wurde nicht eingetragen.',
+  errBusy:'Gerade viel los. Bitte gleich noch einmal versuchen.',
+  errMismatch:'Der Spielverlauf stimmte nicht, die Punktzahl wurde nicht eingetragen.',
+  errTooLong:'Die Partie war zu lang zum Aufzeichnen und kann nicht eingetragen werden.',
+  errNet:'Keine Verbindung zur Bestenliste. Bitte Verbindung prüfen und erneut versuchen.',
+  scopeFree:'Omakase', scopeOrder:'Bestellungen',
+  scopeDay:'heute (JST ', scopeDayEnd:')', scopeAll:'gesamt', scopeTail:'',
+  shouts:['Kommt sofort!','Vorzüglich!','Was für Hände!','Das ist Edomae!','Schöne Arbeit!','Bitte sehr!'],
+  cheers:['Kommt sofort!','Bitte sehr!','Herzlichen Dank!'], cheerTop:'Der Beste Japans!',
+  ranks:[['Lehrling','Drei Jahre nur für den Reis.'],['Küchenhilfe','Diese Hände lernen dazu.'],
+         ['Junior-Itamae','Gute Arbeit da hinten.'],['Sushi-Koch','Die Stammgäste fragen nach Ihnen.'],
+         ['Küchenchef','Der Tresen gehört Ihnen.'],['Taisho','Dieses Nigiri ist Gold wert.'],
+         ['Legendärer Itamae','Bitte sehr. — Unantastbar.']]
+};
+
+TXT.it = {
+  title:'SUSHI TSUMU', sub:'UN ROMPICAPO EDOMAE',
+  lblScore:'PUNTI', lblHi:'RECORD', lblNext:'PROSSIMO',
+  sndOn:'AUDIO', sndOff:'MUTO', langTitle:'LINGUA',
+  modeFree:'OMAKASE', modeFreeSub:'Impila quanto vuoi',
+  modeOrder:'ORDINI', modeOrderSub:'Mancia per ordine, di più con le catene',
+  openRank:'CLASSIFICA', rankShort:'CLASSIFICA',
+  hint1:'Trascina per mirare, rilascia per far cadere.',
+  hint2:'I neta uguali si fondono al contatto.',
+  hint3:'Un pezzo di “gari” cancella un neta che tocca.',
+  over:'SERVIZIO FINITO', namePh:'Nome (max 12)', send:'INVIA', retry:'ANCORA UNA',
+  rankTitle:'CLASSIFICA', tabDay:'OGGI', tabAll:'GENERALE',
+  tabNormal:'OMAKASE', tabOrder:'ORDINI', close:'CHIUDI',
+  libTitle:'NON PRONTO', libBody:'Impossibile avviare il motore fisico.<br>Ricarica la pagina.',
+  adTitle:'PUBBLICITÀ', adBody:'Si torna a giocare tra un istante',
+  rotate:'Ruota il dispositivo<br>in verticale per giocare',
+  danger:'AL BORDO DEL NOREN', gari:'GARI',
+  gariPop:'Palato pulito!', jackpot:'JACKPOT!', megaChain:'MEGACATENA!', newBest:'NUOVO RECORD!',
+  chainSuffix:' IN CATENA!', chainFloat:' in catena ', chainKanji:false,
+  orderHead:'ORDINE', orderWait:'In attesa del prossimo ordine…',
+  noren2:'Noren x', pieces:' pz', orderFail:'Mi scusi, chef…',
+  bestChain:' · catena migliore ', bestChainTail:'', modeTag:'[Ordini] ',
+  loading:'Caricamento…', sending:'Invio…',
+  needName:'Inserisci un nome.', anon:'Anonimo',
+  today:'Oggi', allTime:'Generale', placePre:'#', place:'', outsidePre:'fuori dai primi ', outside:'',
+  emptyDay:'Oggi non ha ancora servito nessuno. Tocca a te.',
+  emptyAll:'Ancora nessuno in classifica.',
+  loadFail:'Impossibile caricare la classifica.',
+  errFull:'La classifica è piena, il punteggio non è stato registrato.',
+  errBusy:'C’è molto traffico. Riprova tra poco.',
+  errMismatch:'Il registro della partita non torna, il punteggio non è stato pubblicato.',
+  errTooLong:'La partita è stata troppo lunga da registrare: non si può pubblicare.',
+  errNet:'Impossibile raggiungere la classifica. Controlla la connessione e riprova.',
+  scopeFree:'Omakase', scopeOrder:'Ordini',
+  scopeDay:'oggi (JST ', scopeDayEnd:')', scopeAll:'generale', scopeTail:'',
+  shouts:['Arriva subito!','Sublime!','Che mani!','Questo è Edomae!','Bel lavoro!','Ecco a lei!'],
+  cheers:['Arriva subito!','Ecco a lei!','Grazie mille!'], cheerTop:'Il migliore del Giappone!',
+  ranks:[['Apprendista','Tre anni solo per il riso.'],['Aiutante','Quelle mani stanno imparando.'],
+         ['Itamae Junior','Bel lavoro, là dietro.'],['Chef di Sushi','Gli habitué chiedono di te.'],
+         ['Capo Cuoco','Il bancone è tuo.'],['Taisho','Quel nigiri vale oro.'],
+         ['Itamae Leggendario','Ecco a lei. — Intoccabile.']]
+};
+
+TXT.pl = {
+  title:'SUSHI TSUMU', sub:'ŁAMIGŁÓWKA W STYLU EDOMAE',
+  lblScore:'WYNIK', lblHi:'REKORD', lblNext:'NASTĘPNY',
+  sndOn:'DŹWIĘK', sndOff:'WYCISZ', langTitle:'JĘZYK',
+  modeFree:'OMAKASE', modeFreeSub:'Układaj do woli',
+  modeOrder:'ZAMÓWIENIA', modeOrderSub:'Napiwek za zamówienie, więcej za serie',
+  openRank:'RANKING', rankShort:'RANKING',
+  hint1:'Przeciągnij, aby wycelować, puść, aby upuścić.',
+  hint2:'Takie same neta łączą się przy zetknięciu.',
+  hint3:'Kawałek „gari” usuwa jedno neta, którego dotknie.',
+  over:'KONIEC ZMIANY', namePh:'Imię (do 12 znaków)', send:'WYŚLIJ', retry:'JESZCZE RAZ',
+  rankTitle:'RANKING', tabDay:'DZIŚ', tabAll:'OGÓLNY',
+  tabNormal:'OMAKASE', tabOrder:'ZAMÓWIENIA', close:'ZAMKNIJ',
+  libTitle:'NIEGOTOWE', libBody:'Nie udało się uruchomić silnika fizyki.<br>Odśwież stronę.',
+  adTitle:'REKLAMA', adBody:'Za chwilę wracamy do gry',
+  rotate:'Obróć urządzenie<br>pionowo, aby zagrać',
+  danger:'PRZY SAMEJ NOREN', gari:'GARI',
+  gariPop:'Podniebienie oczyszczone!', jackpot:'KUMULACJA!', megaChain:'MEGASERIA!', newBest:'NOWY REKORD!',
+  chainSuffix:'-SERIA!', chainFloat:'-seria ', chainKanji:false,
+  orderHead:'ZAMÓWIENIE', orderWait:'Czekam na kolejne zamówienie…',
+  noren2:'Noren x', pieces:' szt.', orderFail:'Przepraszam, szefie…',
+  bestChain:' · najlepsza seria ', bestChainTail:'', modeTag:'[Zamówienia] ',
+  loading:'Wczytywanie…', sending:'Wysyłanie…',
+  needName:'Wpisz imię.', anon:'Bezimienny',
+  today:'Dziś', allTime:'Ogólny', placePre:'#', place:'', outsidePre:'poza pierwszą ', outside:'',
+  emptyDay:'Dziś nikt jeszcze nie serwował. Bądź pierwszy.',
+  emptyAll:'Nikogo jeszcze nie ma w rankingu.',
+  loadFail:'Nie udało się wczytać rankingu.',
+  errFull:'Ranking jest pełny, wynik nie został zapisany.',
+  errBusy:'Duży ruch. Spróbuj ponownie za chwilę.',
+  errMismatch:'Zapis rozgrywki się nie zgadza, więc wynik nie został opublikowany.',
+  errTooLong:'Ta partia była zbyt długa, by ją zapisać, więc nie można jej opublikować.',
+  errNet:'Nie udało się połączyć z rankingiem. Sprawdź połączenie i spróbuj ponownie.',
+  scopeFree:'Omakase', scopeOrder:'Zamówienia',
+  scopeDay:'dziś (JST ', scopeDayEnd:')', scopeAll:'ogólny', scopeTail:'',
+  shouts:['Już podaję!','Wyśmienite!','Ale ręka!','To jest Edomae!','Piękna robota!','Proszę bardzo!'],
+  cheers:['Już podaję!','Proszę bardzo!','Serdecznie dziękuję!'], cheerTop:'Najlepszy w Japonii!',
+  ranks:[['Uczeń','Trzy lata tylko na ryż.'],['Pomocnik','Te ręce się uczą.'],
+         ['Młodszy Itamae','Dobra robota tam z tyłu.'],['Kucharz Sushi','Stali goście już o ciebie pytają.'],
+         ['Szef Kuchni','Bar należy do ciebie.'],['Taisho','To nigiri jest warte fortunę.'],
+         ['Legendarny Itamae','Proszę bardzo. — Nietykalny.']]
+};
+
+TXT.tr = {
+  title:'SUSHI TSUMU', sub:'BİR EDOMAE BİRLEŞTİRME BULMACASI',
+  lblScore:'PUAN', lblHi:'REKOR', lblNext:'SIRADAKİ',
+  sndOn:'SES AÇIK', sndOff:'SES KAPALI', langTitle:'DİL',
+  modeFree:'OMAKASE', modeFreeSub:'Gönlünce istifle',
+  modeOrder:'SİPARİŞLER', modeOrderSub:'Siparişe bahşiş, zincire fazlası',
+  openRank:'SIRALAMA', rankShort:'SIRALAMA',
+  hint1:'Nişan almak için sürükle, bırakmak için parmağını kaldır.',
+  hint2:'Aynı netalar değince birleşir.',
+  hint3:'Bir parça “gari” dokunduğu bir netayı siler.',
+  over:'PAYDOS', namePh:'İsim (en fazla 12)', send:'GÖNDER', retry:'BİR TANE DAHA',
+  rankTitle:'SIRALAMA', tabDay:'BUGÜN', tabAll:'GENEL',
+  tabNormal:'OMAKASE', tabOrder:'SİPARİŞLER', close:'KAPAT',
+  libTitle:'HAZIR DEĞİL', libBody:'Fizik motoru başlatılamadı.<br>Lütfen sayfayı yenileyin.',
+  adTitle:'REKLAM', adBody:'Birazdan oyuna dönüyoruz',
+  rotate:'Oynamak için cihazı<br>dik tutun',
+  danger:'NOREN HİZASINDA', gari:'GARI',
+  gariPop:'Damak temizlendi!', jackpot:'BÜYÜK İKRAMİYE!', megaChain:'MEGA ZİNCİR!', newBest:'YENİ REKOR!',
+  chainSuffix:'Lİ ZİNCİR!', chainFloat:'li zincir ', chainKanji:false,
+  orderHead:'SİPARİŞ', orderWait:'Sıradaki sipariş bekleniyor…',
+  noren2:'Noren x', pieces:' adet', orderFail:'Kusura bakmayın şef…',
+  bestChain:' · en iyi zincir ', bestChainTail:'', modeTag:'[Siparişler] ',
+  loading:'Yükleniyor…', sending:'Gönderiliyor…',
+  needName:'Lütfen bir isim girin.', anon:'İsimsiz',
+  today:'Bugün', allTime:'Genel', placePre:'#', place:'', outsidePre:'ilk ', outside:' dışında',
+  emptyDay:'Bugün henüz kimse servis yapmadı. İlk siz olun.',
+  emptyAll:'Sıralamada henüz kimse yok.',
+  loadFail:'Sıralama yüklenemedi.',
+  errFull:'Sıralama dolu, puan kaydedilmedi.',
+  errBusy:'Şu anda yoğunluk var. Az sonra tekrar deneyin.',
+  errMismatch:'Oyun kaydı tutmadı, bu yüzden puan yayınlanmadı.',
+  errTooLong:'Bu oyun kaydedilemeyecek kadar uzun sürdü, yayınlanamıyor.',
+  errNet:'Sıralamaya ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin.',
+  scopeFree:'Omakase', scopeOrder:'Siparişler',
+  scopeDay:'bugün (JST ', scopeDayEnd:')', scopeAll:'genel', scopeTail:'',
+  shouts:['Hemen geliyor!','Muhteşem!','Ne eller ama!','İşte Edomae bu!','Güzel iş!','Buyurun!'],
+  cheers:['Hemen geliyor!','Buyurun!','Çok teşekkürler!'], cheerTop:'Japonya birincisi!',
+  ranks:[['Çırak','Sırf pirinç için üç yıl.'],['Hazırlıkçı','O eller öğreniyor.'],
+         ['Genç Itamae','Arkada güzel iş çıkıyor.'],['Suşi Şefi','Müdavimler sizi soruyor.'],
+         ['Mutfak Şefi','Tezgâh sizin.'],['Taisho','O nigiri altın değerinde.'],
+         ['Efsanevi Itamae','Buyurun. — Dokunulmaz.']]
+};
+
+TXT.ru = {
+  title:'SUSHI TSUMU', sub:'ГОЛОВОЛОМКА В СТИЛЕ ЭДОМАЭ',
+  lblScore:'ОЧКИ', lblHi:'РЕКОРД', lblNext:'ДАЛЕЕ',
+  sndOn:'ЗВУК ВКЛ', sndOff:'ЗВУК ВЫКЛ', langTitle:'ЯЗЫК',
+  modeFree:'ОМАКАСЭ', modeFreeSub:'Складывайте сколько душе угодно',
+  modeOrder:'ЗАКАЗЫ', modeOrderSub:'Чаевые за заказ, больше за серии',
+  openRank:'ТАБЛИЦА РЕКОРДОВ', rankShort:'РЕКОРДЫ',
+  hint1:'Ведите пальцем, чтобы прицелиться, отпустите — упадёт.',
+  hint2:'Одинаковые нэта сливаются при касании.',
+  hint3:'Кусочек «гари» убирает одну нэта, которой коснётся.',
+  over:'СМЕНА ОКОНЧЕНА', namePh:'Имя (до 12 знаков)', send:'ОТПРАВИТЬ', retry:'ЕЩЁ РАЗ',
+  rankTitle:'ТАБЛИЦА РЕКОРДОВ', tabDay:'СЕГОДНЯ', tabAll:'ЗА ВСЁ ВРЕМЯ',
+  tabNormal:'ОМАКАСЭ', tabOrder:'ЗАКАЗЫ', close:'ЗАКРЫТЬ',
+  libTitle:'НЕ ГОТОВО', libBody:'Не удалось запустить физический движок.<br>Обновите страницу.',
+  adTitle:'РЕКЛАМА', adBody:'Через мгновение вернёмся к игре',
+  rotate:'Поверните устройство<br>вертикально, чтобы играть',
+  danger:'У САМОЙ НОРЭН', gari:'ГАРИ',
+  gariPop:'Вкус освежён!', jackpot:'ДЖЕКПОТ!', megaChain:'МЕГАСЕРИЯ!', newBest:'НОВЫЙ РЕКОРД!',
+  chainSuffix:'-Я СЕРИЯ!', chainFloat:'-я серия ', chainKanji:false,
+  orderHead:'ЗАКАЗ', orderWait:'Ждём следующий заказ…',
+  noren2:'Норэн x', pieces:' шт.', orderFail:'Простите, шеф…',
+  bestChain:' · лучшая серия ', bestChainTail:'', modeTag:'[Заказы] ',
+  loading:'Загрузка…', sending:'Отправка…',
+  needName:'Введите имя.', anon:'Безымянный',
+  today:'Сегодня', allTime:'За всё время', placePre:'#', place:'', outsidePre:'вне первых ', outside:'',
+  emptyDay:'Сегодня ещё никто не подавал. Будьте первым.',
+  emptyAll:'В таблице пока никого нет.',
+  loadFail:'Не удалось загрузить таблицу рекордов.',
+  errFull:'Таблица заполнена, результат не записан.',
+  errBusy:'Сейчас много запросов. Попробуйте чуть позже.',
+  errMismatch:'Запись партии не сошлась, поэтому результат не опубликован.',
+  errTooLong:'Партия оказалась слишком длинной для записи, опубликовать её нельзя.',
+  errNet:'Не удалось связаться с таблицей. Проверьте соединение и попробуйте снова.',
+  scopeFree:'Омакасэ', scopeOrder:'Заказы',
+  scopeDay:'сегодня (JST ', scopeDayEnd:')', scopeAll:'за всё время', scopeTail:'',
+  neta:['Сяри','Тамаго','Эби','Лосось','Магуро','Икура гункан','Уни гункан','Оторо','Анаго','Исэ-эби','Золотая окэ'],
+  shouts:['Сейчас подам!','Превосходно!','Вот это руки!','Вот это Эдомаэ!','Отличная работа!','Прошу!'],
+  cheers:['Сейчас подам!','Прошу вас!','Благодарю сердечно!'], cheerTop:'Лучший в Японии!',
+  ranks:[['Ученик','Три года — и всё ради риса.'],['Подручный','Эти руки уже кое-что умеют.'],
+         ['Младший итамаэ','Хорошая работа там, за стойкой.'],['Повар суси','Постоянные гости спрашивают о вас.'],
+         ['Шеф-повар','Стойка ваша.'],['Тайсё','Эта нигири на вес золота.'],
+         ['Легендарный итамаэ','Прошу. — Недосягаем.']]
+};
+
+TXT.id = {
+  title:'SUSHI TSUMU', sub:'TEKA-TEKI GABUNG ALA EDOMAE',
+  lblScore:'SKOR', lblHi:'REKOR', lblNext:'BERIKUTNYA',
+  sndOn:'SUARA', sndOff:'SENYAP', langTitle:'BAHASA',
+  modeFree:'OMAKASE', modeFreeSub:'Tumpuk sepuasnya',
+  modeOrder:'PESANAN', modeOrderSub:'Tip tiap pesanan, lebih banyak untuk rantai',
+  openRank:'PAPAN PERINGKAT', rankShort:'PERINGKAT',
+  hint1:'Geser untuk membidik, lepas untuk menjatuhkan.',
+  hint2:'Neta yang sama menyatu saat bersentuhan.',
+  hint3:'Sepotong “gari” menghapus satu neta yang disentuhnya.',
+  over:'TUTUP TOKO', namePh:'Nama (maks. 12)', send:'KIRIM', retry:'SEKALI LAGI',
+  rankTitle:'PAPAN PERINGKAT', tabDay:'HARI INI', tabAll:'SEPANJANG MASA',
+  tabNormal:'OMAKASE', tabOrder:'PESANAN', close:'TUTUP',
+  libTitle:'BELUM SIAP', libBody:'Mesin fisika tidak dapat dijalankan.<br>Silakan muat ulang halaman.',
+  adTitle:'IKLAN', adBody:'Sebentar lagi kembali ke permainan',
+  rotate:'Putar perangkat<br>ke posisi tegak untuk bermain',
+  danger:'DI BATAS NOREN', gari:'GARI',
+  gariPop:'Lidah disegarkan!', jackpot:'JACKPOT!', megaChain:'MEGA RANTAI!', newBest:'REKOR BARU!',
+  chainSuffix:' RANTAI!', chainFloat:' rantai ', chainKanji:false,
+  orderHead:'PESANAN', orderWait:'Menunggu pesanan berikutnya…',
+  noren2:'Noren x', pieces:' bh', orderFail:'Maaf, chef…',
+  bestChain:' · rantai terbaik ', bestChainTail:'', modeTag:'[Pesanan] ',
+  loading:'Memuat…', sending:'Mengirim…',
+  needName:'Masukkan nama.', anon:'Tanpa nama',
+  today:'Hari ini', allTime:'Sepanjang masa', placePre:'#', place:'', outsidePre:'di luar ', outside:' besar',
+  emptyDay:'Hari ini belum ada yang menyajikan. Jadilah yang pertama.',
+  emptyAll:'Belum ada siapa pun di papan peringkat.',
+  loadFail:'Papan peringkat tidak dapat dimuat.',
+  errFull:'Papan peringkat penuh, skor tidak tercatat.',
+  errBusy:'Sedang ramai. Coba lagi sebentar.',
+  errMismatch:'Catatan permainan tidak cocok, jadi skor tidak dipasang.',
+  errTooLong:'Permainan terlalu panjang untuk dicatat, jadi tidak bisa dipasang.',
+  errNet:'Tidak dapat terhubung ke papan peringkat. Periksa koneksi dan coba lagi.',
+  scopeFree:'Omakase', scopeOrder:'Pesanan',
+  scopeDay:'hari ini (JST ', scopeDayEnd:')', scopeAll:'sepanjang masa', scopeTail:'',
+  shouts:['Segera datang!','Istimewa!','Tangan yang hebat!','Ini baru Edomae!','Kerja bagus!','Silakan!'],
+  cheers:['Segera datang!','Silakan!','Terima kasih banyak!'], cheerTop:'Terbaik se-Jepang!',
+  ranks:[['Murid','Tiga tahun hanya untuk nasinya.'],['Pembantu Dapur','Tangan itu mulai terlatih.'],
+         ['Itamae Muda','Kerja bagus di balik meja.'],['Koki Sushi','Pelanggan tetap mulai mencari Anda.'],
+         ['Kepala Koki','Meja ini milik Anda.'],['Taisho','Nigiri itu setara emas.'],
+         ['Itamae Legendaris','Silakan. — Tak tersentuh.']]
+};
+
+TXT.vi = {
+  title:'SUSHI TSUMU', sub:'TRÒ GHÉP HÌNH KIỂU EDOMAE',
+  lblScore:'ĐIỂM', lblHi:'KỶ LỤC', lblNext:'TIẾP THEO',
+  sndOn:'CÓ ÂM', sndOff:'TẮT ÂM', langTitle:'NGÔN NGỮ',
+  modeFree:'OMAKASE', modeFreeSub:'Xếp thỏa thích',
+  modeOrder:'ĐƠN HÀNG', modeOrderSub:'Tiền thưởng mỗi đơn, chuỗi càng dài càng nhiều',
+  openRank:'BẢNG XẾP HẠNG', rankShort:'XẾP HẠNG',
+  hint1:'Kéo để ngắm, thả ra để rơi.',
+  hint2:'Các neta giống nhau chạm vào sẽ hợp lại.',
+  hint3:'Một miếng “gari” xóa một neta mà nó chạm phải.',
+  over:'HẾT CA', namePh:'Tên (tối đa 12)', send:'GỬI', retry:'THÊM VÁN NỮA',
+  rankTitle:'BẢNG XẾP HẠNG', tabDay:'HÔM NAY', tabAll:'MỌI LÚC',
+  tabNormal:'OMAKASE', tabOrder:'ĐƠN HÀNG', close:'ĐÓNG',
+  libTitle:'CHƯA SẴN SÀNG', libBody:'Không khởi động được bộ máy vật lý.<br>Vui lòng tải lại trang.',
+  adTitle:'QUẢNG CÁO', adBody:'Lát nữa sẽ quay lại trò chơi',
+  rotate:'Vui lòng xoay thiết bị<br>dọc để chơi',
+  danger:'SÁT MÉP NOREN', gari:'GARI',
+  gariPop:'Sạch vị!', jackpot:'TRÚNG LỚN!', megaChain:'SIÊU CHUỖI!', newBest:'KỶ LỤC MỚI!',
+  chainSuffix:' CHUỖI!', chainFloat:' chuỗi ', chainKanji:false,
+  orderHead:'ĐƠN HÀNG', orderWait:'Đang chờ đơn tiếp theo…',
+  noren2:'Noren x', pieces:' miếng', orderFail:'Xin lỗi đầu bếp…',
+  bestChain:' · chuỗi tốt nhất ', bestChainTail:'', modeTag:'[Đơn hàng] ',
+  loading:'Đang tải…', sending:'Đang gửi…',
+  needName:'Hãy nhập tên.', anon:'Vô danh',
+  today:'Hôm nay', allTime:'Mọi lúc', placePre:'#', place:'', outsidePre:'ngoài top ', outside:'',
+  emptyDay:'Hôm nay chưa ai phục vụ. Hãy là người đầu tiên.',
+  emptyAll:'Chưa có ai trên bảng xếp hạng.',
+  loadFail:'Không tải được bảng xếp hạng.',
+  errFull:'Bảng xếp hạng đã đầy, điểm không được ghi.',
+  errBusy:'Đang đông. Vui lòng thử lại sau giây lát.',
+  errMismatch:'Bản ghi ván chơi không khớp nên điểm không được đăng.',
+  errTooLong:'Ván này quá dài để ghi lại nên không thể đăng.',
+  errNet:'Không kết nối được bảng xếp hạng. Kiểm tra mạng rồi thử lại.',
+  scopeFree:'Omakase', scopeOrder:'Đơn hàng',
+  scopeDay:'hôm nay (JST ', scopeDayEnd:')', scopeAll:'mọi lúc', scopeTail:'',
+  shouts:['Có ngay!','Tuyệt hảo!','Đôi tay cừ thật!','Đúng chất Edomae!','Làm đẹp lắm!','Mời quý khách!'],
+  cheers:['Có ngay!','Mời quý khách!','Xin cảm ơn!'], cheerTop:'Nhất Nhật Bản!',
+  ranks:[['Học việc','Ba năm chỉ để nấu cơm.'],['Phụ bếp','Đôi tay đang lên tay nghề.'],
+         ['Itamae Trẻ','Làm tốt lắm, phía sau quầy.'],['Đầu bếp Sushi','Khách quen đã hỏi đến bạn.'],
+         ['Bếp trưởng','Quầy này là của bạn.'],['Taisho','Miếng nigiri ấy đáng giá ngàn vàng.'],
+         ['Itamae Huyền thoại','Mời quý khách. — Không ai bì kịp.']]
+};
+
+TXT.ko = {
+  title:'SUSHI TSUMU', sub:'에도마에 합체 퍼즐',
+  lblScore:'점수', lblHi:'최고 기록', lblNext:'다음',
+  sndOn:'소리 켬', sndOff:'소리 끔', langTitle:'언어',
+  modeFree:'오마카세', modeFreeSub:'마음껏 쌓아 보세요',
+  modeOrder:'주문', modeOrderSub:'주문마다 팁, 연쇄엔 덤',
+  openRank:'순위표 보기', rankShort:'순위표',
+  hint1:'끌어서 자리를 정하고, 떼면 떨어집니다.',
+  hint2:'같은 네타끼리 닿으면 합쳐집니다.',
+  hint3:'‘가리’는 닿은 네타 하나를 지웁니다.',
+  over:'영업 종료', namePh:'이름 (12자까지)', send:'올리기', retry:'한 판 더',
+  rankTitle:'순위표', tabDay:'오늘', tabAll:'전체',
+  tabNormal:'오마카세', tabOrder:'주문', close:'닫기',
+  libTitle:'준비 중', libBody:'물리 엔진을 시작할 수 없었습니다.<br>페이지를 새로 고쳐 주세요.',
+  adTitle:'광고', adBody:'잠시 후 게임으로 돌아갑니다',
+  rotate:'화면을 세로로 돌려<br>즐겨 주세요',
+  danger:'노렌 코앞', gari:'가리',
+  gariPop:'입가심!', jackpot:'대박!', megaChain:'대연쇄!', newBest:'자기 최고!',
+  chainSuffix:'연쇄!', chainFloat:'연쇄 ', chainKanji:false,
+  orderHead:'주문', orderWait:'다음 주문을 기다리는 중…',
+  noren2:'노렌 x', pieces:'점', orderFail:'죄송합니다…',
+  bestChain:' · 최고 ', bestChainTail:'연쇄', modeTag:'[주문] ',
+  loading:'불러오는 중…', sending:'보내는 중…',
+  needName:'이름을 입력해 주세요.', anon:'이름 없음',
+  today:'오늘', allTime:'전체', placePre:'', place:'위', outsidePre:'', outside:'위 밖',
+  emptyDay:'오늘은 아직 아무도 쥐지 않았습니다. 첫 손님이 되어 주세요.',
+  emptyAll:'아직 순위표에 아무도 없습니다.',
+  loadFail:'순위표를 불러오지 못했습니다.',
+  errFull:'순위표가 가득 차서 등록하지 못했습니다.',
+  errBusy:'지금 붐빕니다. 잠시 후 다시 시도해 주세요.',
+  errMismatch:'기록이 맞지 않아 순위표에 올리지 못했습니다.',
+  errTooLong:'한 판이 너무 길어 기록하지 못했습니다. 순위표에 올릴 수 없습니다.',
+  errNet:'순위표에 연결하지 못했습니다. 통신 상태를 확인하고 다시 시도해 주세요.',
+  scopeFree:'오마카세', scopeOrder:'주문', dot:' · ', gap:'　',
+  scopeDay:'오늘 (일본시간 ', scopeDayEnd:')', scopeAll:'전체', scopeTail:' 상위',
+  neta:['샤리','타마고','에비','연어','마구로','이쿠라 군함','우니 군함','오토로','아나고','이세에비','황금 스시통'],
+  shouts:['자, 나왔습니다!','최상급!','손끝이 좋으시네!','이게 바로 에도마에!','좋은 솜씨!','올라갑니다!'],
+  cheers:['자, 나왔습니다!','여기 있습니다!','감사합니다!'], cheerTop:'일본 제일!',
+  ranks:[['견습','밥 짓기만 삼 년.'],['잔심부름꾼','손놀림이 좋아졌군요.'],
+         ['젊은 장인','일 잘하시네요.'],['중견 장인','단골이 붙기 시작한 솜씨.'],
+         ['수석 장인','주방을 맡는 사람.'],['대장','그 초밥, 천금의 값어치.'],
+         ['전설의 스시 장인','자, 나왔습니다. —— 신의 경지.']]
+};
+
+TXT.zh = {
+  title:'SUSHI TSUMU', sub:'江户前合体解谜',
+  lblScore:'分数', lblHi:'最高分', lblNext:'下一个',
+  sndOn:'声音开', sndOff:'声音关', langTitle:'语言',
+  modeFree:'厨师发办', modeFreeSub:'尽情堆叠',
+  modeOrder:'点单', modeOrderSub:'每单有赏，连锁更多',
+  openRank:'查看排行榜', rankShort:'排行榜',
+  hint1:'拖动瞄准，松手落下。',
+  hint2:'相同的寿司料相碰即合体。',
+  hint3:'一片“姜片”会消掉碰到的一个寿司料。',
+  over:'打烊', namePh:'名字（最多 12 字）', send:'上榜', retry:'再来一局',
+  rankTitle:'排行榜', tabDay:'今日', tabAll:'总榜',
+  tabNormal:'厨师发办', tabOrder:'点单', close:'关闭',
+  libTitle:'尚未就绪', libBody:'物理引擎无法启动。<br>请重新载入页面。',
+  adTitle:'广告', adBody:'稍后立即回到游戏',
+  rotate:'请将设备<br>竖起来游玩',
+  danger:'已到门帘', gari:'姜片',
+  gariPop:'清口！', jackpot:'大满贯！', megaChain:'超级连锁！', newBest:'个人新高！',
+  chainSuffix:'连！', chainFloat:'连锁 ', chainKanji:false,
+  orderHead:'点单', orderWait:'等待下一份点单…',
+  noren2:'门帘 x', pieces:'贯', orderFail:'实在抱歉…',
+  bestChain:' · 最高 ', bestChainTail:'连锁', modeTag:'［点单］ ',
+  loading:'载入中…', sending:'发送中…',
+  needName:'请输入名字。', anon:'无名氏',
+  today:'今日', allTime:'总榜', placePre:'第', place:'名', outsidePre:'', outside:'名开外',
+  emptyDay:'今天还没有人开张。请当第一位。',
+  emptyAll:'排行榜上还没有人。',
+  loadFail:'无法载入排行榜。',
+  errFull:'排行榜已满，成绩未能登记。',
+  errBusy:'目前拥挤，请稍后再试。',
+  errMismatch:'对局记录对不上，成绩未能上榜。',
+  errTooLong:'这一局太长，未能完整记录，无法上榜。',
+  errNet:'无法连上排行榜。请检查网络后重试。',
+  scopeFree:'厨师发办', scopeOrder:'点单', dot:'・', gap:'　',
+  scopeDay:'今日（日本时间 ', scopeDayEnd:'）', scopeAll:'历来', scopeTail:'排名',
+  neta:['醋饭','玉子','甜虾','三文鱼','金枪鱼','鲑鱼子军舰','海胆军舰','大脂','星鳗','龙虾','黄金寿司桶'],
+  shouts:['来嘞！','极品！','这手艺！','这才是江户前！','好功夫！','请慢用！'],
+  cheers:['来嘞！','请慢用！','多谢惠顾！'], cheerTop:'日本第一！',
+  ranks:[['学徒','先煮三年米饭。'],['打杂','手上开始有样子了。'],
+         ['年轻师傅','活儿做得不错。'],['中坚师傅','熟客开始点名了。'],
+         ['主厨','厨房交给你了。'],['大将','这一贯，值千金。'],
+         ['传说中的寿司师傅','来嘞。—— 神境。']]
+};
+
+/* 足りない言葉は英語へ、英語にも無ければ日本語へ落ちる */
 var lang = 'ja';
-function t(k) { var m = TXT[lang]; return (m && m[k] != null) ? m[k] : TXT.ja[k]; }
+function t(k) {
+  var m = TXT[lang], v = m ? m[k] : undefined;
+  if (v === undefined) v = TXT.en[k];
+  if (v === undefined) v = TXT.ja[k];
+  return v;
+}
+function langInfo(c) {
+  for (var i = 0; i < LANGS.length; i++) if (LANGS[i].c === c) return LANGS[i];
+  return LANGS[1];
+}
+/* ブラウザの申告から一番近いものを選ぶ。pt-BR なら pt、zh-Hans なら zh */
 function pickLang() {
   var saved = lsGet('sushitsumu.lang');
-  if (saved === 'ja' || saved === 'en') return saved;
-  var n = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
-  return n.indexOf('ja') === 0 ? 'ja' : 'en';
+  if (saved && TXT[saved]) return saved;
+  var list = (navigator.languages && navigator.languages.length)
+    ? navigator.languages : [navigator.language || navigator.userLanguage || 'en'];
+  for (var i = 0; i < list.length; i++) {
+    var c = String(list[i]).toLowerCase().replace(/_/g, '-');
+    if (TXT[c]) return c;
+    var base = c.split('-')[0];
+    if (base === 'in') base = 'id';        // 古い規格ではインドネシア語が in
+    if (TXT[base]) return base;
+  }
+  return 'en';
 }
+function netaName(i) { return (t('neta') || TXT.en.neta)[i]; }
 
 /* ============================================================
    2. 定数・ワールド定義（論理座標 450 x 800 = 9:16）
@@ -675,22 +1266,22 @@ var GARI_RATE = 20;            // 20回に1回ガリ
 var DROP_INTERVAL = 420;       // 次のネタが出るまで(ms)
 
 /* ---- 寿司ネタ 11段階 ---- */
-/* 英名は訳さず読みをそのまま置く。向こうでも寿司屋の品書きは
-   だいたいこの綴りで通っているので、その方が伝わる */
+/* n は表を引かずに読めるようにした目印。画面に出す名前は
+   言葉の表（TXT[lang].neta）から引く */
 var SUSHI = [
-  { n:'シャリ',           e:'Shari',        shape:'circle',  r:19,           col:'#ffffff' },
-  { n:'玉子',             e:'Tamago',       shape:'rrect',   w:49,  h:33,  ch:11, col:'#f7c53c' },
-  { n:'エビ',             e:'Ebi',          shape:'rrect',   w:64,  h:35,  ch:16, col:'#ff9fb0' },
-  { n:'サーモン',         e:'Salmon',       shape:'ellipse', w:85,  h:47,         col:'#ff9245' },
-  { n:'マグロ',           e:'Maguro',       shape:'rrect',   w:91,  h:49,  ch:7,  col:'#d5323c' },
-  { n:'いくら軍艦',       e:'Ikura Gunkan', shape:'rrect',   w:94,  h:67,  ch:14, col:'#a51f22', nori:true },
-  { n:'ウニ軍艦',         e:'Uni Gunkan',   shape:'rrect',   w:111, h:79,  ch:16, col:'#d79c33', nori:true },
-  { n:'大トロ',           e:'Otoro',        shape:'rrect',   w:149, h:83,  ch:29, col:'#f2a3ad' },
-  { n:'あなご一本焼き',   e:'Anago',        shape:'rrect',   w:247, h:71,  ch:25, col:'#7a4a22', bar:true },
-  { n:'伊勢海老',         e:'Ise-ebi',      shape:'rrect',   w:230, h:107, ch:34, col:'#a8324e' },
-  { n:'ゴールデンすし桶', e:'Golden Oke',   shape:'circle',  r:105,          col:'#e8b62c', gold:true }
+  { n:'シャリ', shape:'circle',  r:19,           col:'#ffffff' },
+  { n:'玉子', shape:'rrect',   w:49,  h:33,  ch:11, col:'#f7c53c' },
+  { n:'エビ', shape:'rrect',   w:64,  h:35,  ch:16, col:'#ff9fb0' },
+  { n:'サーモン', shape:'ellipse', w:85,  h:47,         col:'#ff9245' },
+  { n:'マグロ', shape:'rrect',   w:91,  h:49,  ch:7,  col:'#d5323c' },
+  { n:'いくら軍艦', shape:'rrect',   w:94,  h:67,  ch:14, col:'#a51f22', nori:true },
+  { n:'ウニ軍艦', shape:'rrect',   w:111, h:79,  ch:16, col:'#d79c33', nori:true },
+  { n:'大トロ', shape:'rrect',   w:149, h:83,  ch:29, col:'#f2a3ad' },
+  { n:'あなご一本焼き', shape:'rrect',   w:247, h:71,  ch:25, col:'#7a4a22', bar:true },
+  { n:'伊勢海老', shape:'rrect',   w:230, h:107, ch:34, col:'#a8324e' },
+  { n:'ゴールデンすし桶', shape:'circle',  r:105,          col:'#e8b62c', gold:true }
 ];
-function sushiName(i) { return lang === 'en' ? SUSHI[i].e : SUSHI[i].n; }
+function sushiName(i) { return netaName(i); }
 SUSHI[9].pad = 58;   // 触角が本体から大きくはみ出す   // 伊勢海老は触角と脚が本体からはみ出す
 SUSHI.forEach(function (d) {
   if (d.shape === 'circle') { d.hw = d.r; d.hh = d.r; }
@@ -707,28 +1298,14 @@ var GARI = { n:'ガリ', r:9, col:'#ffc7d4' };
    実測（自動プレイ）: お任せ 12,500-22,400 / お品書き 21,000-46,400。
    無策でも上位になってしまっては値打ちが無いので、
    その上に置いた。お品書きは点の出方が約1.8倍なので同率で伸ばす。 */
-var RANKS = [
-  { s: 0,     name: '見習い職人',     note: 'まずは飯炊き三年から。',
-              en: 'Apprentice',       enNote: 'Three years just to learn the rice.' },
-  { s: 4000,  name: '追い回し',       note: '手つきが良くなってきた。',
-              en: 'Prep Hand',        enNote: 'Those hands are learning.' },
-  { s: 10000, name: '若手職人',       note: 'いい仕事、してますね。',
-              en: 'Junior Itamae',    enNote: 'Nice work back there.' },
-  { s: 18000, name: '中堅職人',       note: '常連がつき始めた腕前。',
-              en: 'Sushi Chef',       enNote: 'The regulars are asking for you.' },
-  { s: 30000, name: '花板',           note: '厨房を任される男。',
-              en: 'Head Chef',        enNote: 'The counter is yours to run.' },
-  { s: 50000, name: '大将',           note: 'その握り、値千金。',
-              en: 'Taisho',           enNote: 'That nigiri is worth its weight in gold.' },
-  { s: 85000, name: '伝説のすし職人', note: 'へい、お待ち。—— 神域。',
-              en: 'Legendary Itamae', enNote: 'Here you are. \u2014 Untouchable.' }
-];
-function rankName(r) { return lang === 'en' ? r.en : r.name; }
-function rankNote(r) { return lang === 'en' ? r.enNote : r.note; }
+var RANK_SCORE = [0, 4000, 10000, 18000, 30000, 50000, 85000];
+function rankRow(i) { return (t('ranks') || TXT.en.ranks)[i]; }
+function rankName(i) { return rankRow(i)[0]; }
+function rankNote(i) { return rankRow(i)[1]; }
 function rankScale() { return gameMode === 'order' ? 1.8 : 1; }
 function rankIndex(sc) {
   var v = sc / rankScale(), idx = 0;
-  for (var i = 0; i < RANKS.length; i++) if (v >= RANKS[i].s) idx = i;
+  for (var i = 0; i < RANK_SCORE.length; i++) if (v >= RANK_SCORE[i]) idx = i;
   return idx;
 }
 
@@ -1018,7 +1595,7 @@ function flushOps() {
       if (chain >= 5) burst(mx, my, ['#c9a227', '#c8402f', '#fffaf0'], 40, 6);
 
       if (op.level + 1 >= 7) {   // 出来上がりがレベル8(大トロ)以上
-        var sh = SHOUT[lang] || SHOUT.ja;
+        var sh = t('shouts');
         showPop(sh[Math.floor(Math.random() * sh.length)], 1);
         if (op.level + 1 >= 9) seHuge(); else seBig();
       }
@@ -1041,7 +1618,7 @@ function addScore(v) {
   if (ri > rankShown) {
     rankShown = ri;
     if (ri >= 3) {
-      showPop(rankName(RANKS[ri]) + (lang === 'en' ? '!' : '！'), 1);
+      showPop(rankName(ri) + (lang === 'ja' ? '！' : '!'), 1);
       seFanfare(ri >= 5);
       burst(W / 2, BARREL_TOP + 70, ['#c9a227', '#c8402f', '#fffaf0'], 46, 6.5);
     }
@@ -2385,7 +2962,7 @@ function drawBarrelTo(c) {
   c.fillStyle = rod;
   c.fillRect(6, ROD_Y - 4, W - 12, 8);
 
-  var chars = ['す', 'し', '積', 'む'];
+  var chars = t('noren') || TXT.en.noren;   // 屋号。日本語以外はローマ字で四つに割る
   var nx = 16, nw = (W - 32 - 3 * 5) / 4;
   for (var pn = 0; pn < 4; pn++) {
     var px = nx + pn * (nw + 5);
@@ -2408,18 +2985,24 @@ function drawBarrelTo(c) {
     c.clip();
     c.strokeStyle = 'rgba(255,255,255,.05)';
     c.lineWidth = 1;
-    for (var t = 0; t < 6; t++) {
+    for (var wv = 0; wv < 6; wv++) {
       c.beginPath();
-      c.moveTo(px + 6 + t * (nw / 6), ROD_Y);
-      c.lineTo(px + 6 + t * (nw / 6), ROD_Y + NOREN_H);
+      c.moveTo(px + 6 + wv * (nw / 6), ROD_Y);
+      c.lineTo(px + 6 + wv * (nw / 6), ROD_Y + NOREN_H);
       c.stroke();
     }
     c.restore();
     // 白抜きの文字
     c.fillStyle = '#f4efe2';
-    c.font = '600 46px ' + F_MIN;
     c.textAlign = 'center';
     c.textBaseline = 'middle';
+    // 一字とは限らないので、暖簾の幅に収まるまで詰める
+    var fz = 46;
+    c.font = '600 ' + fz + 'px ' + F_MIN;
+    while (fz > 12 && c.measureText(chars[pn]).width > nw - 12) {
+      fz -= 2;
+      c.font = '600 ' + fz + 'px ' + F_MIN;
+    }
     c.fillText(chars[pn], px + nw / 2, ROD_Y + NOREN_H * 0.52);
   }
   // 暖簾の落とす影
@@ -2799,17 +3382,20 @@ function render() {
 /* ============================================================
    16. ゲームオーバー / リスタート
    ============================================================ */
-function rankOf(sc) { return RANKS[rankIndex(sc)]; }
+/* 結果札の文言。言葉を変えた時にも呼び直す */
+function showResult() {
+  var ri = rankIndex(score);
+  document.getElementById('rankName').textContent = rankName(ri);
+  document.getElementById('rankNote').textContent =
+    (gameMode === 'order' ? t('modeTag') : '') + rankNote(ri) +
+    (gameMode === 'order' && chainBest >= 2
+      ? t('bestChain') + chainBest + t('bestChainTail') : '');
+}
 function gameOver() {
   if (state === 'over') return;
   state = 'over';
   pointerDown = false;
-  var r = rankOf(score);
-  document.getElementById('rankName').textContent = rankName(r);
-  document.getElementById('rankNote').textContent =
-    (gameMode === 'order' ? t('modeTag') : '') + rankNote(r) +
-    (gameMode === 'order' && chainBest >= 2
-      ? t('bestChain') + chainBest + (lang === 'en' ? t('bestChainTail') : '連鎖') : '');
+  showResult();
   document.getElementById('finalScore').textContent = fmt(score);
   document.getElementById('finalHi').textContent = fmt(hiScore);
   document.getElementById('overModal').hidden = false;
@@ -2913,7 +3499,7 @@ function chainMult(n) { return Math.min(CHAIN_CAP, 1 + (n - 1) * 0.7); }
 var CHAIN_KANJI = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
 function chainLabel(n) {
   if (n >= 5) return t('megaChain');
-  return (lang === 'en' ? String(n) : CHAIN_KANJI[n]) + t('chainSuffix');
+  return (t('chainKanji') ? CHAIN_KANJI[n] : String(n)) + t('chainSuffix');
 }
 
 /* 合体しようとしている二つが、直前の合体から続いているか */
@@ -2974,9 +3560,8 @@ function orderMade(level) {
   addFloat(W / 2, BARREL_TOP - 46, '+' + fmt(bonus), '#c8402f');
   orderStreak++;
   orderMult = Math.min(3, 1 + orderStreak * 0.5);
-  var ch = CHEER[lang] || CHEER.ja;
-  showPop(orderStreak >= 4 ? (lang === 'en' ? CHEER.enTop : CHEER.jaTop)
-        : ch[Math.min(orderStreak, ch.length) - 1], 1);
+  var ch = t('cheers');
+  showPop(orderStreak >= 4 ? t('cheerTop') : ch[Math.min(orderStreak, ch.length) - 1], 1);
   seOrder(orderStreak);
   burst(W / 2, BARREL_TOP - 34, ['#c8402f', '#ffd76a', '#fffaf0'], 34, 5.5);
   order = null;
@@ -3043,7 +3628,7 @@ function drawOrder() {
     ctx.textAlign = 'right';
     ctx.fillStyle = '#c8402f';
     ctx.font = '700 12px ' + F_GO;
-    ctx.fillText(t('noren') + orderMult.toFixed(1), px + PW - 12, py + 15);
+    ctx.fillText(t('noren2') + orderMult.toFixed(1), px + PW - 12, py + 15);
   }
 
   // 二行目：品名。長い名前は札からはみ出すので自動で縮める
@@ -3261,9 +3846,9 @@ function afterSubmit() {
       sp.appendChild(b);
       return sp;
     };
-    sendNote.appendChild(mk(lang === 'en' ? 'Today' : '本日', r[0]));
-    sendNote.appendChild(document.createTextNode(lang === 'en' ? '\u2003\u00b7\u2003' : '\u3000'));
-    sendNote.appendChild(mk(lang === 'en' ? 'All time' : '総合', r[1]));
+    sendNote.appendChild(mk(t('today'), r[0]));
+    sendNote.appendChild(document.createTextNode(t('gap')));
+    sendNote.appendChild(mk(t('allTime'), r[1]));
   });
 }
 
@@ -3455,11 +4040,18 @@ function adBreakPoint() {
     });
 }
 
+/* 漢字・仮名・ハングルは字間を広げても様になるが、欧文はそうならない */
+var WIDE_SCRIPT = { ja:1, ko:1, zh:1 };
+
 /* 印の付いた場所に、選んだ言葉を当てる */
 function applyLang() {
   document.documentElement.lang = lang;
-  document.body.classList.toggle('en', lang === 'en');
-  var i, el, nodes = document.querySelectorAll('[data-t]');
+  document.title = t('title');
+  var i, cls = document.body.classList;
+  for (i = 0; i < LANGS.length; i++) cls.remove('lang-' + LANGS[i].c);
+  cls.add('lang-' + lang);
+  cls.toggle('lat', !WIDE_SCRIPT[lang]);
+  var el, nodes = document.querySelectorAll('[data-t]');
   for (i = 0; i < nodes.length; i++) {
     el = nodes[i];
     el.textContent = t(el.getAttribute('data-t'));
@@ -3472,20 +4064,35 @@ function applyLang() {
   document.getElementById('rotateMsg').innerHTML = t('rotate');
   document.getElementById('libBody').innerHTML = t('libBody');
   applySound();
-  if (state === 'over') {              // 結果を開いたまま切り替えた時
-    var r = rankOf(score);
-    document.getElementById('rankName').textContent = rankName(r);
-    document.getElementById('rankNote').textContent =
-      (gameMode === 'order' ? t('modeTag') : '') + rankNote(r) +
-      (gameMode === 'order' && chainBest >= 2
-        ? t('bestChain') + chainBest + (lang === 'en' ? t('bestChainTail') : '連鎖') : '');
-  }
+  document.getElementById('langBtn').textContent = langInfo(lang).s;
+  buildBarrel();                       // 暖簾の屋号を書き直す
+  if (state === 'over') showResult();  // 結果を開いたまま切り替えた時
+  if (current) drawNextPreview();
   if (rankApi && !rankModal.hidden) loadRank();
+  var g = document.getElementById('langGrid');
+  var on = g.querySelectorAll('button');
+  for (i = 0; i < on.length; i++) on[i].classList.toggle('is-on', on[i].dataset.lang === lang);
 }
-function toggleLang() {
-  lang = (lang === 'ja') ? 'en' : 'ja';
+function setLang(c) {
+  if (!TXT[c] || c === lang) return;
+  lang = c;
   lsSet('sushitsumu.lang', lang);
   applyLang();
+}
+function buildLangGrid() {
+  var g = document.getElementById('langGrid');
+  g.innerHTML = '';
+  LANGS.forEach(function (L) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = L.n;
+    b.dataset.lang = L.c;
+    b.addEventListener('click', function () {
+      setLang(L.c);
+      document.getElementById('langModal').hidden = true;
+    });
+    g.appendChild(b);
+  });
 }
 
 /* ============================================================
@@ -3494,9 +4101,13 @@ function toggleLang() {
 seedItems((Math.random() * 0x100000000) >>> 0);
 soundOn = lsGet('sushitsumu.snd') !== '0';
 lang = pickLang();
-applyLang();
+buildLangGrid();
 document.getElementById('langBtn').addEventListener('click', function (e) {
-  e.preventDefault(); toggleLang();
+  e.preventDefault();
+  document.getElementById('langModal').hidden = false;
+});
+document.getElementById('closeLang').addEventListener('click', function () {
+  document.getElementById('langModal').hidden = true;
 });
 document.getElementById('sndBtn').addEventListener('click', function (e) {
   e.preventDefault(); toggleSound();
@@ -3505,6 +4116,7 @@ initRanking();
 initAds();
 buildSprites();
 buildBarrel();
+applyLang();
 resize();
 // 明朝が遅れて読み込まれた場合、文字を含む絵（寿）を焼き直す
 if (document.fonts && document.fonts.ready) {
