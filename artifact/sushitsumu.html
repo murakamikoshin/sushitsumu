@@ -356,7 +356,42 @@ body:not(.has-rank) #sidePanel .sideList { display: none; }
 .hint { font-size: 11px; color: #9a8a72; margin-top: 22px; line-height: 2.05; letter-spacing: .04em; }
 .err  { color: var(--shu); font-size: 12.5px; line-height: 2; }
 
-/* ---- 遊び方の選択 ---- */
+/* ---- 遊び方の選択 ----
+   初めての人は「とりあえず遊びたい」だけなので、押すものは一つに絞る。
+   番付や図鑑は戻ってくる理由になるが、初回の踏み台にはならない ---- */
+.playBtn {
+  display: block; width: 100%; margin-top: 20px;
+  font-family: var(--mincho); font-size: 19px; letter-spacing: .3em; text-indent: .3em;
+  color: #fff; background: var(--shu); border: 0; border-radius: 2px;
+  padding: 17px 10px; cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0,0,0,.26);
+  transition: opacity .14s ease;
+}
+.playBtn:active { opacity: .72; }
+.subPlay {
+  display: block; width: 100%; margin-top: 9px;
+  font-family: var(--mincho); font-size: 12px; letter-spacing: .14em; text-indent: .14em;
+  color: #6d6154; background: transparent;
+  border: 1px solid rgba(185,148,95,.6); border-radius: 2px;
+  padding: 10px 8px; cursor: pointer;
+}
+.subPlay:active { opacity: .6; }
+
+/* 戻ってきた人にだけ、続きがあることを見せる */
+.prog {
+  display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;
+  margin-top: 16px; font-size: 10px; letter-spacing: .1em; color: #9a8a72;
+}
+.prog[hidden] { display: none; }
+.prog b { font-family: var(--gothic); font-weight: 600; color: var(--shu); font-size: 12px; letter-spacing: 0; }
+
+/* 下の細い一行。遊ぶ前には要らないものを畳んでおく */
+.miniRow {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 18px;
+}
+.miniRow .langLink { margin-top: 0; font-size: 9.5px; padding: 5px 7px; letter-spacing: .04em; }
+body.lat .miniRow .langLink { font-size: 9px; padding: 5px 6px; }
+
 .modeRow { display: flex; flex-direction: column; gap: 9px; margin-top: 22px; }
 .modeBtn {
   font-family: var(--mincho); font-size: 15px; letter-spacing: .26em; text-indent: .26em;
@@ -587,21 +622,21 @@ body.lat .rankNote { font-size: 10.5px; }
         <h1 data-t="title">すし積む</h1>
         <div class="rule"></div>
         <div class="sub" data-t="sub">江戸前合体遊戯</div>
-        <div class="modeRow">
-          <button class="modeBtn" id="startBtn"><span data-t="modeFree">お 任 せ</span><small data-t="modeFreeSub">心ゆくまで積む</small></button>
-          <button class="modeBtn alt" id="startOrderBtn"><span data-t="modeOrder">お 品 書 き</span><small data-t="modeOrderSub">注文をこなすとボーナス点</small></button>
-        </div>
-        <div class="btnRow tight">
-          <button class="btn ghost small needs-rank" id="openRank" data-t="openRank">番 付 を 見 る</button>
-          <button class="btn ghost small" id="openDex" data-t="dexOpen">寿 司 図 鑑</button>
-        </div>
+        <div class="prog" id="titleProg" hidden></div>
+
+        <button class="playBtn" id="startBtn" data-t="play">遊 ぶ</button>
+        <button class="subPlay" id="startOrderBtn" data-t="tryOrders">「お品書き」で遊ぶ</button>
+
         <p class="hint">
           <span data-t="hint1">指でなぞって位置を決め、離せば落ちる。</span><br>
           <span data-t="hint2">同じネタが触れ合えば合体。</span><br>
           <span data-t="hint3">「ガリ」は触れたネタを一つ消す。</span>
           <span id="hintKeys" hidden></span>
         </p>
-        <div class="btnRow tight">
+
+        <div class="miniRow">
+          <button class="langLink needs-rank" id="openRank" data-t="rankShort">番 付</button>
+          <button class="langLink" id="openDex" data-t="dexOpen">寿 司 図 鑑</button>
           <button class="langLink" id="langBtn2" type="button" aria-label="Language">
             <span aria-hidden="true">🌐</span> <span id="langBtn2Name">日本語</span>
           </button>
@@ -831,6 +866,7 @@ var LANGS = [
 var TXT = {};
 
 TXT.ja = {
+  play:'遊 ぶ', tryOrders:'「お品書き」で遊ぶ',
   privacy:'あつかい', privacyTitle:'あつかい',
   priv1:'番付に載せた時だけ、入れた名前・得点・端末が作った番号・その一戦の手順を、こちらのサーバーに預かります。手順は、得点の辻褄を見るためのものです。',
   priv2:'それ以外は何も集めません。会員登録も、追跡の仕組みも、他社の解析も入っていません。',
@@ -889,6 +925,7 @@ TXT.ja = {
 };
 
 TXT.en = {
+  play:'PLAY', tryOrders:'Play ORDERS mode',
   privacy:'PRIVACY', privacyTitle:'PRIVACY',
   priv1:'When you post to the leaderboard, the name you type, your score, an ID generated on your device and a record of that round’s moves are stored on our server. The move record is only used to check the score adds up.',
   priv2:'Nothing else is collected. There are no accounts, no tracking and no third-party analytics.',
@@ -946,6 +983,7 @@ TXT.en = {
 };
 
 TXT.es = {
+  play:'JUGAR', tryOrders:'Jugar en modo PEDIDOS',
   privacy:'PRIVACIDAD', privacyTitle:'PRIVACIDAD',
   priv1:'Al publicar en la clasificación se guardan en nuestro servidor el nombre que escribes, tu puntuación, un identificador creado en tu dispositivo y el registro de jugadas de esa partida. Ese registro solo sirve para comprobar que la puntuación cuadra.',
   priv2:'No se recoge nada más. No hay cuentas, ni seguimiento, ni analíticas de terceros.',
@@ -1000,6 +1038,7 @@ TXT.es = {
 };
 
 TXT.pt = {
+  play:'JOGAR', tryOrders:'Jogar no modo PEDIDOS',
   privacy:'PRIVACIDADE', privacyTitle:'PRIVACIDADE',
   priv1:'Ao publicar na classificação, o nome que você digita, sua pontuação, um identificador criado no seu aparelho e o registro das jogadas daquela partida ficam no nosso servidor. O registro serve apenas para conferir se a pontuação bate.',
   priv2:'Nada além disso é coletado. Não há contas, rastreamento nem análise de terceiros.',
@@ -1054,6 +1093,7 @@ TXT.pt = {
 };
 
 TXT.fr = {
+  play:'JOUER', tryOrders:'Jouer en mode COMMANDES',
   privacy:'DONNÉES', privacyTitle:'CONFIDENTIALITÉ',
   priv1:'Lorsque vous publiez au classement, le nom saisi, votre score, un identifiant créé sur votre appareil et le relevé des coups de cette partie sont conservés sur notre serveur. Ce relevé sert uniquement à vérifier que le score est cohérent.',
   priv2:'Rien d’autre n’est collecté. Pas de compte, pas de pistage, pas d’analyse tierce.',
@@ -1108,6 +1148,7 @@ TXT.fr = {
 };
 
 TXT.de = {
+  play:'SPIELEN', tryOrders:'BESTELLUNGEN-Modus spielen',
   privacy:'DATENSCHUTZ', privacyTitle:'DATENSCHUTZ',
   priv1:'Beim Eintrag in die Bestenliste werden der eingegebene Name, Ihre Punktzahl, eine auf Ihrem Gerät erzeugte Kennung und der Spielverlauf dieser Runde auf unserem Server gespeichert. Der Verlauf dient nur der Prüfung, ob die Punktzahl stimmt.',
   priv2:'Mehr wird nicht erhoben. Keine Konten, kein Tracking, keine Analyse durch Dritte.',
@@ -1162,6 +1203,7 @@ TXT.de = {
 };
 
 TXT.it = {
+  play:'GIOCA', tryOrders:'Gioca in modalità ORDINI',
   privacy:'PRIVACY', privacyTitle:'PRIVACY',
   priv1:'Quando pubblichi in classifica, il nome che scrivi, il punteggio, un identificatore creato sul tuo dispositivo e il registro delle mosse di quella partita vengono conservati sul nostro server. Il registro serve solo a verificare che il punteggio torni.',
   priv2:'Non viene raccolto altro. Nessun account, nessun tracciamento, nessuna analisi di terze parti.',
@@ -1216,6 +1258,7 @@ TXT.it = {
 };
 
 TXT.pl = {
+  play:'GRAJ', tryOrders:'Zagraj w trybie ZAMÓWIENIA',
   privacy:'PRYWATNOŚĆ', privacyTitle:'PRYWATNOŚĆ',
   priv1:'Przy wysyłaniu wyniku do rankingu na naszym serwerze zapisujemy wpisane imię, wynik, identyfikator utworzony na Twoim urządzeniu oraz zapis ruchów z tej partii. Zapis służy wyłącznie sprawdzeniu, czy wynik się zgadza.',
   priv2:'Nic więcej nie jest zbierane. Bez kont, bez śledzenia, bez analityki firm trzecich.',
@@ -1270,6 +1313,7 @@ TXT.pl = {
 };
 
 TXT.tr = {
+  play:'OYNA', tryOrders:'SİPARİŞLER modunda oyna',
   privacy:'GİZLİLİK', privacyTitle:'GİZLİLİK',
   priv1:'Sıralamaya gönderdiğinizde yazdığınız isim, puanınız, cihazınızda üretilen bir kimlik ve o turun hamle kaydı sunucumuzda saklanır. Hamle kaydı yalnızca puanın tutup tutmadığını denetlemek içindir.',
   priv2:'Bunun dışında hiçbir şey toplanmaz. Hesap yok, izleme yok, üçüncü taraf analiz yok.',
@@ -1325,6 +1369,7 @@ TXT.tr = {
 };
 
 TXT.ru = {
+  play:'ИГРАТЬ', tryOrders:'Играть в режиме ЗАКАЗЫ',
   privacy:'ДАННЫЕ', privacyTitle:'КОНФИДЕНЦИАЛЬНОСТЬ',
   priv1:'При отправке результата в таблицу на нашем сервере сохраняются введённое имя, очки, идентификатор, созданный на вашем устройстве, и запись ходов этой партии. Запись нужна только для проверки, что счёт сходится.',
   priv2:'Больше ничего не собирается. Ни учётных записей, ни слежки, ни сторонней аналитики.',
@@ -1381,6 +1426,7 @@ TXT.ru = {
 };
 
 TXT.id = {
+  play:'MAIN', tryOrders:'Main mode PESANAN',
   privacy:'PRIVASI', privacyTitle:'PRIVASI',
   priv1:'Saat Anda mengirim ke papan peringkat, nama yang diketik, skor, sebuah pengenal yang dibuat di perangkat Anda, dan catatan langkah pada ronde itu disimpan di server kami. Catatan langkah hanya dipakai untuk memeriksa kecocokan skor.',
   priv2:'Selain itu tidak ada yang dikumpulkan. Tanpa akun, tanpa pelacakan, tanpa analitik pihak ketiga.',
@@ -1435,6 +1481,7 @@ TXT.id = {
 };
 
 TXT.vi = {
+  play:'CHƠI', tryOrders:'Chơi chế độ ĐƠN HÀNG',
   privacy:'DỮ LIỆU', privacyTitle:'QUYỀN RIÊNG TƯ',
   priv1:'Khi bạn gửi lên bảng xếp hạng, tên bạn nhập, điểm số, một mã do thiết bị của bạn tạo ra và bản ghi các nước đi của ván đó được lưu trên máy chủ của chúng tôi. Bản ghi chỉ dùng để kiểm tra điểm có khớp không.',
   priv2:'Ngoài ra không thu thập gì thêm. Không tài khoản, không theo dõi, không phân tích của bên thứ ba.',
@@ -1489,6 +1536,7 @@ TXT.vi = {
 };
 
 TXT.ko = {
+  play:'시 작', tryOrders:'‘주문’ 모드로 놀기',
   privacy:'개 인 정 보', privacyTitle:'개인정보',
   priv1:'순위표에 올릴 때만, 입력한 이름·점수·기기에서 만든 식별자·그 판의 진행 기록을 저희 서버에 보관합니다. 진행 기록은 점수가 맞는지 확인하는 데에만 씁니다.',
   priv2:'그 밖에는 아무것도 수집하지 않습니다. 회원가입도, 추적도, 외부 분석 도구도 없습니다.',
@@ -1544,6 +1592,7 @@ TXT.ko = {
 };
 
 TXT.zh = {
+  play:'开 始', tryOrders:'玩「点单」模式',
   privacy:'隐 私', privacyTitle:'隐私',
   priv1:'仅在上榜时，会把您输入的名字、分数、设备生成的标识以及该局的操作记录保存到我们的服务器。操作记录只用于核对分数是否对得上。',
   priv2:'除此之外不收集任何内容。没有账号，没有追踪，也没有第三方分析。',
@@ -4078,12 +4127,44 @@ function quitGame() {
 document.getElementById('pauseBtn').addEventListener('click', function (e) {
   e.preventDefault(); pauseGame();
 });
+
+/* 別のタブに移った時。締切が進んで、戻ったら終わっていた、では困る。
+   音も止める（ポータルは裏に回ったゲームが鳴り続けるのを嫌う） */
+document.addEventListener('visibilitychange', function () {
+  if (document.hidden) {
+    keyDir = 0;
+    bgmStop(0.2);
+    pauseGame();                  // 遊技中でなければ何も起きない
+  }
+});
+window.addEventListener('blur', function () { keyDir = 0; });
 document.getElementById('resumeBtn').addEventListener('click', function (e) {
   e.preventDefault(); resumeGame();
 });
 document.getElementById('quitBtn').addEventListener('click', function (e) {
   e.preventDefault(); quitGame();
 });
+
+/* 二度目からのタイトルに、高得点と図鑑の埋まり具合を出す。
+   初めての人には出さない（0点・0種を見せても意味がない） */
+function showTitleProgress() {
+  var el = document.getElementById('titleProg');
+  var got = 0, i;
+  for (i = 0; i < DEX_N; i++) if (seen[i]) got++;
+  if (playCount() < 1 && hiScore <= 0 && got === 0) { el.hidden = true; return; }
+  el.innerHTML = '';
+  var add = function (label, value) {
+    var sp = document.createElement('span');
+    sp.appendChild(document.createTextNode(label + ' '));
+    var b = document.createElement('b');
+    b.textContent = value;
+    sp.appendChild(b);
+    el.appendChild(sp);
+  };
+  if (hiScore > 0) add(t('lblHi'), fmt(hiScore));
+  add(t('dexTitle'), got + ' / ' + DEX_N);
+  el.hidden = false;
+}
 
 /* 遊びを畳んでタイトルへ戻す。beginGame の裏返し */
 function toTitle() {
@@ -4099,6 +4180,7 @@ function toTitle() {
   state = 'title';
   document.body.classList.add('titling');
   document.getElementById('titleModal').hidden = false;
+  showTitleProgress();
   resize();
 }
 document.getElementById('toTitleBtn').addEventListener('click', function (e) {
@@ -4332,8 +4414,28 @@ function jstDay(ms) {
          ('0' + (d.getUTCMonth() + 1)).slice(-2) + '-' +
          ('0' + d.getUTCDate()).slice(-2);
 }
-function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
-function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+/* ---- 控えの置き場 ----
+   ポータルはゲームを別ドメインの iframe で動かすので、ブラウザによっては
+   localStorage が塞がれる。高得点も図鑑も毎回消えてしまう。
+   ポータル側の保存棚があればそちらを使い、無ければ今まで通り端末に置く。
+   どちらも使えない時は黙って諦める（読めなくても遊べる作りにしてある）。 */
+var keepStore = null;
+function keeper() {
+  if (keepStore) return keepStore;
+  try {
+    var CG = window.CrazyGames && window.CrazyGames.SDK;
+    if (CG && CG.data && typeof CG.data.getItem === 'function') keepStore = CG.data;
+  } catch (e) {}
+  return keepStore;               // 見つからない間は毎回探しにいく（SDK は後から来る）
+}
+function lsGet(k) {
+  var d = keeper();
+  try { return d ? d.getItem(k) : localStorage.getItem(k); } catch (e) { return null; }
+}
+function lsSet(k, v) {
+  var d = keeper();
+  try { if (d) d.setItem(k, v); else localStorage.setItem(k, v); } catch (e) {}
+}
 
 function playerId() {
   var v = lsGet('sushitsumu.pid');
@@ -4910,6 +5012,7 @@ function applyLang() {
   if (current) drawNextPreview();
   if (rankApi && !rankModal.hidden) loadRank();
   loadSidePanel();
+  if (!document.getElementById('titleModal').hidden) showTitleProgress();
   var g = document.getElementById('langGrid');
   var on = g.querySelectorAll('button');
   for (i = 0; i < on.length; i++) on[i].classList.toggle('is-on', on[i].dataset.lang === lang);
@@ -4970,6 +5073,7 @@ if (document.fonts && document.fonts.ready) {
 }
 setTimeout(resize, 60);
 setTimeout(resize, 400);
+showTitleProgress();
 next = rollItem();
 drawNextPreview();
 requestAnimationFrame(loop);
