@@ -14,6 +14,7 @@ import { verifyLog } from './verify.js';
 
 const MAX_SCORE = 10000000;   // これを超える点は受け取らない
 const MAX_LIMIT = 100;
+const SCAN      = 100;        // 順位はここまで数える。これより下は「圏外」
 
 const FIELDS = {
   normal: { all: 'best',  day: 'dayBest'  },
@@ -79,9 +80,31 @@ async function top(url, env, req) {
   return json(results || [], env, req);
 }
 
+/*
+ * 順位を数える。無料枠は「1日に読んだ行数」で頭打ちになるので、
+ * 上位 SCAN 件で打ち切る。上にいる人ほど読む行が少なくて済む。
+ */
+async function placeOf(env, kind, mode, day, score) {
+  if (!(score > 0)) return 0;
+  const col = mode === 'day' ? FIELDS[kind].day : FIELDS[kind].all;
+  const st = mode === 'day'
+    ? env.DB.prepare(
+        `SELECT COUNT(*) AS n FROM (SELECT 1 FROM scores WHERE day = ?1 AND ${col} > ?2 LIMIT ?3)`
+      ).bind(day, score, SCAN)
+    : env.DB.prepare(
+        `SELECT COUNT(*) AS n FROM (SELECT 1 FROM scores WHERE ${col} > ?1 LIMIT ?2)`
+      ).bind(score, SCAN);
+  const { results } = await st.all();
+  const n = (results && results[0] && results[0].n) || 0;
+  return n >= SCAN ? 0 : n + 1;          // 0 は圏外
+}
+
 async function submit(req, env) {
+  // ゲーム側は前置きの OPTIONS を避けるため text/plain で送ってくる。
+  // 中身は JSON なので、型は見ずに本文を読む
   let b;
-  try { b = await req.json(); } catch (e) { return json({ error: 'bad json' }, env, req, 400); }
+  try { b = JSON.parse(await req.text()); }
+  catch (e) { return json({ error: 'bad json' }, env, req, 400); }
 
   const id = String(b.id || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64);
   const kind = FIELDS[b.kind] ? b.kind : 'normal';
@@ -120,7 +143,17 @@ async function submit(req, env) {
       updatedAt = excluded.updatedAt
   `).bind(id, name, day, v.best, v.bestO, v.dayBest, v.dayBestO, new Date().toISOString()).run();
 
-  return json({ ok: true }, env, req);
+  // 順位はここで数えて返す。ゲーム側が一覧を二度引かずに済み、
+  // 一回の登録が 3 呼び出しから 1 呼び出しになる。
+  // 数えるのは自己ベストであって、いま送られてきた点ではない
+  const { results } = await env.DB.prepare(
+    'SELECT best, bestO, dayBest, dayBestO FROM scores WHERE id = ?1'
+  ).bind(id).all();
+  const row = (results && results[0]) || v;
+  const rankDay = await placeOf(env, kind, 'day', day, row[f.day]);
+  const rankAll = await placeOf(env, kind, 'all', day, row[f.all]);
+
+  return json({ ok: true, scan: SCAN, rankDay, rankAll }, env, req);
 }
 
 export default {

@@ -3783,7 +3783,8 @@ function claudeBackend(db) {
       });
     },
     /* 一人一文書。文書数が青天井にならないよう、自己ベストだけを持たせる */
-    submit: function (id, name, sc, kind) {   // 共有DBには辻褄を見る側が居ないので手順は使わない
+    /* 共有DBには辻褄を見る側も順位を数える側も居ないので、手順は使わず順位も返さない */
+    submit: function (id, name, sc, kind) {
       var today = jstDay(), f = rankFields(kind), ref = db.doc('scores/' + id);
       return ref.get().then(function (snap) {
         var cur = (snap && snap.exists && snap.data()) || {};
@@ -3798,7 +3799,7 @@ function claudeBackend(db) {
         };
         body[f.all] = Math.max(body[f.all], sc);
         body[f.day] = Math.max(body[f.day], sc);
-        return ref.set(body);
+        return ref.set(body).then(function () { return null; });
       });
     }
   };
@@ -3827,13 +3828,19 @@ function httpBackend(base) {
         });
       });
     },
+    /* 返り値の順位は向こうが数えたもの。無ければ null（＝こちらで数える） */
     submit: function (id, name, sc, kind) {
+      // text/plain で送ると前置きの OPTIONS が要らなくなり、
+      // 一回の登録が二呼び出しから一呼び出しに減る。中身は JSON のまま
       return ask('/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
         body: JSON.stringify({
           id: id, name: name, score: sc, kind: kind, day: jstDay(), log: recDump()
         })
+      }).then(function (r) {
+        return (r && r.rankDay !== undefined)
+          ? { day: r.rankDay, all: r.rankAll, scan: r.scan || RANK_SCAN } : null;
       });
     }
   };
@@ -3871,7 +3878,30 @@ function myRank() {
   });
 }
 
-function afterSubmit() {
+function showRanks(day, all, scan) {
+  sendNote.innerHTML = '';
+  var mk = function (label, pos) {
+    var sp = document.createElement('span');
+    sp.appendChild(document.createTextNode(label + ' '));
+    var b = document.createElement('b');
+    b.textContent = pos
+      ? ((t('placePre') || '') + pos + t('place'))
+      : ((t('outsidePre') || '') + scan + t('outside'));
+    sp.appendChild(b);
+    return sp;
+  };
+  sendNote.appendChild(mk(t('today'), day));
+  sendNote.appendChild(document.createTextNode(t('gap')));
+  sendNote.appendChild(mk(t('allTime'), all));
+}
+
+/* 順位を向こうが数えて返してくれたならそれを使う。
+   一覧を二度引かずに済むので、呼び出しも読み込み行数もずっと減る。 */
+function afterSubmit(res) {
+  if (res && res.day !== undefined) {
+    showRanks(res.day, res.all, res.scan);
+    return Promise.resolve();
+  }
   var keep = rankMode;
   rankKind = gameMode;
   rankMode = 'day';
@@ -3880,20 +3910,7 @@ function afterSubmit() {
     return myRank().then(function (a) { return [d, a]; });
   }).then(function (r) {
     rankMode = keep;
-    sendNote.innerHTML = '';
-    var mk = function (label, pos) {
-      var sp = document.createElement('span');
-      sp.appendChild(document.createTextNode(label + ' '));
-      var b = document.createElement('b');
-      b.textContent = pos
-        ? ((t('placePre') || '') + pos + t('place'))
-        : ((t('outsidePre') || '') + RANK_SCAN + t('outside'));
-      sp.appendChild(b);
-      return sp;
-    };
-    sendNote.appendChild(mk(t('today'), r[0]));
-    sendNote.appendChild(document.createTextNode(t('gap')));
-    sendNote.appendChild(mk(t('allTime'), r[1]));
+    showRanks(r[0], r[1], RANK_SCAN);
   });
 }
 
