@@ -25,20 +25,28 @@ const red  = (s) => `\x1b[31m${s}\x1b[0m`;
 const say  = (s) => console.log('\n' + bold(s));
 function die(msg) { console.error('\n' + red(msg)); process.exit(1); }
 
-/* 画面には出しつつ、中身も控える。聞かれ事にはそのまま答えられる */
-function run(cmd, { quiet = false } = {}) {
+/*
+ * 外の command を呼ぶ。
+ *
+ * interactive を立てた時は端末をそのまま渡す。出力を横取りすると
+ * wrangler が「対話できない環境だ」と見なして、聞かれ事に勝手に
+ * 「いいえ」と答えてしまうため（workers.dev の名前の登録がこれで飛んだ）。
+ * そのぶん中身は控えられないので、必要なら後から別に取りにいく。
+ */
+function run(cmd, { quiet = false, interactive = false } = {}) {
   return new Promise((resolve) => {
     const child = spawn(cmd, {
       shell: true, cwd: HERE,
-      stdio: ['inherit', 'pipe', quiet ? 'pipe' : 'inherit']
+      stdio: interactive ? 'inherit' : ['inherit', 'pipe', quiet ? 'pipe' : 'inherit']
     });
     let out = '';
-    child.stdout.on('data', (d) => { out += d; if (!quiet) process.stdout.write(d); });
+    if (child.stdout) child.stdout.on('data', (d) => { out += d; if (!quiet) process.stdout.write(d); });
     if (quiet && child.stderr) child.stderr.on('data', (d) => { out += d; });
     child.on('close', (code) => resolve({ code, out }));
     child.on('error', () => resolve({ code: 1, out }));
   });
 }
+const findUrl = (t) => (t.match(/https:\/\/[a-z0-9.-]+\.workers\.dev/i) || [])[0];
 
 /* wrangler は「▲ [WARNING] …」を前置きすることがある。その角括弧を
    配列の始まりと取り違えないよう、読める所が見つかるまで順に試す */
@@ -93,11 +101,18 @@ const schema = await run(`${W} d1 execute ${DB} --remote --file=./schema.sql -y`
 if (schema.code !== 0) die('表を作れませんでした。上の内容を貼ってください。');
 
 say('[5/5] Worker を上げます');
-console.log('  初回は workers.dev の名前を決めるよう聞かれることがあります。素直に答えてください。');
-const dep = await run(`${W} deploy`);
+console.log('  初回は workers.dev の名前を決めるよう聞かれます。');
+console.log('  「Would you like to register a workers.dev subdomain now?」には y と答えてください。');
+const dep = await run(`${W} deploy`, { interactive: true });
 if (dep.code !== 0) die('上げられませんでした。上の内容を貼ってください。');
 
-const url = (dep.out.match(/https:\/\/[a-z0-9.-]+\.workers\.dev/i) || [])[0];
+// 一度目は端末をそのまま渡しているので中身が手元に無い。
+// 二度目はもう聞かれ事が無いので、静かに流して URL だけ拾う
+let url = findUrl(dep.out);
+if (!url) {
+  const again = await run(`${W} deploy`, { quiet: true });
+  url = findUrl(again.out);
+}
 
 say('できました');
 if (url) {
