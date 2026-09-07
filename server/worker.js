@@ -5,8 +5,12 @@
  * 自己ベストの取り回しはここで済ませるので、ゲーム側は投げるだけでよい。
  *
  *   GET  /top?kind=normal|order&mode=day|all&day=YYYY-MM-DD&limit=20
- *   POST /submit  {id, name, score, kind, day}
+ *   POST /submit  {id, name, score, kind, day, log}
+ *
+ * log は一手ごとの控え。verify.js で帳尻を見て、合わない申告は弾く。
  */
+
+import { verifyLog } from './verify.js';
 
 const MAX_SCORE = 10000000;   // これを超える点は受け取らない
 const MAX_LIMIT = 100;
@@ -84,6 +88,13 @@ async function submit(req, env) {
   const score = Math.floor(Number(b.score));
   if (!id) return json({ error: 'bad id' }, env, req, 400);
   if (!(score >= 0) || score > MAX_SCORE) return json({ error: 'bad score' }, env, req, 400);
+
+  // 手順の辻褄を見る。合わなければ点は入れない
+  const checked = verifyLog(b.log, score, kind);
+  if (!checked.ok) {
+    return json({ error: checked.why === 'too-long' ? 'too-long' : 'mismatch', why: checked.why },
+                env, req, 400);
+  }
 
   const name = cleanName(b.name);
   const day = jstDay();                       // 客の申告ではなく server の日付を使う

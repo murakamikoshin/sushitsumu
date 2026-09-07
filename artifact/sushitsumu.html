@@ -319,6 +319,24 @@ body:not(.has-rank) .needs-rank { display: none !important; }
 .rEmpty { font-size: 12px; color: #9a8a72; padding: 26px 0; text-align: center; line-height: 2; }
 
 /* ---- 横向き（ランドスケープ）警告 ---- */
+/* ---- 欧文のとき ----
+   和文は字間を大きく開けると格好がつくが、同じ値を欧文に当てると
+   ただ間の抜けた字並びになる。英語の時だけ詰め直す。 */
+body.en .card h1 { letter-spacing: .1em; text-indent: .1em; font-size: 34px; }
+body.en .card h2 { letter-spacing: .18em; text-indent: .18em; font-size: 17px; }
+body.en .sub    { letter-spacing: .2em;  text-indent: .2em;  font-size: 9px; }
+body.en .lbl    { letter-spacing: .2em;  text-indent: .2em; }
+body.en .scoreRow .k { letter-spacing: .16em; text-indent: .16em; }
+body.en .btn, body.en .modeBtn, body.en .rtab,
+body.en .sndBtn { letter-spacing: .12em; text-indent: .12em; }
+body.en .modeBtn { font-size: 14px; }
+body.en .modeBtn small { letter-spacing: .04em; text-indent: .04em; font-size: 9px; }
+body.en .btn.small { letter-spacing: .08em; text-indent: .08em; }
+body.en .rankName { letter-spacing: .04em; text-indent: .04em; font-size: 25px; }
+body.en .hint { line-height: 1.85; }
+body.en #rotate p { letter-spacing: .14em; text-indent: .14em; }
+body.en .pop { letter-spacing: .06em; text-indent: .06em; }
+
 /* 広告の幕。広告そのものは SDK が上に被せるので、裏を隠すだけの役 */
 #adCurtain {
   position: fixed; inset: 0; z-index: 60;
@@ -360,13 +378,14 @@ body:not(.has-rank) .needs-rank { display: none !important; }
 <div id="app">
   <header class="hud">
     <div class="hud-l">
-      <div class="lbl">スコア</div>
+      <div class="lbl" data-t="lblScore">スコア</div>
       <div class="score" id="scoreEl">0</div>
-      <div class="hi">高得点 <b id="hiEl">0</b></div>
+      <div class="hi"><span data-t="lblHi">高得点</span> <b id="hiEl">0</b></div>
       <button class="sndBtn" id="sndBtn" type="button">音 入</button>
+      <button class="sndBtn" id="langBtn" type="button" data-t="langBtn">EN</button>
     </div>
     <div class="hud-r">
-      <div class="lbl">つぎ</div>
+      <div class="lbl" data-t="lblNext">つぎ</div>
       <div class="tray"><canvas id="nextCv" width="132" height="132"></canvas></div>
     </div>
   </header>
@@ -380,16 +399,16 @@ body:not(.has-rank) .needs-rank { display: none !important; }
       <div class="card">
         <h1>すし積む</h1>
         <div class="rule"></div>
-        <div class="sub">江戸前合体遊戯</div>
+        <div class="sub" data-t="sub">江戸前合体遊戯</div>
         <div class="modeRow">
-          <button class="modeBtn" id="startBtn">お 任 せ<small>心ゆくまで積む</small></button>
-          <button class="modeBtn alt" id="startOrderBtn">お 品 書 き<small>注文で祝儀、連鎖で加増</small></button>
+          <button class="modeBtn" id="startBtn"><span data-t="modeFree">お 任 せ</span><small data-t="modeFreeSub">心ゆくまで積む</small></button>
+          <button class="modeBtn alt" id="startOrderBtn"><span data-t="modeOrder">お 品 書 き</span><small data-t="modeOrderSub">注文で祝儀、連鎖で加増</small></button>
         </div>
-        <button class="btn ghost small needs-rank" id="openRank">番 付 を 見 る</button>
+        <button class="btn ghost small needs-rank" id="openRank" data-t="openRank">番 付 を 見 る</button>
         <p class="hint">
-          指でなぞって位置を決め、離せば落ちる。<br>
-          同じネタが触れ合えば合体。<br>
-          「ガリ」は触れたネタを一つ消す。
+          <span data-t="hint1">指でなぞって位置を決め、離せば落ちる。</span><br>
+          <span data-t="hint2">同じネタが触れ合えば合体。</span><br>
+          <span data-t="hint3">「ガリ」は触れたネタを一つ消す。</span>
         </p>
       </div>
     </div>
@@ -397,24 +416,24 @@ body:not(.has-rank) .needs-rank { display: none !important; }
     <!-- 結果 -->
     <div class="modal" id="overModal" hidden>
       <div class="card">
-        <h2>しまい</h2>
+        <h2 data-t="over">しまい</h2>
         <div class="rule"></div>
         <div class="rankName" id="rankName">見習い職人</div>
         <div class="rankNote" id="rankNote"></div>
         <div class="scoreRow">
-          <div><span class="k">スコア</span><span class="v" id="finalScore">0</span></div>
-          <div><span class="k">高得点</span><span class="v" id="finalHi">0</span></div>
+          <div><span class="k" data-t="lblScore">スコア</span><span class="v" id="finalScore">0</span></div>
+          <div><span class="k" data-t="lblHi">高得点</span><span class="v" id="finalHi">0</span></div>
         </div>
         <div class="nameRow needs-rank">
-          <input id="nameInput" type="text" maxlength="12" placeholder="名前（12文字まで）"
+          <input id="nameInput" type="text" maxlength="12" data-tp="namePh" placeholder="名前（12文字まで）"
                  autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-          <button class="btn small" id="sendBtn">載 せ る</button>
+          <button class="btn small" id="sendBtn" data-t="send">載 せ る</button>
         </div>
         <div class="rankNote needs-rank" id="sendNote"></div>
 
         <div class="btnRow">
-          <button class="btn ghost needs-rank" id="openRank2">番 付</button>
-          <button class="btn" id="retryBtn">もう一丁</button>
+          <button class="btn ghost needs-rank" id="openRank2" data-t="rankShort">番 付</button>
+          <button class="btn" id="retryBtn" data-t="retry">もう一丁</button>
         </div>
       </div>
     </div>
@@ -422,28 +441,28 @@ body:not(.has-rank) .needs-rank { display: none !important; }
     <!-- 番付（オンラインランキング） -->
     <div class="modal" id="rankModal" hidden>
       <div class="card">
-        <h2>番付</h2>
+        <h2 data-t="rankTitle">番付</h2>
         <div class="rule"></div>
         <div class="rtabs">
-          <button class="rtab is-on" id="tabDay">本 日</button>
-          <button class="rtab" id="tabAll">総 合</button>
+          <button class="rtab is-on" id="tabDay" data-t="tabDay">本 日</button>
+          <button class="rtab" id="tabAll" data-t="tabAll">総 合</button>
         </div>
         <div class="rtabs">
-          <button class="rtab is-on" id="tabNormal">お 任 せ</button>
-          <button class="rtab" id="tabOrder">お 品 書 き</button>
+          <button class="rtab is-on" id="tabNormal" data-t="tabNormal">お 任 せ</button>
+          <button class="rtab" id="tabOrder" data-t="tabOrder">お 品 書 き</button>
         </div>
         <ol class="rlist" id="rlist"></ol>
         <div class="rankNote" id="rankScope"></div>
-        <button class="btn" id="closeRank">閉 じ る</button>
+        <button class="btn" id="closeRank" data-t="close">閉 じ る</button>
       </div>
     </div>
 
     <!-- ライブラリ読み込み失敗時 -->
     <div class="modal" id="libModal" hidden>
       <div class="card">
-        <h2>準備中</h2>
+        <h2 data-t="libTitle">準備中</h2>
         <div class="rule"></div>
-        <p class="err">
+        <p class="err" id="libBody">
           物理エンジンを初期化できませんでした。<br>
           ページを再読み込みしてください。
         </p>
@@ -453,14 +472,14 @@ body:not(.has-rank) .needs-rank { display: none !important; }
 
   <!-- 広告のあいだの幕。SDK が無い時は一度も出ない -->
   <div id="adCurtain" hidden>
-    <div class="noren">広告</div>
-    <p>このあと、すぐに再開します</p>
+    <div class="noren" data-t="adTitle">広告</div>
+    <p data-t="adBody">このあと、すぐに再開します</p>
   </div>
 
   <!-- 横向き時のご案内 -->
   <div id="rotate">
     <div class="ico">📱</div>
-    <p>画面を縦にして<br>お楽しみください</p>
+    <p id="rotateMsg">画面を縦にして<br>お楽しみください</p>
   </div>
 </div>
 
@@ -527,6 +546,120 @@ var Engine    = Matter.Engine,
     Events    = Matter.Events,
     Sleeping  = Matter.Sleeping;
 
+
+/* ============================================================
+   1.5 言葉
+   海外のポータルにも出すので、読ませる文は全部ここに集める。
+   暖簾の「すし積む」と桶の「寿」だけは訳さない。あれは看板であって
+   文章ではないし、それを消したらこの店の顔が無くなる。
+   ============================================================ */
+var TXT = {
+  ja: {
+    langBtn:'EN',
+    sub:'江戸前合体遊戯',
+    lblScore:'スコア', lblHi:'高得点', lblNext:'つぎ',
+    sndOn:'音 入', sndOff:'音 切',
+    modeFree:'お 任 せ', modeFreeSub:'心ゆくまで積む',
+    modeOrder:'お 品 書 き', modeOrderSub:'注文で祝儀、連鎖で加増',
+    openRank:'番 付 を 見 る', rankShort:'番 付',
+    hint1:'指でなぞって位置を決め、離せば落ちる。',
+    hint2:'同じネタが触れ合えば合体。',
+    hint3:'「ガリ」は触れたネタを一つ消す。',
+    over:'しまい', namePh:'名前（12文字まで）', send:'載 せ る', retry:'もう一丁',
+    rankTitle:'番付', tabDay:'本 日', tabAll:'総 合',
+    tabNormal:'お 任 せ', tabOrder:'お 品 書 き', close:'閉 じ る',
+    libTitle:'準備中', libBody:'物理エンジンを初期化できませんでした。ページを再読み込みしてください。',
+    adTitle:'広告', adBody:'このあと、すぐに再開します',
+    rotate:'画面を縦にして<br>お楽しみください',
+
+    danger:'の れ ん 際', gari:'ガ リ',
+    gariPop:'お口直し！', jackpot:'大 入 袋 ！', megaChain:'大 連 鎖 ！',
+    newBest:'自己最高！',
+    chainSuffix:' 連 ！', chainFloat:'連鎖 ',
+    orderHead:'ご 注 文', orderWait:'次 の ご 注 文 を お 待 ち …',
+    noren:'のれん x', pieces:'貫', orderFail:'相すみません…',
+    bestChain:'　最高 ', modeTag:'［お品書き］ ',
+
+    loading:'読み込んでいます…', sending:'送っています…',
+    needName:'名前を入れてください。', anon:'名無し',
+    place:'位', outside:'位圏外',
+    emptyDay:'本日はまだ誰も握っていません。一番乗りをどうぞ。',
+    emptyAll:'まだ誰も番付に載っていません。',
+    loadFail:'番付を読み込めませんでした。',
+    errFull:'番付が満杯で登録できませんでした。',
+    errBusy:'混み合っています。少し置いてからお試しください。',
+    errMismatch:'記録の辻褄が合わなかったため、載せられませんでした。',
+    errTooLong:'一戦が長すぎて記録しきれませんでした。番付には載せられません。',
+    errNet:'番付に繋がりませんでした。通信を確かめて、もう一度お試しください。',
+    scopeFree:'お任せ', scopeOrder:'お品書き',
+    scopeDay:'本日（日本時間 ', scopeDayEnd:'）', scopeAll:'これまで', scopeTail:'の上位',
+    dot:'・'
+  },
+  en: {
+    langBtn:'日本語',
+    sub:'SUSHI TSUMU \u00b7 AN EDOMAE MERGE PUZZLE',
+    lblScore:'SCORE', lblHi:'BEST', lblNext:'NEXT',
+    sndOn:'SOUND ON', sndOff:'SOUND OFF',
+    modeFree:'OMAKASE', modeFreeSub:'Stack to your heart\u2019s content',
+    modeOrder:'ORDERS', modeOrderSub:'Tips for orders, more for chains',
+    openRank:'LEADERBOARD', rankShort:'BOARD',
+    hint1:'Drag to aim, release to drop.',
+    hint2:'Matching neta merge on contact.',
+    hint3:'A piece of \u201cgari\u201d removes one neta it touches.',
+    over:'THAT\u2019S A WRAP', namePh:'Name (up to 12)', send:'POST', retry:'ONE MORE',
+    rankTitle:'LEADERBOARD', tabDay:'TODAY', tabAll:'ALL TIME',
+    tabNormal:'OMAKASE', tabOrder:'ORDERS', close:'CLOSE',
+    libTitle:'NOT READY', libBody:'The physics engine could not start. Please reload the page.',
+    adTitle:'AD', adBody:'Back to the game in a moment',
+    rotate:'Please turn your device<br>upright to play',
+
+    danger:'OVER THE LINE', gari:'GARI',
+    gariPop:'Palate cleansed!', jackpot:'JACKPOT!', megaChain:'MEGA CHAIN!',
+    newBest:'NEW BEST!',
+    chainSuffix:' CHAIN!', chainFloat:'-chain ',
+    orderHead:'ORDER', orderWait:'Awaiting the next order\u2026',
+    noren:'Noren x', pieces:' pcs', orderFail:'Sorry, chef\u2026',
+    bestChain:'\u2003\u00b7 best chain ', bestChainTail:'', modeTag:'[Orders] ',
+
+    loading:'Loading\u2026', sending:'Sending\u2026',
+    needName:'Please enter a name.', anon:'Anonymous',
+    place:'', outside:'', placePre:'#', outsidePre:'outside top ',
+    emptyDay:'Nobody has served today. Be the first.',
+    emptyAll:'Nobody is on the board yet.',
+    loadFail:'Could not load the leaderboard.',
+    errFull:'The leaderboard is full, so the score was not posted.',
+    errBusy:'Busy right now. Please try again shortly.',
+    errMismatch:'The play record did not check out, so the score was not posted.',
+    errTooLong:'That run was too long to record, so it cannot be posted.',
+    errNet:'Could not reach the leaderboard. Check your connection and try again.',
+    scopeFree:'Omakase', scopeOrder:'Orders',
+    scopeDay:'today (JST ', scopeDayEnd:')', scopeAll:'all time', scopeTail:'',
+    dot:' \u00b7 '
+  }
+};
+
+/* 掛け声。レベル8以上を作った時に飛ぶ */
+var SHOUT = {
+  ja: ['へい大将！', '極上！', 'いよっ、名人！', 'これぞ江戸前！', '大将、いい仕事！', 'あがりでィ！'],
+  en: ['Order up!', 'Sublime!', 'Nice hands!', 'That\u2019s Edomae!', 'Beautiful work!', 'Here you go!']
+};
+/* 注文をこなした時の礼。続けるほど威勢が良くなる */
+var CHEER = {
+  ja: ['へい、お待ち！', 'あいよ、上がり！', 'ありがとうございます！'],
+  en: ['Order up!', 'Here you are!', 'Much obliged!'],
+  jaTop: 'よっ、日本一！',
+  enTop: 'Best in Japan!'
+};
+
+var lang = 'ja';
+function t(k) { var m = TXT[lang]; return (m && m[k] != null) ? m[k] : TXT.ja[k]; }
+function pickLang() {
+  var saved = lsGet('sushitsumu.lang');
+  if (saved === 'ja' || saved === 'en') return saved;
+  var n = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+  return n.indexOf('ja') === 0 ? 'ja' : 'en';
+}
+
 /* ============================================================
    2. 定数・ワールド定義（論理座標 450 x 800 = 9:16）
    ============================================================ */
@@ -542,19 +675,22 @@ var GARI_RATE = 20;            // 20回に1回ガリ
 var DROP_INTERVAL = 420;       // 次のネタが出るまで(ms)
 
 /* ---- 寿司ネタ 11段階 ---- */
+/* 英名は訳さず読みをそのまま置く。向こうでも寿司屋の品書きは
+   だいたいこの綴りで通っているので、その方が伝わる */
 var SUSHI = [
-  { n:'シャリ',           shape:'circle',  r:19,           col:'#ffffff' },
-  { n:'玉子',             shape:'rrect',   w:49,  h:33,  ch:11, col:'#f7c53c' },
-  { n:'エビ',             shape:'rrect',   w:64,  h:35,  ch:16, col:'#ff9fb0' },
-  { n:'サーモン',         shape:'ellipse', w:85,  h:47,         col:'#ff9245' },
-  { n:'マグロ',           shape:'rrect',   w:91,  h:49,  ch:7,  col:'#d5323c' },
-  { n:'いくら軍艦',       shape:'rrect',   w:94,  h:67,  ch:14, col:'#a51f22', nori:true },
-  { n:'ウニ軍艦',         shape:'rrect',   w:111, h:79,  ch:16, col:'#d79c33', nori:true },
-  { n:'大トロ',           shape:'rrect',   w:149, h:83,  ch:29, col:'#f2a3ad' },
-  { n:'あなご一本焼き',   shape:'rrect',   w:247, h:71,  ch:25, col:'#7a4a22', bar:true },
-  { n:'伊勢海老',         shape:'rrect',   w:230, h:107, ch:34, col:'#a8324e' },
-  { n:'ゴールデンすし桶', shape:'circle',  r:105,          col:'#e8b62c', gold:true }
+  { n:'シャリ',           e:'Shari',        shape:'circle',  r:19,           col:'#ffffff' },
+  { n:'玉子',             e:'Tamago',       shape:'rrect',   w:49,  h:33,  ch:11, col:'#f7c53c' },
+  { n:'エビ',             e:'Ebi',          shape:'rrect',   w:64,  h:35,  ch:16, col:'#ff9fb0' },
+  { n:'サーモン',         e:'Salmon',       shape:'ellipse', w:85,  h:47,         col:'#ff9245' },
+  { n:'マグロ',           e:'Maguro',       shape:'rrect',   w:91,  h:49,  ch:7,  col:'#d5323c' },
+  { n:'いくら軍艦',       e:'Ikura Gunkan', shape:'rrect',   w:94,  h:67,  ch:14, col:'#a51f22', nori:true },
+  { n:'ウニ軍艦',         e:'Uni Gunkan',   shape:'rrect',   w:111, h:79,  ch:16, col:'#d79c33', nori:true },
+  { n:'大トロ',           e:'Otoro',        shape:'rrect',   w:149, h:83,  ch:29, col:'#f2a3ad' },
+  { n:'あなご一本焼き',   e:'Anago',        shape:'rrect',   w:247, h:71,  ch:25, col:'#7a4a22', bar:true },
+  { n:'伊勢海老',         e:'Ise-ebi',      shape:'rrect',   w:230, h:107, ch:34, col:'#a8324e' },
+  { n:'ゴールデンすし桶', e:'Golden Oke',   shape:'circle',  r:105,          col:'#e8b62c', gold:true }
 ];
+function sushiName(i) { return lang === 'en' ? SUSHI[i].e : SUSHI[i].n; }
 SUSHI[9].pad = 58;   // 触角が本体から大きくはみ出す   // 伊勢海老は触角と脚が本体からはみ出す
 SUSHI.forEach(function (d) {
   if (d.shape === 'circle') { d.hw = d.r; d.hh = d.r; }
@@ -567,22 +703,28 @@ var GARI_SCORE   = 40;
 
 var GARI = { n:'ガリ', r:9, col:'#ffc7d4' };
 
-/* 威勢のいい掛け声（レベル8以上の合体で表示） */
-var SHOUTS = ['へい大将！', '極上！', 'いよっ、名人！', 'これぞ江戸前！', '大将、いい仕事！', 'あがりでィ！'];
-
 /* ランク判定
    実測（自動プレイ）: お任せ 12,500-22,400 / お品書き 21,000-46,400。
    無策でも上位になってしまっては値打ちが無いので、
    その上に置いた。お品書きは点の出方が約1.8倍なので同率で伸ばす。 */
 var RANKS = [
-  { s: 0,     name: '見習い職人',     note: 'まずは飯炊き三年から。' },
-  { s: 4000,  name: '追い回し',       note: '手つきが良くなってきた。' },
-  { s: 10000, name: '若手職人',       note: 'いい仕事、してますね。' },
-  { s: 18000, name: '中堅職人',       note: '常連がつき始めた腕前。' },
-  { s: 30000, name: '花板',           note: '厨房を任される男。' },
-  { s: 50000, name: '大将',           note: 'その握り、値千金。' },
-  { s: 85000, name: '伝説のすし職人', note: 'へい、お待ち。—— 神域。' }
+  { s: 0,     name: '見習い職人',     note: 'まずは飯炊き三年から。',
+              en: 'Apprentice',       enNote: 'Three years just to learn the rice.' },
+  { s: 4000,  name: '追い回し',       note: '手つきが良くなってきた。',
+              en: 'Prep Hand',        enNote: 'Those hands are learning.' },
+  { s: 10000, name: '若手職人',       note: 'いい仕事、してますね。',
+              en: 'Junior Itamae',    enNote: 'Nice work back there.' },
+  { s: 18000, name: '中堅職人',       note: '常連がつき始めた腕前。',
+              en: 'Sushi Chef',       enNote: 'The regulars are asking for you.' },
+  { s: 30000, name: '花板',           note: '厨房を任される男。',
+              en: 'Head Chef',        enNote: 'The counter is yours to run.' },
+  { s: 50000, name: '大将',           note: 'その握り、値千金。',
+              en: 'Taisho',           enNote: 'That nigiri is worth its weight in gold.' },
+  { s: 85000, name: '伝説のすし職人', note: 'へい、お待ち。—— 神域。',
+              en: 'Legendary Itamae', enNote: 'Here you are. \u2014 Untouchable.' }
 ];
+function rankName(r) { return lang === 'en' ? r.en : r.name; }
+function rankNote(r) { return lang === 'en' ? r.enNote : r.note; }
 function rankScale() { return gameMode === 'order' ? 1.8 : 1; }
 function rankIndex(sc) {
   var v = sc / rankScale(), idx = 0;
@@ -696,10 +838,40 @@ function makeGari(x, y) {
 
 /* ============================================================
    6. 出題（1〜3 からランダム / 20回に1回ガリ）
+
+   出題だけは種つきの乱数から引く。番付に送る時に種も一緒に渡せば、
+   向こうで同じ並びを作り直して、書き留めた手順と突き合わせられる。
+   演出用の Math.random とは混ぜない（混ぜると並びが再現しない）。
    ============================================================ */
+var itemSeed = 0, itemState = 0;
+function seedItems(v) { itemSeed = v >>> 0; itemState = itemSeed; }
+function rnd() {                     // mulberry32
+  itemState = (itemState + 0x6D2B79F5) >>> 0;
+  var t = itemState;
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
 function rollItem() {
-  if (Math.floor(Math.random() * GARI_RATE) === 0) return { gari: true };
-  return { level: Math.floor(Math.random() * 3) };  // 0,1,2 = シャリ/玉子/エビ
+  if (Math.floor(rnd() * GARI_RATE) === 0) return { gari: true };
+  return { level: Math.floor(rnd() * 3) };  // 0,1,2 = シャリ/玉子/エビ
+}
+
+/* ---- 手順の控え ----
+   一手ごとに「いつ・何を・どうしたか」だけを並べる。座標は点に効かない
+   ので持たない。これを種と一緒に送ると、向こうで辻褄を見てもらえる。 */
+var REC_MAX = 12000;                 // これ以上は伸ばさない
+var rec = [], recT0 = 0, recFull = false;
+function recReset() { rec.length = 0; recFull = false; recT0 = performance.now(); }
+function recAdd(kind, a, b) {
+  if (rec.length >= REC_MAX) { recFull = true; return; }
+  var t = Math.round(performance.now() - recT0).toString(36);
+  rec.push(kind + ',' + t + (a === undefined ? '' : ',' + a) + (b === undefined ? '' : ',' + b));
+}
+function recDump() {
+  // 溢れた控えは辻褄が合わないので、そう名乗って向こうに断ってもらう
+  return (recFull ? '1t|' : '1|') + itemSeed.toString(36) + '|' +
+         (gameMode === 'order' ? 'o' : 'n') + '|' + rec.join(';');
 }
 function itemHalfWidth(it) {
   return it.gari ? GARI.r : SUSHI[it.level].hw;
@@ -734,6 +906,7 @@ function clampPreview() {
 function dropCurrent() {
   if (state !== 'ready' || dropLock || !current) return;
   clampPreview();
+  recAdd(current.gari ? 'p' : 'd', current.gari ? undefined : current.level);
   var b = current.gari ? makeGari(previewX, previewY)
                        : makeSushi(current.level, previewX, previewY);
   Body.setVelocity(b, { x: 0, y: 1.2 });
@@ -789,10 +962,11 @@ function flushOps() {
       Composite.remove(world, op.target);
       burst(gx, gy, ['#ffc7d4', '#ffffff', '#ff88a6'], 16, 3.4);
       burst(op.gari.position.x, op.gari.position.y, ['#ffc7d4'], 8, 2.2);
+      recAdd('g', lv);
       addScore(GARI_SCORE + lv * 10);
       addFloat(gx, gy - 12, '+' + fmt(GARI_SCORE + lv * 10), '#c8402f');
       seGari();
-      showPop('お口直し！', 0.8);
+      showPop(t('gariPop'), 0.8);
     } else {
       var mx = (op.a.position.x + op.b.position.x) / 2;
       var my = (op.a.position.y + op.b.position.y) / 2;
@@ -801,10 +975,11 @@ function flushOps() {
 
       if (op.level >= SUSHI.length - 1) {
         /* ゴールデンすし桶同士 → 消滅して大得点 */
+        recAdd('m', op.level, 1);
         addScore(GOLDEN_BONUS);
         addFloat(mx, my - 20, '+' + fmt(GOLDEN_BONUS), '#96690a');
         burst(mx, my, ['#ffe89a', '#ffd45a', '#fff8dc', '#e8b62c'], 60, 8);
-        showPop('大 入 袋 ！', 1);
+        showPop(t('jackpot'), 1);
         seJackpot();
         adHappy();
         continue;
@@ -822,12 +997,13 @@ function flushOps() {
       Body.setVelocity(nb, { x: 0, y: -1.6 });
 
       var gain = Math.round(MERGE_SCORE[op.level] * chainMult(chain));
+      recAdd('m', op.level, chain);
       addScore(gain);
       orderMade(op.level + 1);
       var fy = my - SUSHI[op.level + 1].hh - 6;
       if (chain >= 2) {
         if (chain > chainBest) chainBest = chain;
-        addFloat(mx, fy, chain + '連鎖 +' + fmt(gain), chain >= 3 ? '#c8402f' : '#c2690f');
+        addFloat(mx, fy, chain + t('chainFloat') + '+' + fmt(gain), chain >= 3 ? '#c8402f' : '#c2690f');
       } else {
         addFloat(mx, fy, '+' + fmt(gain),
                  op.level + 1 >= 7 ? '#c8402f' : 'rgba(58,40,16,.95)');
@@ -842,7 +1018,8 @@ function flushOps() {
       if (chain >= 5) burst(mx, my, ['#c9a227', '#c8402f', '#fffaf0'], 40, 6);
 
       if (op.level + 1 >= 7) {   // 出来上がりがレベル8(大トロ)以上
-        showPop(SHOUTS[Math.floor(Math.random() * SHOUTS.length)], 1);
+        var sh = SHOUT[lang] || SHOUT.ja;
+        showPop(sh[Math.floor(Math.random() * sh.length)], 1);
         if (op.level + 1 >= 9) seHuge(); else seBig();
       }
     }
@@ -864,7 +1041,7 @@ function addScore(v) {
   if (ri > rankShown) {
     rankShown = ri;
     if (ri >= 3) {
-      showPop(RANKS[ri].name + '！', 1);
+      showPop(rankName(RANKS[ri]) + (lang === 'en' ? '!' : '！'), 1);
       seFanfare(ri >= 5);
       burst(W / 2, BARREL_TOP + 70, ['#c9a227', '#c8402f', '#fffaf0'], 46, 6.5);
     }
@@ -872,7 +1049,7 @@ function addScore(v) {
   // 自己記録を抜いた瞬間
   if (!hiBeaten && startHi > 0 && score > startHi) {
     hiBeaten = true;
-    showPop('自己最高！', 1);
+    showPop(t('newBest'), 1);
     seFanfare(false);
   }
 }
@@ -1195,7 +1372,7 @@ function seOver() {
 /* ---- 音の入切 ---- */
 function applySound() {
   var btn = document.getElementById('sndBtn');
-  if (btn) btn.textContent = soundOn ? '音 入' : '音 切';
+  if (btn) btn.textContent = soundOn ? t('sndOn') : t('sndOff');
   if (!soundOn) bgmStop(0.25);
   else if (state !== 'title' && state !== 'over') bgmStart();
 }
@@ -2445,7 +2622,7 @@ function drawPreview() {
     ctx.fillStyle = 'rgba(200,64,47,.72)';
     ctx.font = '600 9px ' + F_MIN;
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    ctx.fillText('ガ リ', previewX, previewY + 12);
+    ctx.fillText(t('gari'), previewX, previewY + 12);
     ctx.restore();
   }
 }
@@ -2612,7 +2789,7 @@ function render() {
     ctx.textBaseline = 'middle';
     ctx.fillStyle = 'rgba(255,250,242,' + (0.55 + 0.45 * pulse).toFixed(3) + ')';
     ctx.font = '600 17px ' + F_MIN;
-    ctx.fillText('の れ ん 際', W / 2, BARREL_TOP - 62);
+    ctx.fillText(t('danger'), W / 2, BARREL_TOP - 62);
     ctx.font = '200 32px ' + F_GO;
     ctx.fillText(remain.toFixed(1), W / 2, BARREL_TOP - 30);
     ctx.restore();
@@ -2628,10 +2805,11 @@ function gameOver() {
   state = 'over';
   pointerDown = false;
   var r = rankOf(score);
-  document.getElementById('rankName').textContent = r.name;
+  document.getElementById('rankName').textContent = rankName(r);
   document.getElementById('rankNote').textContent =
-    (gameMode === 'order' ? '［お品書き］ ' : '') + r.note +
-    (gameMode === 'order' && chainBest >= 2 ? '　最高 ' + chainBest + '連鎖' : '');
+    (gameMode === 'order' ? t('modeTag') : '') + rankNote(r) +
+    (gameMode === 'order' && chainBest >= 2
+      ? t('bestChain') + chainBest + (lang === 'en' ? t('bestChainTail') : '連鎖') : '');
   document.getElementById('finalScore').textContent = fmt(score);
   document.getElementById('finalHi').textContent = fmt(hiScore);
   document.getElementById('overModal').hidden = false;
@@ -2670,6 +2848,9 @@ function resetGame() {
   pointerDown = false; dropLock = false;
   lastPtr = { x: W / 2, y: DROP_Y + FINGER_OFFSET_Y };
   order = null; orderWait = 0; orderMult = 1; orderStreak = 0; maxLevelMade = 2;
+  // 一戦ごとに種を引き直し、控えも白紙に戻す
+  seedItems((Math.random() * 0x100000000) >>> 0);
+  recReset();
   chainBest = 0;
   current = null; next = null;
   state = 'ready';
@@ -2720,8 +2901,6 @@ var orderStreak = 0;
 var orderWait = 0;           // 次の注文までの間(ms)
 var maxLevelMade = 2;        // これまでに作れた最大レベル(0基点)
 
-var ORDER_CHEERS = ['へい、お待ち！', 'あいよ、上がり！', 'ありがとうございます！'];
-
 /* 連鎖（両モード共通）
    落とした直後の合体を数えると、ただの連打が連鎖になってしまう。
    「合体で生まれた駒が、間を置かずさらに合体した時」だけを連鎖と数える。 */
@@ -2733,8 +2912,8 @@ function chainMult(n) { return Math.min(CHAIN_CAP, 1 + (n - 1) * 0.7); }
 
 var CHAIN_KANJI = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
 function chainLabel(n) {
-  if (n >= 5) return '大 連 鎖 ！';
-  return CHAIN_KANJI[n] + ' 連 ！';
+  if (n >= 5) return t('megaChain');
+  return (lang === 'en' ? String(n) : CHAIN_KANJI[n]) + t('chainSuffix');
 }
 
 /* 合体しようとしている二つが、直前の合体から続いているか */
@@ -2772,7 +2951,8 @@ function orderTick(dtMs) {
   }
   if (!order) { newOrder(); return; }
   if (performance.now() > order.until) {
-    showPop('相すみません…', 1);
+    showPop(t('orderFail'), 1);
+    recAdd('x');
     seOrderFail();
     orderStreak = 0;
     orderMult = 1;
@@ -2789,12 +2969,14 @@ function orderMade(level) {
   if (order.done < order.need) { seOrderStep(); return; }
 
   var bonus = Math.round(orderReward(order.level) * order.need * orderMult);
+  recAdd('o', order.level, order.need);
   addScore(bonus);
   addFloat(W / 2, BARREL_TOP - 46, '+' + fmt(bonus), '#c8402f');
   orderStreak++;
   orderMult = Math.min(3, 1 + orderStreak * 0.5);
-  showPop(orderStreak >= 4 ? 'よっ、日本一！'
-        : ORDER_CHEERS[Math.min(orderStreak, ORDER_CHEERS.length) - 1], 1);
+  var ch = CHEER[lang] || CHEER.ja;
+  showPop(orderStreak >= 4 ? (lang === 'en' ? CHEER.enTop : CHEER.jaTop)
+        : ch[Math.min(orderStreak, ch.length) - 1], 1);
   seOrder(orderStreak);
   burst(W / 2, BARREL_TOP - 34, ['#c8402f', '#ffd76a', '#fffaf0'], 34, 5.5);
   order = null;
@@ -2838,7 +3020,8 @@ function drawOrder() {
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(90,62,24,.75)';
     ctx.font = '600 15px ' + F_MIN;
-    ctx.fillText('次 の ご 注 文 を お 待 ち …', px + PW / 2, py + PH / 2);
+    ctx.font = (lang === 'en' ? '600 13px ' : '600 15px ') + F_MIN;
+    ctx.fillText(t('orderWait'), px + PW / 2, py + PH / 2);
     return;
   }
 
@@ -2855,18 +3038,18 @@ function drawOrder() {
   ctx.textAlign = 'left';
   ctx.fillStyle = 'rgba(120,86,38,.85)';
   ctx.font = '600 9.5px ' + F_MIN;
-  ctx.fillText('ご 注 文', px + 70, py + 15);
+  ctx.fillText(t('orderHead'), px + 70, py + 15);
   if (orderMult > 1) {
     ctx.textAlign = 'right';
     ctx.fillStyle = '#c8402f';
     ctx.font = '700 12px ' + F_GO;
-    ctx.fillText('のれん x' + orderMult.toFixed(1), px + PW - 12, py + 15);
+    ctx.fillText(t('noren') + orderMult.toFixed(1), px + PW - 12, py + 15);
   }
 
   // 二行目：品名。長い名前は札からはみ出すので自動で縮める
   ctx.textAlign = 'left';
   ctx.fillStyle = '#4a3212';
-  var nm = SUSHI[order.level].n;
+  var nm = sushiName(order.level);
   var avail = PW - 70 - 14, fs = 17;
   ctx.font = '600 ' + fs + 'px ' + F_MIN;
   while (fs > 11 && ctx.measureText(nm).width > avail) {
@@ -2885,7 +3068,7 @@ function drawOrder() {
   }
   ctx.fillStyle = 'rgba(120,86,38,.85)';
   ctx.font = '600 10px ' + F_MIN;
-  ctx.fillText(order.need + '貫', px + 75 + order.need * 15 + 3, py + 56);
+  ctx.fillText(order.need + t('pieces'), px + 75 + order.need * 15 + 3, py + 56);
 
   // 残り時間
   var left = Math.max(0, order.until - performance.now());
@@ -2970,7 +3153,7 @@ function claudeBackend(db) {
       });
     },
     /* 一人一文書。文書数が青天井にならないよう、自己ベストだけを持たせる */
-    submit: function (id, name, sc, kind) {
+    submit: function (id, name, sc, kind) {   // 共有DBには辻褄を見る側が居ないので手順は使わない
       var today = jstDay(), f = rankFields(kind), ref = db.doc('scores/' + id);
       return ref.get().then(function (snap) {
         var cur = (snap && snap.exists && snap.data()) || {};
@@ -2996,8 +3179,11 @@ function claudeBackend(db) {
 function httpBackend(base) {
   function ask(path, opt) {
     return fetch(base + path, opt).then(function (r) {
-      if (!r.ok) throw { code: r.status === 429 ? 'busy' : 'http' };
-      return r.json();
+      if (r.ok) return r.json();
+      // 断られた理由は本文に入っている。読めなければ通信の失敗として扱う
+      return r.json()['catch'](function () { return {}; }).then(function (body) {
+        throw { code: (body && body.error) || (r.status === 429 ? 'busy' : 'http') };
+      });
     });
   }
   return {
@@ -3016,7 +3202,7 @@ function httpBackend(base) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: id, name: name, score: sc, kind: kind, day: jstDay()
+          id: id, name: name, score: sc, kind: kind, day: jstDay(), log: recDump()
         })
       });
     }
@@ -3069,29 +3255,33 @@ function afterSubmit() {
       var sp = document.createElement('span');
       sp.appendChild(document.createTextNode(label + ' '));
       var b = document.createElement('b');
-      b.textContent = pos ? (pos + '位') : (RANK_SCAN + '位圏外');
+      b.textContent = pos
+        ? ((t('placePre') || '') + pos + t('place'))
+        : ((t('outsidePre') || '') + RANK_SCAN + t('outside'));
       sp.appendChild(b);
       return sp;
     };
-    sendNote.appendChild(mk('本日', r[0]));
-    sendNote.appendChild(document.createTextNode('\u3000'));
-    sendNote.appendChild(mk('総合', r[1]));
+    sendNote.appendChild(mk(lang === 'en' ? 'Today' : '本日', r[0]));
+    sendNote.appendChild(document.createTextNode(lang === 'en' ? '\u2003\u00b7\u2003' : '\u3000'));
+    sendNote.appendChild(mk(lang === 'en' ? 'All time' : '総合', r[1]));
   });
 }
 
 function doSubmit() {
   if (!rankApi || rankBusy) return;
   var name = cleanName(nameInput.value);
-  if (!name) { sendNote.textContent = '名前を入れてください。'; nameInput.focus(); return; }
+  if (!name) { sendNote.textContent = t('needName'); nameInput.focus(); return; }
   lsSet('sushitsumu.name', name);
   rankBusy = true;
-  sendNote.textContent = '送っています…';
+  sendNote.textContent = t('sending');
   rankApi.submit(playerId(), name, score, gameMode).then(afterSubmit)['catch'](function (e) {
     var code = e && e.code;
     sendNote.textContent =
-      code === 'quota_exceeded' ? '番付が満杯で登録できませんでした。' :
-      code === 'busy'           ? '混み合っています。少し置いてからお試しください。' :
-      '番付に繋がりませんでした。通信を確かめて、もう一度お試しください。';
+      code === 'quota_exceeded' ? t('errFull')      :
+      code === 'busy'           ? t('errBusy')      :
+      code === 'too-long'       ? t('errTooLong')   :
+      code === 'mismatch'       ? t('errMismatch')  :
+      t('errNet');
   }).then(function () { rankBusy = false; });
 }
 
@@ -3105,9 +3295,7 @@ function rankMessage(text) {
 
 function renderRank(rows) {
   if (!rows || !rows.length) {
-    rankMessage(rankMode === 'day'
-      ? '本日はまだ誰も握っていません。一番乗りをどうぞ。'
-      : 'まだ誰も番付に載っていません。');
+    rankMessage(rankMode === 'day' ? t('emptyDay') : t('emptyAll'));
     return;
   }
   rlistEl.innerHTML = '';
@@ -3121,7 +3309,7 @@ function renderRank(rows) {
     var rn = document.createElement('span');
     rn.className = 'rn';
     // 他人が入れた名前。textContent なので何を書かれても崩れない
-    rn.textContent = cleanName(row.name) || '名無し';
+    rn.textContent = cleanName(row.name) || t('anon');
     var rs = document.createElement('span');
     rs.className = 'rs';
     rs.textContent = fmt(Math.max(0, Math.floor(row.score)));
@@ -3137,11 +3325,12 @@ function loadRank() {
   tabNormal.classList.toggle('is-on', rankKind === 'normal');
   tabOrder.classList.toggle('is-on', rankKind === 'order');
   rankScope.textContent =
-    (rankKind === 'order' ? 'お品書き' : 'お任せ') + '・' +
-    (rankMode === 'day' ? '本日（日本時間 ' + jstDay() + '）' : 'これまで') + 'の上位';
-  rankMessage('読み込んでいます…');
+    (rankKind === 'order' ? t('scopeOrder') : t('scopeFree')) + t('dot') +
+    (rankMode === 'day' ? t('scopeDay') + jstDay() + t('scopeDayEnd') : t('scopeAll')) +
+    t('scopeTail');
+  rankMessage(t('loading'));
   rankApi.top(rankKind, rankMode, RANK_SHOW).then(renderRank)['catch'](function () {
-    rankMessage('番付を読み込めませんでした。');
+    rankMessage(t('loadFail'));
   });
 }
 
@@ -3266,11 +3455,49 @@ function adBreakPoint() {
     });
 }
 
+/* 印の付いた場所に、選んだ言葉を当てる */
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.body.classList.toggle('en', lang === 'en');
+  var i, el, nodes = document.querySelectorAll('[data-t]');
+  for (i = 0; i < nodes.length; i++) {
+    el = nodes[i];
+    el.textContent = t(el.getAttribute('data-t'));
+  }
+  nodes = document.querySelectorAll('[data-tp]');
+  for (i = 0; i < nodes.length; i++) {
+    nodes[i].placeholder = t(nodes[i].getAttribute('data-tp'));
+  }
+  // 改行を含む二つだけは innerHTML で入れる（表の中身はこちらで書いた文だけ）
+  document.getElementById('rotateMsg').innerHTML = t('rotate');
+  document.getElementById('libBody').innerHTML = t('libBody');
+  applySound();
+  if (state === 'over') {              // 結果を開いたまま切り替えた時
+    var r = rankOf(score);
+    document.getElementById('rankName').textContent = rankName(r);
+    document.getElementById('rankNote').textContent =
+      (gameMode === 'order' ? t('modeTag') : '') + rankNote(r) +
+      (gameMode === 'order' && chainBest >= 2
+        ? t('bestChain') + chainBest + (lang === 'en' ? t('bestChainTail') : '連鎖') : '');
+  }
+  if (rankApi && !rankModal.hidden) loadRank();
+}
+function toggleLang() {
+  lang = (lang === 'ja') ? 'en' : 'ja';
+  lsSet('sushitsumu.lang', lang);
+  applyLang();
+}
+
 /* ============================================================
    20. 起動
    ============================================================ */
+seedItems((Math.random() * 0x100000000) >>> 0);
 soundOn = lsGet('sushitsumu.snd') !== '0';
-applySound();
+lang = pickLang();
+applyLang();
+document.getElementById('langBtn').addEventListener('click', function (e) {
+  e.preventDefault(); toggleLang();
+});
 document.getElementById('sndBtn').addEventListener('click', function (e) {
   e.preventDefault(); toggleSound();
 });
