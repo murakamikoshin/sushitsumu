@@ -234,6 +234,67 @@ body.titling .hud { opacity: 0; pointer-events: none; }
 .hint { font-size: 11px; color: #9a8a72; margin-top: 22px; line-height: 2.05; letter-spacing: .04em; }
 .err  { color: var(--shu); font-size: 12.5px; line-height: 2; }
 
+/* ---- 番付（オンラインランキング） ---- */
+/* 共有データベースが使えない配布（単体の index.html など）では丸ごと隠す */
+body:not(.has-rank) .needs-rank { display: none !important; }
+
+.btnRow { display: flex; gap: 10px; justify-content: center; align-items: center; margin-top: 22px; }
+.btnRow .btn { margin-top: 0; }
+.btn.ghost {
+  background: transparent; color: var(--shu);
+  border: 1px solid rgba(200,64,47,.55); box-shadow: none;
+}
+.btn.small {
+  font-size: 11.5px; padding: 11px 14px; letter-spacing: .16em; text-indent: .16em;
+  white-space: nowrap; flex: 0 0 auto;
+}
+
+.nameRow { display: flex; align-items: center; gap: 8px; margin-top: 20px; }
+#nameInput {
+  flex: 1 1 auto; min-width: 0;
+  font-family: var(--mincho); font-size: 14px; color: #1d1a15;
+  padding: 10px 12px; border: 1px solid rgba(185,148,95,.75); border-radius: 2px;
+  background: #fffdf7;
+  -webkit-user-select: text; user-select: text; touch-action: auto;
+}
+#nameInput::placeholder { color: #b6a68c; }
+#nameInput:focus { outline: 2px solid rgba(200,64,47,.45); outline-offset: 1px; }
+
+.rankNote { font-size: 11px; color: #9a8a72; margin-top: 10px; line-height: 1.9; letter-spacing: .04em; }
+.rankNote b { font-family: var(--gothic); font-weight: 600; color: #c8402f; font-size: 12.5px; }
+
+.rtabs { display: flex; gap: 6px; justify-content: center; margin: 4px 0 12px; }
+.rtab {
+  font-family: var(--mincho); font-size: 11.5px; letter-spacing: .2em; text-indent: .2em;
+  padding: 7px 16px; border: 1px solid rgba(185,148,95,.7); border-radius: 2px;
+  background: transparent; color: #8a7a63; cursor: pointer;
+}
+.rtab.is-on { background: var(--shu); border-color: var(--shu); color: #fff; }
+
+.rlist {
+  list-style: none; text-align: left;
+  max-height: 44vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  touch-action: pan-y; overscroll-behavior: contain;
+  border-top: 1px dashed rgba(185,148,95,.6);
+}
+.rlist li {
+  display: flex; align-items: baseline; gap: 10px; padding: 8px 4px;
+  border-bottom: 1px dashed rgba(185,148,95,.32); font-size: 13px;
+}
+.rlist .rk {
+  font-family: var(--gothic); font-weight: 600; font-size: 12px; color: #9a8a72;
+  width: 2.4em; text-align: right; flex: 0 0 auto; font-variant-numeric: tabular-nums;
+}
+.rlist .rk.g1 { color: #b8901b; } .rlist .rk.g2 { color: #8d8d8d; } .rlist .rk.g3 { color: #a5713c; }
+.rlist .rn { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rlist .rs {
+  font-family: var(--gothic); font-weight: 500; flex: 0 0 auto;
+  font-variant-numeric: tabular-nums; color: #1d1a15;
+}
+.rlist li.me { background: rgba(200,64,47,.1); }
+.rlist li.me .rn { font-weight: 700; }
+.rEmpty { font-size: 12px; color: #9a8a72; padding: 26px 0; text-align: center; line-height: 2; }
+
 /* ---- 横向き（ランドスケープ）警告 ---- */
 #rotate { display: none; }
 @media (orientation: landscape) and (max-height: 520px) and (pointer: coarse) {
@@ -280,6 +341,7 @@ body.titling .hud { opacity: 0; pointer-events: none; }
         <div class="rule"></div>
         <div class="sub">江戸前合体遊戯</div>
         <button class="btn" id="startBtn">暖簾を潜る</button>
+        <button class="btn ghost small needs-rank" id="openRank">番 付 を 見 る</button>
         <p class="hint">
           指でなぞって位置を決め、離せば落ちる。<br>
           同じネタが触れ合えば合体。<br>
@@ -299,7 +361,32 @@ body.titling .hud { opacity: 0; pointer-events: none; }
           <div><span class="k">スコア</span><span class="v" id="finalScore">0</span></div>
           <div><span class="k">高得点</span><span class="v" id="finalHi">0</span></div>
         </div>
-        <button class="btn" id="retryBtn">もう一丁</button>
+        <div class="nameRow needs-rank">
+          <input id="nameInput" type="text" maxlength="12" placeholder="名前（12文字まで）"
+                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+          <button class="btn small" id="sendBtn">載 せ る</button>
+        </div>
+        <div class="rankNote needs-rank" id="sendNote"></div>
+
+        <div class="btnRow">
+          <button class="btn ghost needs-rank" id="openRank2">番 付</button>
+          <button class="btn" id="retryBtn">もう一丁</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 番付（オンラインランキング） -->
+    <div class="modal" id="rankModal" hidden>
+      <div class="card">
+        <h2>番付</h2>
+        <div class="rule"></div>
+        <div class="rtabs">
+          <button class="rtab is-on" id="tabDay">本 日</button>
+          <button class="rtab" id="tabAll">総 合</button>
+        </div>
+        <ol class="rlist" id="rlist"></ol>
+        <div class="rankNote" id="rankScope"></div>
+        <button class="btn" id="closeRank">閉 じ る</button>
       </div>
     </div>
 
@@ -346,6 +433,12 @@ body.titling .hud { opacity: 0; pointer-events: none; }
    ============================================================ */
 // スクロール／ラバーバンド禁止
 document.addEventListener('touchmove', function (e) {
+  // 番付の一覧だけは指で送れるようにする
+  var t = e.target;
+  while (t && t !== document) {
+    if (t.classList && t.classList.contains('rlist')) return;
+    t = t.parentNode;
+  }
   if (e.cancelable) e.preventDefault();
 }, { passive: false });
 // ピンチズーム(Safari独自イベント)禁止
@@ -2202,6 +2295,14 @@ function gameOver() {
   document.getElementById('finalHi').textContent = fmt(hiScore);
   document.getElementById('overModal').hidden = false;
   beep(180, 0.5, 'sawtooth');
+
+  // 名前を登録済みなら自動で送る。初回は本人が押すまで送らない
+  if (rankDb) {
+    sendNote.textContent = '';
+    var savedName = cleanName(lsGet('sushitsumu.name') || '');
+    nameInput.value = savedName;
+    if (savedName && score > 0) doSubmit();
+  }
   var bodies = Composite.allBodies(world);
   for (var i = 0; i < bodies.length; i++) {
     if (!bodies[i].isStatic) {
@@ -2247,8 +2348,209 @@ document.getElementById('retryBtn').addEventListener('click', function (e) {
 });
 
 /* ============================================================
-   17. 起動
+   17. オンライン番付
+   共有データベースはアーティファクトとして公開した時だけ使える。
+   単体の index.html には window.claude が無いので、その場合は
+   番付の UI ごと隠して、これまで通り端末内のハイスコアだけで動かす。
    ============================================================ */
+var RANK_SHOW = 20;      // 一覧に出す人数
+var RANK_SCAN = 100;     // 自分の順位を数えるために見る範囲
+var rankDb = null;
+var rankMode = 'day';
+var rankBusy = false;
+
+/* 日付は日本時間で切る。閲覧者の時計に任せると日替わりがばらつく */
+function jstDay(ms) {
+  var d = new Date((ms || Date.now()) + 9 * 3600 * 1000);
+  return d.getUTCFullYear() + '-' +
+         ('0' + (d.getUTCMonth() + 1)).slice(-2) + '-' +
+         ('0' + d.getUTCDate()).slice(-2);
+}
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+function playerId() {
+  var v = lsGet('sushitsumu.pid');
+  if (!v) {
+    v = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    lsSet('sushitsumu.pid', v);
+  }
+  return v;
+}
+/* 他人が書いた名前は信用しない。制御文字を落として長さを切る */
+function cleanName(n) {
+  var src = String(n == null ? '' : n), out = '', i, c;
+  for (i = 0; i < src.length && out.length < 12; i++) {
+    c = src.charCodeAt(i);
+    if (c < 32 || c === 127) continue;
+    out += src.charAt(i);
+  }
+  return out.trim().slice(0, 12);
+}
+
+var nameInput = document.getElementById('nameInput');
+var sendNote  = document.getElementById('sendNote');
+var rankModal = document.getElementById('rankModal');
+var rlistEl   = document.getElementById('rlist');
+var rankScope = document.getElementById('rankScope');
+var tabDay    = document.getElementById('tabDay');
+var tabAll    = document.getElementById('tabAll');
+
+function initRanking() {
+  if (!window.claude || typeof window.claude.use !== 'function') return;
+  window.claude.use('db').then(function (db) {
+    if (!db) return;
+    rankDb = db;
+    document.body.classList.add('has-rank');
+    nameInput.value = cleanName(lsGet('sushitsumu.name') || '');
+  })['catch'](function () {});
+}
+
+function topQuery(n) {
+  var col = rankDb.collection('scores');
+  return rankMode === 'day'
+    ? col.where('day', '==', jstDay()).orderBy('dayBest', 'desc').limit(n)
+    : col.orderBy('best', 'desc').limit(n);
+}
+function scoreOf(row) {
+  return Number(rankMode === 'day' ? row.dayBest : row.best) || 0;
+}
+
+/* 一人一文書。文書数が青天井にならないよう、自己ベストだけを持たせる */
+function submitScore(name, sc) {
+  if (!rankDb) return Promise.reject({ code: 'unavailable' });
+  var today = jstDay();
+  var ref = rankDb.doc('scores/' + playerId());
+  return ref.get().then(function (snap) {
+    var cur = (snap && snap.exists && snap.data()) || {};
+    var best = Math.max(Number(cur.best) || 0, sc);
+    var dayBest = (cur.day === today) ? Math.max(Number(cur.dayBest) || 0, sc) : sc;
+    return ref.set({
+      name: name, best: best, day: today, dayBest: dayBest,
+      updatedAt: new Date().toISOString()
+    });
+  });
+}
+
+/* 自分の順位を数える（RANK_SCAN 位まで） */
+function myRank() {
+  return topQuery(RANK_SCAN).get().then(function (snap) {
+    var me = playerId();
+    for (var i = 0; i < snap.docs.length; i++) {
+      if (snap.docs[i].id === me) return i + 1;
+    }
+    return 0;
+  });
+}
+
+function afterSubmit() {
+  var keep = rankMode;
+  rankMode = 'day';
+  return myRank().then(function (d) {
+    rankMode = 'all';
+    return myRank().then(function (a) { return [d, a]; });
+  }).then(function (r) {
+    rankMode = keep;
+    sendNote.innerHTML = '';
+    var mk = function (label, pos) {
+      var sp = document.createElement('span');
+      sp.appendChild(document.createTextNode(label + ' '));
+      var b = document.createElement('b');
+      b.textContent = pos ? (pos + '位') : (RANK_SCAN + '位圏外');
+      sp.appendChild(b);
+      return sp;
+    };
+    sendNote.appendChild(mk('本日', r[0]));
+    sendNote.appendChild(document.createTextNode('　'));
+    sendNote.appendChild(mk('総合', r[1]));
+  });
+}
+
+function doSubmit() {
+  if (!rankDb || rankBusy) return;
+  var name = cleanName(nameInput.value);
+  if (!name) { sendNote.textContent = '名前を入れてください。'; nameInput.focus(); return; }
+  lsSet('sushitsumu.name', name);
+  rankBusy = true;
+  sendNote.textContent = '送っています…';
+  submitScore(name, score).then(afterSubmit)['catch'](function (e) {
+    sendNote.textContent = (e && e.code === 'quota_exceeded')
+      ? '番付が満杯で登録できませんでした。'
+      : '番付に繋がりませんでした。通信を確かめて、もう一度お試しください。';
+  }).then(function () { rankBusy = false; });
+}
+
+function rankMessage(text) {
+  rlistEl.innerHTML = '';
+  var li = document.createElement('li');
+  li.className = 'rEmpty';
+  li.textContent = text;
+  rlistEl.appendChild(li);
+}
+
+function renderRank(snap) {
+  if (!snap || snap.empty) {
+    rankMessage(rankMode === 'day'
+      ? '本日はまだ誰も握っていません。一番乗りをどうぞ。'
+      : 'まだ誰も番付に載っていません。');
+    return;
+  }
+  rlistEl.innerHTML = '';
+  var me = playerId();
+  snap.docs.forEach(function (d, i) {
+    var row = d.data() || {};
+    var li = document.createElement('li');
+    if (d.id === me) li.className = 'me';
+    var rk = document.createElement('span');
+    rk.className = 'rk' + (i < 3 ? ' g' + (i + 1) : '');
+    rk.textContent = String(i + 1);
+    var rn = document.createElement('span');
+    rn.className = 'rn';
+    // 他人が入れた名前。textContent なので何を書かれても崩れない
+    rn.textContent = cleanName(row.name) || '名無し';
+    var rs = document.createElement('span');
+    rs.className = 'rs';
+    rs.textContent = fmt(Math.max(0, Math.floor(scoreOf(row))));
+    li.appendChild(rk); li.appendChild(rn); li.appendChild(rs);
+    rlistEl.appendChild(li);
+  });
+}
+
+function loadRank() {
+  if (!rankDb) return;
+  tabDay.classList.toggle('is-on', rankMode === 'day');
+  tabAll.classList.toggle('is-on', rankMode === 'all');
+  rankScope.textContent = rankMode === 'day'
+    ? '本日（日本時間 ' + jstDay() + '）の上位'
+    : 'これまでの上位';
+  rankMessage('読み込んでいます…');
+  topQuery(RANK_SHOW).get().then(renderRank)['catch'](function () {
+    rankMessage('番付を読み込めませんでした。');
+  });
+}
+
+function openRankModal(mode) {
+  rankMode = mode || 'day';
+  rankModal.hidden = false;
+  loadRank();
+}
+
+tabDay.addEventListener('click', function () { rankMode = 'day'; loadRank(); });
+tabAll.addEventListener('click', function () { rankMode = 'all'; loadRank(); });
+document.getElementById('closeRank').addEventListener('click', function () {
+  rankModal.hidden = true;
+});
+document.getElementById('sendBtn').addEventListener('click', doSubmit);
+nameInput.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') { e.preventDefault(); nameInput.blur(); doSubmit(); }
+});
+document.getElementById('openRank').addEventListener('click', function () { openRankModal('day'); });
+document.getElementById('openRank2').addEventListener('click', function () { openRankModal('day'); });
+
+/* ============================================================
+   18. 起動
+   ============================================================ */
+initRanking();
 buildSprites();
 buildBarrel();
 resize();
