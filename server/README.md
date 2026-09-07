@@ -32,13 +32,14 @@ Node.js が入っていること。Cloudflare のアカウントは既存のも�
 （新しく作る必要はない）。
 
 ```sh
-npx wrangler login        # ブラウザが開くので、置きたいアカウントで許可する
-bash server/setup.sh      # あとは全部やる
+npx wrangler login          # ブラウザが開くので、置きたいアカウントで許可する
+node server/setup.mjs       # あとは全部やる
 ```
 
-`setup.sh` は、データベースを作り、その id を `wrangler.toml` に書き込み、
+`setup.mjs` は、データベースを作り、その id を `wrangler.toml` に書き込み、
 表を用意し、Worker を上げるところまでやって、最後に URL を出す。
 何度流しても構わない（二度目からは既にあるものを使い回す）。
+Windows・Mac・Linux のどれでも同じコマンドで動く。
 
 手でやるなら：
 
