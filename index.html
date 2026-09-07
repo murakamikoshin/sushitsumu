@@ -120,6 +120,13 @@ body {
   font-family: var(--gothic); font-weight: 400; font-size: 11.5px;
   letter-spacing: 0; color: rgba(250,246,236,.7);
 }
+.sndBtn {
+  margin-top: 7px; font-family: var(--mincho); font-size: 9.5px;
+  letter-spacing: .2em; text-indent: .2em; color: rgba(230,205,166,.8);
+  background: transparent; border: 1px solid rgba(230,205,166,.4);
+  border-radius: 2px; padding: 4px 9px; cursor: pointer;
+}
+.sndBtn:active { opacity: .6; }
 
 /* NEXT は白木の丸盆に乗せる */
 .tray {
@@ -353,6 +360,7 @@ body:not(.has-rank) .needs-rank { display: none !important; }
       <div class="lbl">スコア</div>
       <div class="score" id="scoreEl">0</div>
       <div class="hi">高得点 <b id="hiEl">0</b></div>
+      <button class="sndBtn" id="sndBtn" type="button">音 入</button>
     </div>
     <div class="hud-r">
       <div class="lbl">つぎ</div>
@@ -553,16 +561,25 @@ var GARI = { n:'ガリ', r:9, col:'#ffc7d4' };
 /* 威勢のいい掛け声（レベル8以上の合体で表示） */
 var SHOUTS = ['へい大将！', '極上！', 'いよっ、名人！', 'これぞ江戸前！', '大将、いい仕事！', 'あがりでィ！'];
 
-/* ランク判定 */
+/* ランク判定
+   実測（自動プレイ）: お任せ 12,500-22,400 / お品書き 21,000-46,400。
+   無策でも上位になってしまっては値打ちが無いので、
+   その上に置いた。お品書きは点の出方が約1.8倍なので同率で伸ばす。 */
 var RANKS = [
   { s: 0,     name: '見習い職人',     note: 'まずは飯炊き三年から。' },
-  { s: 1200,  name: '追い回し',       note: '手つきが良くなってきた。' },
-  { s: 3000,  name: '若手職人',       note: 'いい仕事、してますね。' },
-  { s: 6000,  name: '中堅職人',       note: '常連がつき始めた腕前。' },
-  { s: 11000, name: '花板',           note: '厨房を任される男。' },
-  { s: 18000, name: '大将',           note: 'その握り、値千金。' },
-  { s: 30000, name: '伝説のすし職人', note: 'へい、お待ち。—— 神域。' }
+  { s: 4000,  name: '追い回し',       note: '手つきが良くなってきた。' },
+  { s: 10000, name: '若手職人',       note: 'いい仕事、してますね。' },
+  { s: 18000, name: '中堅職人',       note: '常連がつき始めた腕前。' },
+  { s: 30000, name: '花板',           note: '厨房を任される男。' },
+  { s: 50000, name: '大将',           note: 'その握り、値千金。' },
+  { s: 85000, name: '伝説のすし職人', note: 'へい、お待ち。—— 神域。' }
 ];
+function rankScale() { return gameMode === 'order' ? 1.8 : 1; }
+function rankIndex(sc) {
+  var v = sc / rankScale(), idx = 0;
+  for (var i = 0; i < RANKS.length; i++) if (v >= RANKS[i].s) idx = i;
+  return idx;
+}
 
 /* ============================================================
    3. 物理エンジン
@@ -604,6 +621,9 @@ var lastPtr     = { x: W / 2, y: DROP_Y + FINGER_OFFSET_Y };
 var dropLock    = false;
 var deadTimer   = 0;
 var particles   = [];
+var rankShown   = 0;         // その回で祝ったランク
+var startHi     = 0;         // 開始時のハイスコア
+var hiBeaten    = false;
 var pendingOps  = [];          // 物理ステップ後にまとめて処理
 var bodySeq     = 0;
 
@@ -709,7 +729,7 @@ function dropCurrent() {
                        : makeSushi(current.level, previewX, previewY);
   Body.setVelocity(b, { x: 0, y: 1.2 });
   Composite.add(world, b);
-  beep(current.gari ? 900 : 520, 0.05, 'triangle');
+  seDrop(current.gari);
 
   current = null;
   dropLock = true;
@@ -762,7 +782,7 @@ function flushOps() {
       burst(op.gari.position.x, op.gari.position.y, ['#ffc7d4'], 8, 2.2);
       addScore(GARI_SCORE + lv * 10);
       addFloat(gx, gy - 12, '+' + fmt(GARI_SCORE + lv * 10), '#c8402f');
-      beep(1250, 0.07, 'square');
+      seGari();
       showPop('お口直し！', 0.8);
     } else {
       var mx = (op.a.position.x + op.b.position.x) / 2;
@@ -776,7 +796,7 @@ function flushOps() {
         addFloat(mx, my - 20, '+' + fmt(GOLDEN_BONUS), '#96690a');
         burst(mx, my, ['#ffe89a', '#ffd45a', '#fff8dc', '#e8b62c'], 60, 8);
         showPop('大 入 袋 ！', 1);
-        beep(1600, 0.25, 'sawtooth');
+        seJackpot();
         continue;
       }
 
@@ -805,15 +825,15 @@ function flushOps() {
       var col = SUSHI[op.level + 1].col;
       burst(mx, my, [col, '#ffffff', '#fff2c8'],
             (14 + op.level * 3) * (chain >= 2 ? 2 : 1), (3 + op.level * 0.5) * (chain >= 2 ? 1.5 : 1));
-      beep(420 + op.level * 70 + (chain - 1) * 120, 0.06 + (chain >= 2 ? 0.04 : 0), 'triangle');
-      if (chain >= 3) {
-        showPop(chainLabel(chain), 1);
-        beep(880 + chain * 90, 0.2, 'square');
-      }
+      seMerge(op.level + 1, chain);
+      // 3連鎖は1ゲームに20回以上出て有り難みが無かったので、
+      // 画面中央に出すのは4連鎖から。2〜3連鎖は浮き文字と音だけ
+      if (chain >= 4) showPop(chainLabel(chain), 1);
+      if (chain >= 5) burst(mx, my, ['#c9a227', '#c8402f', '#fffaf0'], 40, 6);
 
       if (op.level + 1 >= 7) {   // 出来上がりがレベル8(大トロ)以上
         showPop(SHOUTS[Math.floor(Math.random() * SHOUTS.length)], 1);
-        beep(880 + op.level * 40, 0.16, 'square');
+        if (op.level + 1 >= 9) seHuge(); else seBig();
       }
     }
   }
@@ -826,6 +846,24 @@ function addScore(v) {
     hiScore = score;
     hiEl.textContent = fmt(hiScore);
     saveHi(hiScore);
+  }
+  if (state === 'over' || state === 'title') return;
+
+  // 段が上がったら祝う。中堅職人から上だけ
+  var ri = rankIndex(score);
+  if (ri > rankShown) {
+    rankShown = ri;
+    if (ri >= 3) {
+      showPop(RANKS[ri].name + '！', 1);
+      seFanfare(ri >= 5);
+      burst(W / 2, BARREL_TOP + 70, ['#c9a227', '#c8402f', '#fffaf0'], 46, 6.5);
+    }
+  }
+  // 自己記録を抜いた瞬間
+  if (!hiBeaten && startHi > 0 && score > startHi) {
+    hiBeaten = true;
+    showPop('自己最高！', 1);
+    seFanfare(false);
   }
 }
 
@@ -894,33 +932,268 @@ function showPop(text, scale) {
 }
 
 /* ============================================================
-   11. サウンド（WebAudio・軽量）
+   11. 音（BGM と 効果音）
+   外部ライブラリは使わない。単体配布でも通信なしで鳴らしたいので、
+   WebAudio で和楽器を合成する。
+   音階は陽旋法（レ・ミ・ソ・ラ・シ）。和の響きが崩れない。
    ============================================================ */
-var actx = null;
-function unlockAudio() {
-  if (actx) return;
+var actx = null, master = null, musBus = null, sfxBus = null, noiseBuf = null;
+var soundOn = true;
+var bgm = { on: false, step: 0, next: 0, timer: null, level: 0 };
+
+var YO = [0, 2, 5, 7, 9];          // 陽旋法（Dを主音とする）
+var BPM = 100, SP8 = 30 / BPM;     // 八分音符の秒数
+
+function nf(semi) { return 293.665 * Math.pow(2, semi / 12); }   // D4 基準
+
+function initAudio() {
+  if (actx) return true;
   try {
     var AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return;
+    if (!AC) return false;
     actx = new AC();
-    if (actx.state === 'suspended') actx.resume();
-    var b = actx.createBuffer(1, 1, 22050);
-    var s = actx.createBufferSource();
-    s.buffer = b; s.connect(actx.destination); s.start(0);
-  } catch (e) { actx = null; }
+    master = actx.createGain();
+    master.gain.value = 0.85;
+    var comp = actx.createDynamicsCompressor();
+    comp.threshold.value = -14; comp.ratio.value = 4;
+    comp.attack.value = 0.004; comp.release.value = 0.22;
+    master.connect(comp); comp.connect(actx.destination);
+    musBus = actx.createGain(); musBus.gain.value = 0.0001; musBus.connect(master);
+    sfxBus = actx.createGain(); sfxBus.gain.value = 0.95;   sfxBus.connect(master);
+    var n = Math.floor(actx.sampleRate * 1.5);
+    noiseBuf = actx.createBuffer(1, n, actx.sampleRate);
+    var d = noiseBuf.getChannelData(0);
+    for (var k = 0; k < n; k++) d[k] = Math.random() * 2 - 1;
+    return true;
+  } catch (e) { actx = null; return false; }
 }
-function beep(freq, dur, type) {
+function audioReady() { return soundOn && actx && sfxBus; }
+
+function unlockAudio() {
+  if (!initAudio()) return;
+  try {
+    if (actx.state === 'suspended') actx.resume();
+    var b = actx.createBuffer(1, 1, 22050), s2 = actx.createBufferSource();
+    s2.buffer = b; s2.connect(actx.destination); s2.start(0);
+  } catch (e) {}
+}
+
+/* ---- 素の音 ---- */
+function tone(bus, t, freq, dur, type, peak) {
+  var o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine';
+  o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak), t + 0.006);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(bus);
+  o.start(t); o.stop(t + dur + 0.05);
+}
+function noiseHit(bus, t, dur, peak, type, freq, q) {
+  var s2 = actx.createBufferSource(); s2.buffer = noiseBuf; s2.loop = true;
+  var f = actx.createBiquadFilter();
+  f.type = type || 'bandpass';
+  f.frequency.setValueAtTime(freq, t);
+  if (q) f.Q.setValueAtTime(q, t);
+  var g = actx.createGain();
+  g.gain.setValueAtTime(Math.max(0.0002, peak), t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  s2.connect(f); f.connect(g); g.connect(bus);
+  s2.start(t); s2.stop(t + dur + 0.04);
+}
+/* 箏（爪弾き）：立ち上がりが鋭く、余韻が伸びる */
+function koto(bus, t, freq, dur, peak) {
+  var o = actx.createOscillator(), g = actx.createGain(), lp = actx.createBiquadFilter();
+  o.type = 'triangle';
+  o.frequency.setValueAtTime(freq * 1.015, t);
+  o.frequency.exponentialRampToValueAtTime(freq, t + 0.04);
+  lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(freq * 7, t);
+  lp.frequency.exponentialRampToValueAtTime(freq * 2.2, t + dur * 0.7);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak), t + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(lp); lp.connect(g); g.connect(bus);
+  o.start(t); o.stop(t + dur + 0.05);
+  noiseHit(bus, t, 0.028, peak * 0.45, 'bandpass', freq * 4, 7);
+}
+/* 太鼓：頭で高く、すぐ沈む */
+function taiko(bus, t, f0, dur, peak) {
+  var o = actx.createOscillator(), g = actx.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(f0 * 2.4, t);
+  o.frequency.exponentialRampToValueAtTime(f0, t + 0.07);
+  g.gain.setValueAtTime(Math.max(0.0002, peak), t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(bus);
+  o.start(t); o.stop(t + dur + 0.05);
+  noiseHit(bus, t, 0.05, peak * 0.55, 'lowpass', 800, 1);
+}
+/* 拍子木 */
+function clap(bus, t, peak) {
+  noiseHit(bus, t, 0.04, peak, 'bandpass', 2400, 3);
+  tone(bus, t, 1500, 0.045, 'square', peak * 0.28);
+}
+/* 鉦・鈴：倍音が非整数で金属らしくなる */
+function bell(bus, t, freq, dur, peak) {
+  tone(bus, t, freq, dur, 'sine', peak);
+  tone(bus, t, freq * 2.76, dur * 0.7, 'sine', peak * 0.3);
+  tone(bus, t, freq * 5.4, dur * 0.4, 'sine', peak * 0.14);
+}
+
+/* ---- BGM ----
+   桶の埋まり具合で厚みを変える。静かに始まり、危なくなるほど太鼓が増える。 */
+function bgmStep(step, t) {
+  var I = bgm.level;
+  var bar = Math.floor(step / 8) % 8, b = step % 8;
+  var ROOT = [0, 0, 5, 7, 0, 0, 5, -3][bar];
+
+  if (b === 0) tone(musBus, t, nf(ROOT - 24), SP8 * 1.8, 'triangle', 0.34);
+  if (b === 4) tone(musBus, t, nf(ROOT - 24 + 7), SP8 * 1.4, 'triangle', 0.24);
+
+  var seq = [0, 2, 4, 3, 1, 2, 4, 3];
+  var play = I >= 2 ? true : (I === 1 ? (b % 2 === 0) : (b === 0 || b === 4));
+  if (play) koto(musBus, t, nf(YO[seq[b]] + ROOT + (I >= 3 ? 12 : 0)), 0.55, 0.15);
+
+  if (I >= 1 && (b === 0 || b === 4)) taiko(musBus, t, 82, 0.3, 0.42);
+  if (I >= 2 && b === 6) taiko(musBus, t, 108, 0.2, 0.28);
+  if (I >= 3 && (b === 2 || b === 7)) taiko(musBus, t, 96, 0.18, 0.26);
+  if (I >= 2 && b % 2 === 1) noiseHit(musBus, t, 0.045, 0.04, 'highpass', 5200, 1);
+}
+function bgmTick() {
+  if (!actx || !bgm.on) return;
+  var guard = 0;
+  while (bgm.next < actx.currentTime + 0.16 && guard++ < 40) {
+    bgmStep(bgm.step++, bgm.next);
+    bgm.next += SP8;
+  }
+}
+function bgmStart() {
+  if (!soundOn || !initAudio()) return;
+  if (bgm.on) return;
+  bgm.on = true; bgm.step = 0; bgm.next = actx.currentTime + 0.12;
+  try {
+    musBus.gain.cancelScheduledValues(actx.currentTime);
+    musBus.gain.setValueAtTime(0.0001, actx.currentTime);
+    musBus.gain.exponentialRampToValueAtTime(0.34, actx.currentTime + 1.4);
+  } catch (e) {}
+  if (bgm.timer) clearInterval(bgm.timer);
+  bgm.timer = setInterval(bgmTick, 25);
+}
+function bgmStop(fade) {
+  bgm.on = false;
+  if (bgm.timer) { clearInterval(bgm.timer); bgm.timer = null; }
   if (!actx) return;
   try {
-    var o = actx.createOscillator(), g = actx.createGain();
-    o.type = type || 'sine';
-    o.frequency.setValueAtTime(freq, actx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(freq * 0.6, actx.currentTime + dur);
-    g.gain.setValueAtTime(0.09, actx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
-    o.connect(g); g.connect(actx.destination);
-    o.start(); o.stop(actx.currentTime + dur + 0.02);
+    musBus.gain.cancelScheduledValues(actx.currentTime);
+    musBus.gain.setValueAtTime(musBus.gain.value, actx.currentTime);
+    musBus.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (fade || 0.5));
   } catch (e) {}
+}
+function bgmIntensity(fill, danger) {
+  var I = danger ? 3 : fill > 0.8 ? 3 : fill > 0.58 ? 2 : fill > 0.32 ? 1 : 0;
+  if (I !== bgm.level) bgm.level = I;
+}
+
+/* ---- 効果音 ---- */
+function seDrop(isGari) {
+  if (!audioReady()) return;
+  var t = actx.currentTime;
+  if (isGari) noiseHit(sfxBus, t, 0.09, 0.18, 'highpass', 4200, 1);
+  else noiseHit(sfxBus, t, 0.026, 0.22, 'bandpass', 1500, 5);
+}
+function seMerge(level, chain) {
+  if (!audioReady()) return;
+  var t = actx.currentTime;
+  koto(sfxBus, t, nf(YO[level % 5] + Math.floor(level / 5) * 12), 0.45, 0.72);
+  if (chain >= 2) {                      // 連鎖は駆け上がる
+    var n = Math.min(chain, 6);
+    for (var i = 0; i < n; i++)
+      koto(sfxBus, t + 0.045 * (i + 1), nf(YO[i % 5] + 12 + Math.floor(i / 5) * 12), 0.34, 0.52);
+    if (chain >= 3) taiko(sfxBus, t, 96, 0.28, 0.6);
+  }
+}
+function seBig() {                        // 大トロ以上
+  if (!audioReady()) return;
+  var t = actx.currentTime;
+  taiko(sfxBus, t, 70, 0.5, 0.8);
+  bell(sfxBus, t + 0.02, nf(12), 0.9, 0.3);
+  for (var i = 0; i < 5; i++) koto(sfxBus, t + 0.05 + i * 0.06, nf(YO[i] + 12), 0.4, 0.48);
+}
+function seHuge() {                       // 伊勢海老・ゴールデン誕生
+  if (!audioReady()) return;
+  var t = actx.currentTime;
+  taiko(sfxBus, t, 58, 0.85, 0.85);
+  taiko(sfxBus, t + 0.13, 68, 0.6, 0.6);
+  bell(sfxBus, t + 0.04, nf(0), 1.7, 0.38);
+  for (var i = 0; i < 10; i++)
+    koto(sfxBus, t + 0.08 + i * 0.055, nf(YO[i % 5] + Math.floor(i / 5) * 12), 0.5, 0.5);
+}
+function seJackpot() {                    // ゴールデン同士。この曲で一番派手にする
+  if (!audioReady()) return;
+  var t = actx.currentTime;
+  for (var r = 0; r < 3; r++) taiko(sfxBus, t + r * 0.13, 54 + r * 7, 0.85, 0.6);
+  bell(sfxBus, t, nf(0), 2.4, 0.26);
+  bell(sfxBus, t + 0.36, nf(12), 2.0, 0.2);
+  for (var i = 0; i < 15; i++)
+    koto(sfxBus, t + 0.14 + i * 0.055, nf(YO[i % 5] + Math.floor(i / 5) * 12), 0.55, 0.4);
+  for (var k = 0; k < 14; k++)
+    tone(sfxBus, t + 0.3 + Math.random(), 1800 + Math.random() * 2600, 0.22, 'sine', 0.05);
+}
+function seOrder(streak) {
+  if (!audioReady()) return;
+  var t = actx.currentTime, up = Math.min(streak, 5);
+  clap(sfxBus, t, 0.55); clap(sfxBus, t + 0.085, 0.44);
+  for (var i = 0; i < 3; i++)
+    bell(sfxBus, t + 0.06 + i * 0.07, nf(YO[i] + 12 + (up - 1) * 2), 0.7, 0.34);
+}
+function seOrderStep() {
+  if (!audioReady()) return;
+  clap(sfxBus, actx.currentTime, 0.4);
+}
+function seOrderFail() {
+  if (!audioReady()) return;
+  var t = actx.currentTime;
+  taiko(sfxBus, t, 58, 0.55, 0.42);
+  tone(sfxBus, t, 175, 0.42, 'triangle', 0.13);
+}
+function seGari() {
+  if (!audioReady()) return;
+  var t = actx.currentTime;
+  noiseHit(sfxBus, t, 0.16, 0.26, 'highpass', 3200, 1);
+  tone(sfxBus, t, 1500, 0.12, 'sine', 0.2);
+}
+function seFanfare(big) {                 // 記録更新・大台
+  if (!audioReady()) return;
+  var t = actx.currentTime;
+  var mel = big ? [0, 4, 7, 9, 12, 16, 19] : [0, 4, 7, 12];
+  taiko(sfxBus, t, 62, 0.7, big ? 0.8 : 0.5);
+  mel.forEach(function (m, i) {
+    koto(sfxBus, t + 0.08 * i, nf(m + 12), 0.6, 0.5);
+    if (big) bell(sfxBus, t + 0.08 * i, nf(m + 24), 0.8, 0.2);
+  });
+  if (big) for (var k = 0; k < 10; k++)
+    tone(sfxBus, t + 0.4 + Math.random() * 0.8, 2000 + Math.random() * 2400, 0.2, 'sine', 0.06);
+}
+function seOver() {
+  if (!audioReady()) return;
+  var t = actx.currentTime;
+  taiko(sfxBus, t, 52, 1.0, 0.7);
+  [9, 7, 5, 0].forEach(function (m, i) { koto(sfxBus, t + i * 0.17, nf(m - 12), 0.9, 0.45); });
+}
+
+/* ---- 音の入切 ---- */
+function applySound() {
+  var btn = document.getElementById('sndBtn');
+  if (btn) btn.textContent = soundOn ? '音 入' : '音 切';
+  if (!soundOn) bgmStop(0.25);
+  else if (state !== 'title' && state !== 'over') bgmStart();
+}
+function toggleSound() {
+  soundOn = !soundOn;
+  lsSet('sushitsumu.snd', soundOn ? '1' : '0');
+  if (soundOn) unlockAudio();
+  applySound();
 }
 
 /* ============================================================
@@ -2231,13 +2504,16 @@ function checkGameOver(dtSec) {
   var bodies = Composite.allBodies(world);
   var breach = false;
   var now = performance.now();
+  var pileTop = FLOOR;
   for (var i = 0; i < bodies.length; i++) {
     var b = bodies[i];
     var meta = b.sushi || b.gari;
     if (!meta || b.isStatic) continue;
+    if (b.bounds.min.y < pileTop && Math.abs(b.velocity.y) < 1.2) pileTop = b.bounds.min.y;
     if (now - meta.born < 900) continue;           // 落下直後は猶予
-    if (b.bounds.min.y < DEAD_Y) { breach = true; break; }
+    if (b.bounds.min.y < DEAD_Y) breach = true;
   }
+  bgmIntensity((FLOOR - pileTop) / (FLOOR - DEAD_Y), deadTimer > 0.05);
   if (breach) {
     deadTimer += dtSec;
     if (deadTimer >= DEAD_LIMIT) gameOver();
@@ -2336,11 +2612,7 @@ function render() {
 /* ============================================================
    16. ゲームオーバー / リスタート
    ============================================================ */
-function rankOf(s) {
-  var r = RANKS[0];
-  for (var i = 0; i < RANKS.length; i++) if (s >= RANKS[i].s) r = RANKS[i];
-  return r;
-}
+function rankOf(sc) { return RANKS[rankIndex(sc)]; }
 function gameOver() {
   if (state === 'over') return;
   state = 'over';
@@ -2353,7 +2625,8 @@ function gameOver() {
   document.getElementById('finalScore').textContent = fmt(score);
   document.getElementById('finalHi').textContent = fmt(hiScore);
   document.getElementById('overModal').hidden = false;
-  beep(180, 0.5, 'sawtooth');
+  seOver();
+  bgmStop(0.8);
 
   // 名前を登録済みなら自動で送る。初回は本人が押すまで送らない
   if (rankDb) {
@@ -2379,6 +2652,7 @@ function resetGame() {
   particles.length = 0;
   floats.length = 0;
   score = 0; scoreEl.textContent = '0';
+  rankShown = 0; startHi = hiScore; hiBeaten = false;
   deadTimer = 0;
   previewX = W / 2; previewY = DROP_Y;
   pointerDown = false; dropLock = false;
@@ -2395,6 +2669,7 @@ function resetGame() {
 document.body.classList.add('titling');
 function beginGame(mode) {
   unlockAudio();
+  bgmStart();
   gameMode = mode;
   document.body.classList.remove('titling');
   document.getElementById('titleModal').hidden = true;
@@ -2410,6 +2685,7 @@ document.getElementById('startOrderBtn').addEventListener('click', function (e) 
 document.getElementById('retryBtn').addEventListener('click', function (e) {
   e.preventDefault();
   unlockAudio();
+  bgmStart();
   document.getElementById('overModal').hidden = true;
   resetGame();
 });
@@ -2429,7 +2705,7 @@ var maxLevelMade = 2;        // これまでに作れた最大レベル(0基点)
 
 var ORDER_CHEERS = ['へい、お待ち！', 'あいよ、上がり！', 'ありがとうございます！'];
 
-/* 連鎖（お品書きのみ）
+/* 連鎖（両モード共通）
    落とした直後の合体を数えると、ただの連打が連鎖になってしまう。
    「合体で生まれた駒が、間を置かずさらに合体した時」だけを連鎖と数える。 */
 var CHAIN_WINDOW = 1400;   // 生まれてからこの時間内に合体すれば繋がったとみなす(ms)
@@ -2446,7 +2722,6 @@ function chainLabel(n) {
 
 /* 合体しようとしている二つが、直前の合体から続いているか */
 function chainDepthOf(a, b) {
-  if (gameMode !== 'order') return 1;
   var now = performance.now(), inherited = 0, i, bd, list = [a, b];
   for (i = 0; i < 2; i++) {
     bd = list[i];
@@ -2481,7 +2756,7 @@ function orderTick(dtMs) {
   if (!order) { newOrder(); return; }
   if (performance.now() > order.until) {
     showPop('相すみません…', 1);
-    beep(190, 0.32, 'sawtooth');
+    seOrderFail();
     orderStreak = 0;
     orderMult = 1;
     order = null;
@@ -2494,7 +2769,7 @@ function orderMade(level) {
   if (level > maxLevelMade) maxLevelMade = level;
   if (gameMode !== 'order' || !order || level !== order.level) return;
   order.done++;
-  if (order.done < order.need) { beep(980, 0.07, 'triangle'); return; }
+  if (order.done < order.need) { seOrderStep(); return; }
 
   var bonus = Math.round(orderReward(order.level) * order.need * orderMult);
   addScore(bonus);
@@ -2503,7 +2778,7 @@ function orderMade(level) {
   orderMult = Math.min(3, 1 + orderStreak * 0.5);
   showPop(orderStreak >= 4 ? 'よっ、日本一！'
         : ORDER_CHEERS[Math.min(orderStreak, ORDER_CHEERS.length) - 1], 1);
-  beep(1180, 0.18, 'square');
+  seOrder(orderStreak);
   burst(W / 2, BARREL_TOP - 34, ['#c8402f', '#ffd76a', '#fffaf0'], 34, 5.5);
   order = null;
   orderWait = 1100;
@@ -2833,6 +3108,11 @@ document.getElementById('openRank2').addEventListener('click', function () { ope
 /* ============================================================
    19. 起動
    ============================================================ */
+soundOn = lsGet('sushitsumu.snd') !== '0';
+applySound();
+document.getElementById('sndBtn').addEventListener('click', function (e) {
+  e.preventDefault(); toggleSound();
+});
 initRanking();
 buildSprites();
 buildBarrel();
