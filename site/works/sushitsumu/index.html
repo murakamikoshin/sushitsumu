@@ -8,26 +8,69 @@
 <meta property="og:title" content="すし積む">
 <meta property="og:description" content="シャリから始めて同じネタをぶつけて育てる、江戸前の落ち物パズル。">
 <meta property="og:type" content="article">
-<meta name="theme-color" content="#080d16">
+<meta name="theme-color" content="#070c17">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/icon/icon-180.png">
+<link rel="manifest" href="/site.webmanifest">
+<script>document.documentElement.className+=" js"</script>
 <link rel="stylesheet" href="/style.css">
+<link rel="canonical" href="https://koshin-studio.pages.dev/works/sushitsumu/">
+<meta property="og:url" content="https://koshin-studio.pages.dev/works/sushitsumu/">
+<meta property="og:site_name" content="Koshin Studio">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" type="application/rss+xml" title="Koshin Studio — Notes" href="https://koshin-studio.pages.dev/feed.xml">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"VideoGame","name":"すし積む","url":"https://koshin-studio.pages.dev/works/sushitsumu/","description":"シャリから始めて、同じネタ同士をぶつけて育てる落ち物パズル。行き着く先は金のすし桶。ブラウザだけで遊べます。","inLanguage":"ja","image":"https://koshin-studio.pages.dev/assets/sushitsumu-wide.jpg","applicationCategory":"GameApplication","operatingSystem":"Web","datePublished":"2026","genre":["パズル","落ち物パズル"],"gamePlatform":"Web browser","playMode":"SinglePlayer","author":{"@id":"https://koshin-studio.pages.dev#studio"},"publisher":{"@id":"https://koshin-studio.pages.dev#studio"},"offers":{"@type":"Offer","price":"0","priceCurrency":"JPY"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Koshin Studio","item":"https://koshin-studio.pages.dev/"},{"@type":"ListItem","position":2,"name":"Works","item":"https://koshin-studio.pages.dev/works/"},{"@type":"ListItem","position":3,"name":"すし積む","item":"https://koshin-studio.pages.dev/works/sushitsumu/"}]}]}</script>
+<meta property="og:image" content="https://koshin-studio.pages.dev/assets/og/og_works_sushitsumu.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 </head>
 <body>
 <canvas id="motes"></canvas>
 
 <header class="site"><div class="wrap">
   <a class="logo" href="/">Koshin Studio</a>
-  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/profile/">Profile</a></nav>
+  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/stack/">Stack</a><a href="/profile/">Profile</a><a class="nav-cta" href="/contact/">Contact</a></nav>
 </div></header>
 
 <main><div class="wrap">
+  <nav class="crumbs" aria-label="現在地"><a href="/">Koshin Studio</a><i aria-hidden="true">›</i><a href="/works/">Works</a><i aria-hidden="true">›</i><span aria-current="page">すし積む</span></nav>
   <h1>すし積む</h1>
   <div class="rule"></div>
   <p class="lead">シャリから始めて、同じネタ同士をぶつけて育てる落ち物パズル。<br>行き着く先は、金のすし桶。</p>
 
   <p><a class="btn" href="/works/sushitsumu/play/">遊 ぶ</a></p>
 
-  <img src="/assets/sushitsumu-portrait.png" alt="すし積むの画面。藍色の壁に「すし積む」の暖簾がかかり、白木のすし桶にネタが積まれている" width="800" height="1200" style="max-width:340px;margin:34px 0;border-radius:4px">
+  <figure class="shot-wide rv">
+    <picture>
+      <source srcset="/assets/shots/desktop.webp" type="image/webp">
+      <img src="/assets/shots/desktop.jpg" alt="パソコンで遊んだところ。桶の左に得点、右に番付の柱が常に出ている" width="1200" height="831" loading="lazy" decoding="async">
+    </picture>
+    <figcaption>パソコンでは、桶の左に得点、右に番付が常に出ています</figcaption>
+  </figure>
+  <div class="shots rv" data-delay="80">
+    <figure>
+      <picture>
+        <source srcset="/assets/shots/title.webp" type="image/webp">
+        <img src="/assets/shots/title.jpg" alt="すし積むの表紙。「すし積む」の題字の下に「遊ぶ」の札が並ぶ" width="560" height="844" loading="lazy" decoding="async">
+      </picture>
+      <figcaption>表紙</figcaption>
+    </figure>
+    <figure>
+      <picture>
+        <source srcset="/assets/shots/play.webp" type="image/webp">
+        <img src="/assets/shots/play.jpg" alt="遊んでいるところ。桶の中に寿司が積み上がり、上には次のネタが待っている" width="560" height="1212" loading="lazy" decoding="async">
+      </picture>
+      <figcaption>遊んでいるところ</figcaption>
+    </figure>
+    <figure>
+      <picture>
+        <source srcset="/assets/shots/dex.webp" type="image/webp">
+        <img src="/assets/shots/dex.jpg" alt="寿司図鑑の画面。十二種のうち十種が集まり、二つが ??? のまま残っている" width="560" height="811" loading="lazy" decoding="async">
+      </picture>
+      <figcaption>寿司図鑑</figcaption>
+    </figure>
+  </div>
 
   <h2 class="rv">どんなゲームか</h2>
   <p>桶の上からシャリを落とします。同じネタ同士が触れると、ひとつ上のネタに変わる。シャリが玉子に、玉子がエビに、エビがサーモンに——そうやって十一段を上っていきます。</p>
@@ -54,14 +97,19 @@
 
   <p style="margin-top:40px">
     <a class="btn" href="/works/sushitsumu/play/">遊 ぶ</a>
-    <a class="btn ghost" href="/works/sushitsumu/guide.html" style="margin-left:10px">遊び方をくわしく</a>
+    <a class="btn ghost" href="/works/sushitsumu/guide.html">遊び方をくわしく</a>
   </p>
 </div></main>
 
 <footer class="site"><div class="wrap">
   <span>© 2026 Koshin Studio</span>
+  <div class="sns-row"><a class="sns" href="https://github.com/murakamikoshin" rel="me noopener" target="_blank">GitHub<i>@murakamikoshin</i></a></div>
   <nav><a href="/profile/">Profile</a><a href="/privacy/">あつかい</a></nav>
 </div></footer>
+<script src="/vendor/gsap.min.js" defer></script>
+<script src="/vendor/ScrollTrigger.min.js" defer></script>
+<script src="/vendor/lenis.min.js" defer></script>
+<script src="/voice.js" defer></script>
 <script src="/motion.js" defer></script>
 </body>
 </html>

@@ -7,17 +7,31 @@
 <meta name="description" content="すし積むの遊び方。ネタ十一段の一覧、合体の点数、連鎖、ガリ、お品書き、番付、操作方法までまとめています。">
 <meta name="theme-color" content="#080d16">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/icon/icon-180.png">
+<link rel="manifest" href="/site.webmanifest">
+<script>document.documentElement.className+=" js"</script>
 <link rel="stylesheet" href="/style.css">
+<link rel="canonical" href="https://koshin-studio.pages.dev/works/sushitsumu/guide.html">
+<meta property="og:url" content="https://koshin-studio.pages.dev/works/sushitsumu/guide.html">
+<meta property="og:site_name" content="Koshin Studio">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" type="application/rss+xml" title="Koshin Studio — Notes" href="https://koshin-studio.pages.dev/feed.xml">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","name":"すし積む 遊び方","url":"https://koshin-studio.pages.dev/works/sushitsumu/guide.html","inLanguage":"ja","primaryImageOfPage":"https://koshin-studio.pages.dev/assets/og/og_works_sushitsumu_guide.jpg","about":{"@type":"VideoGame","name":"すし積む","url":"https://koshin-studio.pages.dev/works/sushitsumu/"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Koshin Studio","item":"https://koshin-studio.pages.dev/"},{"@type":"ListItem","position":2,"name":"Works","item":"https://koshin-studio.pages.dev/works/"},{"@type":"ListItem","position":3,"name":"すし積む","item":"https://koshin-studio.pages.dev/works/sushitsumu/"},{"@type":"ListItem","position":4,"name":"遊び方","item":"https://koshin-studio.pages.dev/works/sushitsumu/guide.html"}]}]}</script>
+<meta property="og:image" content="https://koshin-studio.pages.dev/assets/og/og_works_sushitsumu_guide.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 </head>
 <body>
 <canvas id="motes"></canvas>
 
 <header class="site"><div class="wrap">
   <a class="logo" href="/">Koshin Studio</a>
-  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/profile/">Profile</a></nav>
+  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/stack/">Stack</a><a href="/profile/">Profile</a><a class="nav-cta" href="/contact/">Contact</a></nav>
 </div></header>
 
 <main><div class="wrap">
+  <nav class="crumbs" aria-label="現在地"><a href="/">Koshin Studio</a><i aria-hidden="true">›</i><a href="/works/">Works</a><i aria-hidden="true">›</i><a href="/works/sushitsumu/">すし積む</a><i aria-hidden="true">›</i><span aria-current="page">遊び方</span></nav>
   <h1>すし積む 遊び方</h1>
   <div class="rule"></div>
   <p class="lead">覚えることは三つだけです。落とす、合わせる、あふれさせない。</p>
@@ -29,6 +43,7 @@
 
   <h2 class="rv">ネタ十一段</h2>
   <p>下から順に育てていきます。数字は合体したときに入る点です。</p>
+  <div class="side-by">
   <div class="scroll rv"><table>
     <tr><th>段</th><th>ネタ</th><th class="n">大きさ</th><th class="n">合体で入る点</th></tr>
     <tr><td>1</td><td>シャリ</td><td class="n">直径 30</td><td class="n">—</td></tr>
@@ -43,6 +58,15 @@
     <tr><td>10</td><td>伊勢海老</td><td class="n">184 × 86</td><td class="n">950</td></tr>
     <tr><td>11</td><td>ゴールデンすし桶</td><td class="n">直径 168</td><td class="n">1,500</td></tr>
   </table></div>
+  <figure class="shot-tall rv" data-delay="80">
+    <picture>
+      <source srcset="/assets/shots/dex.webp" type="image/webp">
+      <img src="/assets/shots/dex.jpg" alt="寿司図鑑の画面。十二種のうち十種が集まり、二つが ??? のまま残っている"
+           width="560" height="811" loading="lazy" decoding="async">
+    </picture>
+    <figcaption>一度でも作ったネタは「寿司図鑑」に残ります</figcaption>
+  </figure>
+  </div>
   <p class="note">桶の内側の幅は 336。金のすし桶はちょうどその半分です。落ちてくるのはシャリ・玉子・エビの三種だけなので、上の段はすべて自分で作ることになります。</p>
 
   <h3>金のすし桶を二つ作ると</h3>
@@ -88,8 +112,13 @@
 
 <footer class="site"><div class="wrap">
   <span>© 2026 Koshin Studio</span>
+  <div class="sns-row"><a class="sns" href="https://github.com/murakamikoshin" rel="me noopener" target="_blank">GitHub<i>@murakamikoshin</i></a></div>
   <nav><a href="/profile/">Profile</a><a href="/privacy/">あつかい</a></nav>
 </div></footer>
+<script src="/vendor/gsap.min.js" defer></script>
+<script src="/vendor/ScrollTrigger.min.js" defer></script>
+<script src="/vendor/lenis.min.js" defer></script>
+<script src="/voice.js" defer></script>
 <script src="/motion.js" defer></script>
 </body>
 </html>

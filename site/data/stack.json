@@ -1,0 +1,125 @@
+{
+  "note": "使ったことのある道具。増えたらここに足して node build.mjs。level は 主力 / 実務 / 触った。",
+  "groups": [
+    {
+      "name": "つくる言葉",
+      "items": [
+        {
+          "n": "JavaScript",
+          "level": "主力",
+          "d": "ゲームもサイトも、動くところは全部これ"
+        },
+        {
+          "n": "Python",
+          "level": "実務",
+          "d": "書体づくり、絵の変換、統計を取る道具"
+        },
+        {
+          "n": "Swift",
+          "level": "実務",
+          "d": "iOS のアプリ"
+        },
+        {
+          "n": "HTML / CSS",
+          "level": "主力",
+          "d": "枠組みに頼らず、手で書く"
+        }
+      ]
+    },
+    {
+      "name": "ゲーム",
+      "items": [
+        {
+          "n": "Matter.js",
+          "level": "主力",
+          "d": "物理演算。すし積むの土台"
+        },
+        {
+          "n": "Canvas 2D",
+          "level": "主力",
+          "d": "絵は画像を貼らず、毎回描く"
+        },
+        {
+          "n": "Web Audio",
+          "level": "実務",
+          "d": "音も合成して鳴らす"
+        }
+      ]
+    },
+    {
+      "name": "サイト",
+      "items": [
+        {
+          "n": "GSAP / ScrollTrigger",
+          "level": "主力",
+          "d": "立ち上がりとスクロール連動"
+        },
+        {
+          "n": "Lenis",
+          "level": "実務",
+          "d": "滑らかなスクロール"
+        },
+        {
+          "n": "SVG",
+          "level": "主力",
+          "d": "ロゴの字も自分で起こす"
+        }
+      ]
+    },
+    {
+      "name": "置き場所",
+      "items": [
+        {
+          "n": "Cloudflare Pages",
+          "level": "主力",
+          "d": "このサイトの置き場所"
+        },
+        {
+          "n": "Cloudflare Workers",
+          "level": "実務",
+          "d": "すし積むの番付サーバー"
+        },
+        {
+          "n": "Cloudflare D1",
+          "level": "実務",
+          "d": "番付のデータベース"
+        },
+        {
+          "n": "Firebase",
+          "level": "実務",
+          "d": "アプリの裏側（Firestore / Functions / Storage）"
+        }
+      ]
+    },
+    {
+      "name": "道具",
+      "items": [
+        {
+          "n": "Git / GitHub",
+          "level": "主力",
+          "d": "全部ここで管理する"
+        },
+        {
+          "n": "Playwright",
+          "level": "主力",
+          "d": "自動で遊ばせる・自動で見て回る"
+        },
+        {
+          "n": "fontTools",
+          "level": "実務",
+          "d": "書体を必要な字だけに削る"
+        },
+        {
+          "n": "Pillow",
+          "level": "実務",
+          "d": "絵を配る形に落とす"
+        },
+        {
+          "n": "Xcode",
+          "level": "実務",
+          "d": "iOS の開発"
+        }
+      ]
+    }
+  ]
+}

@@ -5,19 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>あつかい（プライバシー） — Koshin Studio</title>
 <meta name="description" content="Koshin Studio が預かるもの、預からないもの。番付に載せたときだけ、名前・得点・端末が作った番号・その一戦の手順を預かります。">
-<meta name="theme-color" content="#080d16">
+<meta name="theme-color" content="#070c17">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/icon/icon-180.png">
+<link rel="manifest" href="/site.webmanifest">
+<script>document.documentElement.className+=" js"</script>
 <link rel="stylesheet" href="/style.css">
+<link rel="canonical" href="https://koshin-studio.pages.dev/privacy/">
+<meta property="og:url" content="https://koshin-studio.pages.dev/privacy/">
+<meta property="og:site_name" content="Koshin Studio">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" type="application/rss+xml" title="Koshin Studio — Notes" href="https://koshin-studio.pages.dev/feed.xml">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","name":"あつかい（プライバシー）","url":"https://koshin-studio.pages.dev/privacy/","inLanguage":"ja","isPartOf":{"@id":"https://koshin-studio.pages.dev#studio"},"primaryImageOfPage":"https://koshin-studio.pages.dev/assets/og/og_privacy.jpg"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Koshin Studio","item":"https://koshin-studio.pages.dev/"},{"@type":"ListItem","position":2,"name":"あつかい","item":"https://koshin-studio.pages.dev/privacy/"}]}]}</script>
+<meta property="og:image" content="https://koshin-studio.pages.dev/assets/og/og_privacy.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 </head>
 <body>
 <canvas id="motes"></canvas>
 
 <header class="site"><div class="wrap">
   <a class="logo" href="/">Koshin Studio</a>
-  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/profile/">Profile</a></nav>
+  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/stack/">Stack</a><a href="/profile/">Profile</a><a class="nav-cta" href="/contact/">Contact</a></nav>
 </div></header>
 
 <main><div class="wrap">
+  <nav class="crumbs" aria-label="現在地"><a href="/">Koshin Studio</a><i aria-hidden="true">›</i><span aria-current="page">あつかい</span></nav>
   <h1>あつかい</h1>
   <div class="rule"></div>
   <p class="lead">預かるもの、預からないもの。<br>最終更新 2026年9月</p>
@@ -31,9 +45,10 @@
 
   <h2 class="rv">端末の中だけに残るもの</h2>
   <p>高得点・寿司図鑑・言葉の設定・音の設定は、<strong>その端末の中にだけ</strong>残ります。番付に載せなければ、外へは何も出ません。ブラウザの保存領域を消せば、いつでも消えます。</p>
+  <p>このサイト側で覚えているのも一つだけで、<strong>入口のあいさつ（合成音声）を流すかどうか</strong>の設定です。これも端末の中にだけ残り、こちらへは届きません。</p>
 
   <h2 class="rv">預けたものを消したいとき</h2>
-  <p>番付に載せた記録を消したい場合は、載せた名前を添えて連絡してください。確認のうえ削除します。</p>
+  <p>番付に載せた記録を消したい場合は、載せた名前を添えて<a href="/contact/">こちら</a>までご連絡ください。確認のうえ削除します。</p>
 
   <h2 class="rv">置き場所</h2>
   <p>このサイトと番付のサーバーは Cloudflare 上で動いています。番付のデータは Cloudflare の D1（データベース）に保存されます。</p>
@@ -47,8 +62,13 @@
 
 <footer class="site"><div class="wrap">
   <span>© 2026 Koshin Studio</span>
+  <div class="sns-row"><a class="sns" href="https://github.com/murakamikoshin" rel="me noopener" target="_blank">GitHub<i>@murakamikoshin</i></a></div>
   <nav><a href="/profile/">Profile</a><a href="/privacy/">あつかい</a></nav>
 </div></footer>
+<script src="/vendor/gsap.min.js" defer></script>
+<script src="/vendor/ScrollTrigger.min.js" defer></script>
+<script src="/vendor/lenis.min.js" defer></script>
+<script src="/voice.js" defer></script>
 <script src="/motion.js" defer></script>
 </body>
 </html>

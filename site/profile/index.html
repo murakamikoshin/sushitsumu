@@ -3,26 +3,40 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Profile — Koshin Studio</title>
-<meta name="description" content="Koshin Studio について。ブラウザゲーム、スマートフォンのアプリ、Web サイトを、ひとりで作っています。">
-<meta name="theme-color" content="#080d16">
+<title>Profile — Koshin Studio について（個人制作）</title>
+<meta name="description" content="Koshin Studio について。ブラウザゲーム、スマートフォンのアプリ、Web サイト、3D モデルを、設計から絵と音まで、ひとりで作っています。">
+<meta name="theme-color" content="#070c17">
 <meta property="og:title" content="Profile — Koshin Studio">
 <meta property="og:description" content="ブラウザゲーム、スマートフォンのアプリ、Web サイトを、ひとりで作っています。">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/icon/icon-180.png">
+<link rel="manifest" href="/site.webmanifest">
+<script>document.documentElement.className+=" js"</script>
 <link rel="stylesheet" href="/style.css">
+<link rel="canonical" href="https://koshin-studio.pages.dev/profile/">
+<meta property="og:url" content="https://koshin-studio.pages.dev/profile/">
+<meta property="og:site_name" content="Koshin Studio">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" type="application/rss+xml" title="Koshin Studio — Notes" href="https://koshin-studio.pages.dev/feed.xml">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://koshin-studio.pages.dev#studio","name":"Koshin Studio","url":"https://koshin-studio.pages.dev","description":"ゲーム、アプリ、Web サイト、3D モデルを個人で制作しています。","logo":"https://koshin-studio.pages.dev/assets/og/og_home.jpg","sameAs":["https://github.com/murakamikoshin"]},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Koshin Studio","item":"https://koshin-studio.pages.dev/"},{"@type":"ListItem","position":2,"name":"Profile","item":"https://koshin-studio.pages.dev/profile/"}]}]}</script>
+<meta property="og:image" content="https://koshin-studio.pages.dev/assets/og/og_profile.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 </head>
 <body>
 <canvas id="motes"></canvas>
 
 <header class="site"><div class="wrap">
   <a class="logo" href="/">Koshin Studio</a>
-  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/profile/">Profile</a></nav>
+  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/stack/">Stack</a><a href="/profile/">Profile</a><a class="nav-cta" href="/contact/">Contact</a></nav>
 </div></header>
 
 <main><div class="wrap">
+  <nav class="crumbs" aria-label="現在地"><a href="/">Koshin Studio</a><i aria-hidden="true">›</i><span aria-current="page">Profile</span></nav>
   <h1>Profile</h1>
   <div class="rule"></div>
-  <p class="lead">ひとりで作っています。<br>ブラウザゲーム、スマートフォンのアプリ、Web サイト。</p>
+  <p class="lead">ひとりで作っています。<br>ブラウザゲーム、スマートフォンのアプリ、Web サイト、3D モデル。</p>
 
   <h2 class="rv">作っているもの</h2>
   <div class="kinds">
@@ -32,15 +46,18 @@
       <p>つかうもの。スマートフォンで日常的に使う道具を作ります。機能を足すより、迷わず終わることを優先します。</p></div>
     <div class="kind rv" data-delay="140"><h3>Sites<i>サイト</i></h3>
       <p>読ませるもの。速く開いて、読みやすく、余計なものが動かない。中身が主役になる作りを心がけています。</p></div>
+    <div class="kind rv" data-delay="210"><h3>3D<i>3Dモデル</i></h3>
+      <p>かたちを起こすもの。商品のイメージ、キャラクター、Web に載せる立体。用途に合わせて起こします。</p></div>
   </div>
 
   <h2 class="rv">作り方</h2>
   <p class="rv">だいたい一人で、手元で動かしながら作っています。設計から絵から音まで通しでやるので、直したいところがあれば、その場で直せます。</p>
-  <p class="rv" data-delay="60">釣り合いの調整には、<strong>測る手を必ず用意します</strong>。ゲームなら自動で何百回も遊ばせて、どこで詰まるかを数字で見る。勘で三回いじって確かめるより、ずっと速くて確かです。</p>
+  <p class="rv" data-delay="60">釣り合いの調整には、<strong>測る手を必ず用意します</strong>。ゲームなら自動で何百回も遊ばせて、どこで詰まるかを数字で見る。勘で三回いじって確かめるより、ずっと速くて確かです。実際にそうやって直したのが<a href="/works/sushitsumu/">すし積む</a>で、その顛末は<a href="/notes/anago/">穴子がデカすぎた話</a>にまとめました。</p>
   <blockquote class="rv" data-delay="120">感覚は当たっていた。<br>でも、原因は思っていたところになかった。</blockquote>
   <p class="rv" data-delay="160">その過程で分かったことは、隠さず<a href="/notes/">Notes</a> に書き残しています。</p>
 
   <h2 class="rv">使っているもの</h2>
+  <p class="rv">主なものだけ。全部は<a href="/stack/">使っている道具</a>にまとめています。</p>
   <ul class="rv">
     <li>手書きの HTML / CSS / JavaScript。枠組みは、必要になってから入れます</li>
     <li><a href="https://brm.io/matter-js/" rel="noopener">Matter.js</a> — 物理演算（MIT ライセンス）</li>
@@ -48,15 +65,20 @@
   </ul>
 
   <h2 class="rv">連絡</h2>
-  <p class="rv">不具合の報告や感想は歓迎です。お仕事の相談も受けています。連絡先はこのページに追って載せます。</p>
+  <p class="rv">不具合の報告や感想は歓迎です。お仕事の相談も受けています。窓口は<a href="/contact/">ご依頼・お問い合わせ</a>にまとめました。</p>
 
-  <p class="rv" style="margin-top:38px"><a class="btn ghost" href="/works/">Works を見る</a></p>
+  <p class="rv" style="margin-top:38px"><a class="btn ghost" href="/works/">Works を見る</a><a class="btn" href="/contact/">ご依頼</a></p>
 </div></main>
 
 <footer class="site"><div class="wrap">
   <span>© 2026 Koshin Studio</span>
+  <div class="sns-row"><a class="sns" href="https://github.com/murakamikoshin" rel="me noopener" target="_blank">GitHub<i>@murakamikoshin</i></a></div>
   <nav><a href="/profile/">Profile</a><a href="/privacy/">あつかい</a></nav>
 </div></footer>
+<script src="/vendor/gsap.min.js" defer></script>
+<script src="/vendor/ScrollTrigger.min.js" defer></script>
+<script src="/vendor/lenis.min.js" defer></script>
+<script src="/voice.js" defer></script>
 <script src="/motion.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+  <title>Koshin Studio — Notes</title>
+  <link>https://koshin-studio.pages.dev/notes/</link>
+  <description>作りながら考えたことの記録</description>
+  <language>ja</language>
+  <atom:link href="https://koshin-studio.pages.dev/feed.xml" rel="self" type="application/rss+xml"/>
+  <item>
+    <title>穴子がデカすぎた話</title>
+    <link>https://koshin-studio.pages.dev/notes/anago/</link>
+    <guid isPermaLink="true">https://koshin-studio.pages.dev/notes/anago/</guid>
+    <pubDate>Sun, 06 Sep 2026 15:00:00 GMT</pubDate>
+    <description>落ち物パズルの最後の一手に、どうしても届かない。勘で直す前に、自動プレイで三百戦以上の統計を取って原因を突き止めた記録。</description>
+  </item>
+</channel>
+</rss>

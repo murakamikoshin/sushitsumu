@@ -3,67 +3,173 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Koshin Studio</title>
-<meta name="description" content="ひとりで作ったものを置いています。ブラウザで開いたらすぐ遊べるものを中心に。">
-<meta name="theme-color" content="#080d16">
+<title>Koshin Studio — ゲーム、アプリ、サイト、3D</title>
+<meta name="description" content="ゲーム、アプリ、Web サイト、3D モデル。ひとりで、ぜんぶ作っています。ブラウザで開いたらすぐ動くものを中心に。">
+<meta name="theme-color" content="#070c17">
 <meta property="og:title" content="Koshin Studio">
-<meta property="og:description" content="ひとりで作ったものを置いています。">
+<meta property="og:description" content="ゲーム、アプリ、サイト、3D。ひとりで、ぜんぶ。">
 <meta property="og:type" content="website">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preload" as="image" href="/assets/sushitsumu-square.webp" type="image/webp">
+<link rel="apple-touch-icon" href="/assets/icon/icon-180.png">
+<link rel="manifest" href="/site.webmanifest">
+<script>document.documentElement.className+=" js"</script>
 <link rel="stylesheet" href="/style.css">
+<link rel="canonical" href="https://koshin-studio.pages.dev/">
+<meta property="og:url" content="https://koshin-studio.pages.dev/">
+<meta property="og:site_name" content="Koshin Studio">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" type="application/rss+xml" title="Koshin Studio — Notes" href="https://koshin-studio.pages.dev/feed.xml">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://koshin-studio.pages.dev#studio","name":"Koshin Studio","url":"https://koshin-studio.pages.dev","description":"ゲーム、アプリ、Web サイト、3D モデルを個人で制作しています。","logo":"https://koshin-studio.pages.dev/assets/og/og_home.jpg","sameAs":["https://github.com/murakamikoshin"]},{"@type":"WebSite","url":"https://koshin-studio.pages.dev","name":"Koshin Studio","publisher":{"@id":"https://koshin-studio.pages.dev#studio"},"inLanguage":"ja"},{"@type":"ItemList","name":"作ったもの","itemListElement":[{"@type":"ListItem","position":1,"url":"https://koshin-studio.pages.dev/works/sushitsumu/","name":"すし積む"}]}]}</script>
+<meta property="og:image" content="https://koshin-studio.pages.dev/assets/og/og_home.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 </head>
-<body>
+<body class="home">
 <canvas id="motes"></canvas>
 
 <header class="site"><div class="wrap">
   <a class="logo" href="/">Koshin Studio</a>
-  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/profile/">Profile</a></nav>
+  <nav><a href="/works/">Works</a><a href="/notes/">Notes</a><a href="/stack/">Stack</a><a href="/profile/">Profile</a><a class="nav-cta" href="/contact/">Contact</a></nav>
 </div></header>
 
 <main>
-  <section class="hero"><div class="wrap">
-    <p class="kicker">KOSHIN STUDIO</p>
-    <h1 class="mark">積み上げる。</h1>
-    <p class="say">ひとりで作ったものを置いています。<br>
-      導入も、登録も要らない。URL を開いたら、もう始まっている。<br>
-      そういうものだけを作っています。</p>
-    <p class="scrollcue"><i></i>SCROLL</p>
+
+  <!-- ================= ファーストビュー ================= -->
+  <section class="hero" id="hero">
+    <div class="stage">
+      <div class="orbit" id="orbit"><!--orbit:start-->
+      <a class="orb has-img" href="/works/sushitsumu/" style="--i:0">
+        <picture><source srcset="/assets/sushitsumu-square.webp" type="image/webp"><img src="/assets/sushitsumu-square.jpg" alt="すし積む" width="360" height="360" loading="eager" decoding="async"></picture>
+        <span class="orb-cap">すし積む</span>
+      </a>
+      <a class="orb" href="/works/#game" style="--i:1">
+        <span class="orb-mark">Games</span>
+        <span class="orb-cap">ゲーム</span>
+      </a>
+      <a class="orb" href="/works/#app" style="--i:2">
+        <span class="orb-mark">Apps</span>
+        <span class="orb-cap">アプリ</span>
+      </a>
+      <a class="orb" href="/works/#site" style="--i:3">
+        <span class="orb-mark">Sites</span>
+        <span class="orb-cap">サイト</span>
+      </a>
+      <a class="orb" href="/works/#cg" style="--i:4">
+        <span class="orb-mark">3D</span>
+        <span class="orb-cap">3Dモデル</span>
+      </a>
+    <!--orbit:end--></div>
+
+      <div class="lockup">
+        <h1 class="logo-xl"><span class="sr">Koshin Studio</span><!--logo:start-->
+<svg class="ks-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4768 1550" role="img" aria-label="Koshin Studio" preserveAspectRatio="xMidYMid meet"> <defs> <!-- グラデーションは、字ごとの座標系で解決されると先頭の色しか拾わない。 だから文字は「マスク」にして、色は一枚の矩形に塗る。 --> <linearGradient id="ksGrad" gradientUnits="userSpaceOnUse" x1="28.0" y1="0" x2="4740.0" y2="0"> <stop offset="0%" stop-color="#eef6fc"/><stop offset="24%" stop-color="#9adcf0"/> <stop offset="54%" stop-color="#4f95e0"/><stop offset="80%" stop-color="#2a63c4"/> <stop offset="100%" stop-color="#7ec8e3"/> </linearGradient> <mask id="ksMask" maskUnits="userSpaceOnUse" x="0" y="0" width="4768" height="1550"> <g fill="#fff" transform="translate(0,1550) scale(1,-1)"> <g transform="translate(28.0,0)"><g transform="translate(0,0)"><path d="M735,545 C700,640 610,700 470,700 C300,700 150,625 150,505 C150,410 225,360 380,318 L470,294 C600,259 640,225 640,170 C640,105 570,62 460,62 C340,62 262,112 232,205 L150,182 C190,62 300,0 468,0 C640,0 760,78 760,196 C760,292 690,340 530,383 L440,407 C310,442 268,478 268,530 C268,596 340,638 462,638 C578,638 650,596 668,520 Z"/></g><g transform="translate(926,0)"><path d="M340,674 L432,674 L432,20 L340,20 Z M306,0 L466,0 L432,20 L340,20 Z"/><path d="M48,701.95 L724,701.95 L724,672.05 L48,672.05 Z"/><path d="M48,674 L96,674 L96,634 L48,628 Z"/><path d="M676,674 L724,674 L724,628 L676,634 Z"/></g><g transform="translate(1794,0)"><path d="M70,700 L162,700 L162,190 L70,190 Z M660,700 L752,700 L752,190 L660,190 Z M70,190 C70,85.063 222.6657,-8 411.0,-8 C599.3343,-8 752,85.063 752,190 L660,190 C660,100.85878 548.5227,32.5 411.0,32.5 C273.4773,32.5 162,100.85878 162,190 Z"/><path d="M36,700 L196,700 L162,680 L70,680 Z"/><path d="M626,700 L786,700 L752,680 L660,680 Z"/></g><g transform="translate(2690,0)"><path d="M36,700 L196,700 L162,680 L70,680 Z M70,680 L162,680 L162,20 L70,20 Z M36,0 L196,0 L162,20 L70,20 Z"/><path d="M162,700 L282,700 C480.82800000000003,700 562,543.3050000000001 562,350.0 C562,156.695 480.82800000000003,0 282,0 L162,0 L162,20 L272,20 C425.09756000000004,20 465.4,171.0548 465.4,350.0 C465.4,528.9452 425.09756000000004,680 272,680 L162,680 Z"/></g><g transform="translate(3486,0)"><path d="M70,700 L230,700 L196,680 L104,680 Z M104,680 L196,680 L196,20 L104,20 Z M70,0 L230,0 L196,20 L104,20 Z"/></g><g transform="translate(3882,0)"><path d="M415,708.0 C622.1125,708.0 790,547.7234 790,350.0 C790,152.2766 622.1125,-8.0 415,-8.0 C207.8875,-8.0 40,152.2766 40,350.0 C40,547.7234 207.8875,708.0 415,708.0 Z M415,669.0 C259.715332,669.0 133.84000000000003,526.1837 133.84000000000003,350.0 C133.84000000000003,173.81629999999998 259.715332,31.0 415,31.0 C570.284668,31.0 696.16,173.81629999999998 696.16,350.0 C696.16,526.1837 570.284668,669.0 415,669.0 Z"/></g></g> </g> </mask> </defs> <g class="ks-l1" fill="currentColor" transform="translate(0,1550) scale(1,-1)"> <g transform="translate(0.0,850)"><g transform="translate(0,0)"><path d="M36,700 L196,700 L162,680 L70,680 Z M70,680 L162,680 L162,20 L70,20 Z M36,0 L196,0 L162,20 L70,20 Z"/><path d="M120,396.0 L726,680 L642,680 L120,312.0 Z"/><path d="M120,340.0 L216,340.0 L790,20 L676,20 Z"/><path d="M620,700 L784,700 L784,680 L620,680 Z"/><path d="M620,0 L804,0 L804,20 L620,20 Z"/></g><g transform="translate(896,0)"><path d="M415,708.0 C622.1125,708.0 790,547.7234 790,350.0 C790,152.2766 622.1125,-8.0 415,-8.0 C207.8875,-8.0 40,152.2766 40,350.0 C40,547.7234 207.8875,708.0 415,708.0 Z M415,669.0 C259.715332,669.0 133.84000000000003,526.1837 133.84000000000003,350.0 C133.84000000000003,173.81629999999998 259.715332,31.0 415,31.0 C570.284668,31.0 696.16,173.81629999999998 696.16,350.0 C696.16,526.1837 570.284668,669.0 415,669.0 Z"/></g><g transform="translate(1822,0)"><path d="M735,545 C700,640 610,700 470,700 C300,700 150,625 150,505 C150,410 225,360 380,318 L470,294 C600,259 640,225 640,170 C640,105 570,62 460,62 C340,62 262,112 232,205 L150,182 C190,62 300,0 468,0 C640,0 760,78 760,196 C760,292 690,340 530,383 L440,407 C310,442 268,478 268,530 C268,596 340,638 462,638 C578,638 650,596 668,520 Z"/></g><g transform="translate(2748,0)"><path d="M36,700 L196,700 L162,680 L70,680 Z M70,680 L162,680 L162,20 L70,20 Z M36,0 L196,0 L162,20 L70,20 Z"/><path d="M564,700 L724,700 L690,680 L598,680 Z M598,680 L690,680 L690,20 L598,20 Z M564,0 L724,0 L690,20 L598,20 Z"/><path d="M162,363.0 L598,363.0 L598,337.0 L162,337.0 Z"/></g><g transform="translate(3604,0)"><path d="M70,700 L230,700 L196,680 L104,680 Z M104,680 L196,680 L196,20 L104,20 Z M70,0 L230,0 L196,20 L104,20 Z"/></g><g transform="translate(4000,0)"><path d="M36,700 L196,700 L162,680 L70,680 Z M70,680 L162,680 L162,20 L70,20 Z M36,0 L196,0 L162,20 L70,20 Z"/><path d="M572,700 L732,700 L698,680 L606,680 Z M606,680 L698,680 L698,20 L606,20 Z M572,0 L732,0 L698,20 L606,20 Z"/><path d="M150,684 L272,684 L710,62 L588,62 Z"/></g></g> </g> <g class="ks-l2"> <rect x="0" y="849" width="4768" height="702" fill="url(#ksGrad)" mask="url(#ksMask)"/> </g> </svg> 
+    <!--logo:end--></h1>
+        <div class="hairline"></div>
+        <p class="tagline">ゲーム、アプリ、サイト、3D。<b>ひとりで、ぜんぶ。</b></p>
+      </div>
+    </div>
+
+    <div class="hero-act">
+      <a class="btn" href="/works/">作ったものを見る</a>
+      <a class="btn ghost" href="/works/sushitsumu/play/">いま すぐ 遊ぶ</a>
+    </div>
+    <div class="cue" aria-hidden="true"><i></i>SCROLL</div>
+  </section>
+
+  <!-- ================= 何を作るか ================= -->
+  <section class="band" id="what"><div class="wrap">
+    <h2 class="sec">作っているもの<span>4 つの分野</span></h2>
+    <div class="kinds big"><!--kinds:start-->
+      <a class="kind rv" data-delay="0" href="/works/#game">
+        <span class="kind-n">01</span>
+        <h3>Games<i>ゲーム</i></h3>
+        <p>あそぶもの</p>
+        <span class="kind-count">1 点</span>
+      </a>
+      <a class="kind rv" data-delay="70" href="/works/#app">
+        <span class="kind-n">02</span>
+        <h3>Apps<i>アプリ</i></h3>
+        <p>つかうもの</p>
+        <span class="kind-count">準備中</span>
+      </a>
+      <a class="kind rv" data-delay="140" href="/works/#site">
+        <span class="kind-n">03</span>
+        <h3>Sites<i>サイト</i></h3>
+        <p>読ませるもの</p>
+        <span class="kind-count">準備中</span>
+      </a>
+      <a class="kind rv" data-delay="210" href="/works/#cg">
+        <span class="kind-n">04</span>
+        <h3>3D<i>3Dモデル</i></h3>
+        <p>かたちを起こす</p>
+        <span class="kind-count">準備中</span>
+      </a>
+    <!--kinds:end--></div>
   </div></section>
 
-  <section id="works"><div class="wrap">
-    <h2 class="rv">作ったもの</h2>
-    <ul class="works">
-      <!--works:start-->
-      <li class="rv" data-kind="game" data-delay="0"><a class="work" href="/works/sushitsumu/">
-        <img src="/assets/sushitsumu-square.png" alt="すし積むの表紙" width="800" height="800" loading="lazy">
-        <div>
-          <h3>すし積む</h3>
-          <p>シャリから始めて、同じネタ同士をぶつけて育てる落ち物パズル。行き着く先は金のすし桶。ブラウザだけで遊べます。</p>
-          <div class="tags"><span class="tag kind">ゲーム</span><span class="tag">ブラウザ</span><span class="tag">14 言語</span><span class="tag">オンライン番付</span><span class="tag">2026</span></div>
-        </div>
-      </a></li>
-    <!--works:end-->
-    </ul>
-    <p class="rv" data-delay="140" style="margin-top:26px"><a class="btn ghost" href="/works/">Works をすべて見る</a></p>
+  <!-- ================= 代表作 ================= -->
+  <section class="band feat" id="featured"><!--featured:start-->
+    <div class="feat-media rv">
+      <picture>
+        <source srcset="/assets/shots/hero.webp" type="image/webp">
+        <img src="/assets/shots/hero.jpg" alt="すし積むをパソコンで遊んでいるところ。すし桶に寿司が積み上がっている"
+             width="1600" height="499"
+             loading="lazy" decoding="async">
+      </picture>
+    </div>
+    <div class="wrap feat-body">
+      <p class="eyebrow rv">代表作 / ゲーム</p>
+      <h2 class="rv" data-delay="60">すし積む</h2>
+      <p class="rv" data-delay="100" style="max-width:32em;color:var(--muted)">シャリから始めて、同じネタ同士をぶつけて育てる落ち物パズル。行き着く先は金のすし桶。ブラウザだけで遊べます。</p>
+      <div class="stats rv" data-delay="140">
+        <div><b data-count="11">0</b><span>段のネタ</span></div>
+        <div><b data-count="14">0</b><span>言語</span></div>
+        <div><b data-count="300">0</b><span>戦を自動で検証</span></div>
+      </div>
+      <p class="rv" data-delay="180" style="margin-top:30px">
+        <a class="btn" href="/works/sushitsumu/play/">遊 ぶ</a>
+        <a class="btn ghost" href="/works/sushitsumu/">くわしく</a>
+      </p>
+    </div>
+    <!--featured:end--></section>
+
+  <!-- ================= 記録 ================= -->
+  <section class="band" id="notes-teaser"><div class="wrap">
+    <h2 class="sec">制作の記録<span>Notes</span></h2>
+    <ul class="notes"><!--notes:start-->
+    <li class="rv" data-delay="0"><a class="note-row" href="/notes/anago/">
+      <time datetime="2026-09-07">2026.09.07</time>
+      <div><h3>穴子がデカすぎた話</h3><p>落ち物パズルの最後の一手に、どうしても届かない。勘で直す前に、自動プレイで三百戦以上の統計を取って原因を突き止めた記録。</p>
+      <div class="tags"><span class="tag">すし積む</span></div></div>
+    </a></li>
+    <!--notes:end--></ul>
+    <p class="rv" style="margin-top:26px"><a class="btn ghost" href="/notes/">Notes をすべて読む</a></p>
   </div></section>
 
-  <section><div class="wrap">
-    <h2 class="rv">作り方について</h2>
-    <p class="rv">ここに置いてあるものは、だいたい一人で、手元で動かしながら作っています。重たい導入を挟まず、開いた瞬間に始まること。それだけは崩さないようにしています。</p>
-    <p class="rv" data-delay="60">遊びの釣り合いは、勘で決めません。<strong>自動で何百回も遊ばせて、数字を取ってから</strong>直します。どこで詰まっているのかは、たいてい思っていた場所とは違うところにあります。</p>
-    <blockquote class="rv" data-delay="120">感覚は当たっていた。<br>でも、原因は思っていたところになかった。</blockquote>
-    <p class="rv" data-delay="160">「すし積む」では、最後の一手にどうしても届かない理由を三百戦以上の統計で突き止め、寸法を組み直しました。その一部始終は
-      <a href="/notes/anago/">穴子がデカすぎた話</a>に書いています。</p>
-    <p class="rv" data-delay="200" style="margin-top:34px">
-      <a class="btn ghost" href="/notes/">Notes を読む</a>
+  <!-- ================= 締め ================= -->
+  <section class="band closing"><div class="wrap">
+    <h2 class="closing-line rv">つくる。<br>ためす。<br><b>数える。</b></h2>
+    <p class="rv" style="max-width:30em;color:var(--muted)">勘で決めずに、動かして数字を取ってから直します。だから、直したところは必ず良くなっています。</p>
+    <p class="rv" style="margin-top:34px">
+      <a class="btn" href="/works/">Works</a>
+      <a class="btn ghost" href="/profile/">Profile</a>
     </p>
   </div></section>
+
 </main>
 
 <footer class="site"><div class="wrap">
   <span>© 2026 Koshin Studio</span>
+  <div class="sns-row"><a class="sns" href="https://github.com/murakamikoshin" rel="me noopener" target="_blank">GitHub<i>@murakamikoshin</i></a></div>
   <nav><a href="/profile/">Profile</a><a href="/privacy/">あつかい</a></nav>
 </div></footer>
+
+<script src="/vendor/gsap.min.js" defer></script>
+<script src="/vendor/ScrollTrigger.min.js" defer></script>
+<script src="/vendor/lenis.min.js" defer></script>
+<script src="/voice.js" defer></script>
 <script src="/motion.js" defer></script>
 </body>
 </html>

@@ -6,8 +6,33 @@
     "year": "2026",
     "status": "公開中",
     "url": "/works/sushitsumu/",
-    "cover": "/assets/sushitsumu-square.png",
+    "cover": "/assets/sushitsumu-square",
     "blurb": "シャリから始めて、同じネタ同士をぶつけて育てる落ち物パズル。行き着く先は金のすし桶。ブラウザだけで遊べます。",
-    "tags": ["ブラウザ", "14 言語", "オンライン番付"]
+    "tags": [
+      "ブラウザ",
+      "14 言語",
+      "オンライン番付"
+    ],
+    "featured": true,
+    "coverW": 720,
+    "coverH": 720,
+    "hero": "/assets/shots/hero",
+    "heroW": 1600,
+    "heroH": 499,
+    "heroAlt": "すし積むをパソコンで遊んでいるところ。すし桶に寿司が積み上がっている",
+    "stats": [
+      {
+        "n": 11,
+        "label": "段のネタ"
+      },
+      {
+        "n": 14,
+        "label": "言語"
+      },
+      {
+        "n": 300,
+        "label": "戦を自動で検証"
+      }
+    ]
   }
 ]

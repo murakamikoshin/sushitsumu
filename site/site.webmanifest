@@ -1,0 +1,29 @@
+{
+  "name": "Koshin Studio",
+  "short_name": "Koshin",
+  "description": "ゲーム、アプリ、Web サイト、3D モデル。ひとりで、ぜんぶ作っています。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "lang": "ja",
+  "background_color": "#070c17",
+  "theme_color": "#080d16",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icon/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/assets/icon/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

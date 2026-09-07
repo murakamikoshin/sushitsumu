@@ -1,0 +1,20 @@
+# Cloudflare Pages に配らないもの。
+# `npx wrangler pages deploy .` はこの下ごと上げてしまうので、
+# 配って意味の無いもの・重いものはここに並べる。
+.git
+.DS_Store
+.gitignore
+.assetsignore
+README.md
+
+# 組み立てる側の道具と、その元
+build.mjs
+tools
+data
+
+# 撮ったままの絵（配る形は assets/shots に出してある）
+assets/shots/raw
+
+# 元の PNG（重い。webp と jpg を配っている）。
+# 直下だけ。assets/icon/ の PNG は配る
+/assets/*.png
