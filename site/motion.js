@@ -217,6 +217,19 @@
         }
         x = Math.max(-rxCap, Math.min(rxCap, x));
         y = Math.max(-ryCap, Math.min(ryCap, y));
+        /* 枠に収めるための切り詰めで、せっかく外へ出した札が
+           またロゴの上に戻ることがある。字に札が重なると、
+           どちらも読めなくなる。余裕のある側の軸で、もう一度外へ出す */
+        if (Math.abs(x) < Wc && Math.abs(y) < Hc) {
+          var roomY = ryCap >= Hc, roomX = rxCap >= Wc;
+          if (roomY && (!roomX || Math.abs(y) / Hc >= Math.abs(x) / Wc)) {
+            y = (y < 0 ? -1 : 1) * Hc;
+          } else if (roomX) {
+            x = (x < 0 ? -1 : 1) * Wc;
+          } else {
+            y = (y < 0 ? -1 : 1) * ryCap;
+          }
+        }
         var s2 = 0.58 + 0.42 * (z + 1) / 2;
         var o = 0.26 + 0.74 * (z + 1) / 2;
         var el = orbs[i];
