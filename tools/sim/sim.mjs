@@ -12,6 +12,7 @@ const bot = readFileSync(import.meta.dirname + '/bot.js', 'utf8');
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
 const c = await b.newContext({ viewport: { width: 200, height: 356 }, locale: 'ja-JP' });
 await c.addInitScript(vclock);
+await c.addInitScript('window.__SCALE = ' + (process.env.SCALE || 1));
 const p = await c.newPage();
 p.on('pageerror', e => console.log('PAGEERROR', '' + e));
 await p.goto('file://' + import.meta.dirname + '/' + (process.env.LAB || 'lab') + '.html');
