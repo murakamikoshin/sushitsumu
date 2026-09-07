@@ -2,10 +2,15 @@ name = "sushitsumu-rank"
 main = "worker.js"
 compatibility_date = "2026-01-01"
 
+# 一つのログインで複数のアカウントを扱っている場合、どれに置くか聞かれる。
+# 迷わせたくなければ、置きたいアカウントの ID を書いておく
+# （Cloudflare のダッシュボード右下、または npx wrangler whoami で分かる）。
+# account_id = ""
+
 [[d1_databases]]
 binding = "DB"
 database_name = "sushitsumu"
-database_id = "ここに wrangler d1 create sushitsumu が出した ID を貼る"
+database_id = ""   # setup.sh が入れる。手でやるなら wrangler d1 create の出した uuid を貼る
 
 # 誰でも書き込める番付なので、置き場所を絞りたい時はここにゲームの URL を並べる。
 # 空にすると全部のサイトから受ける。

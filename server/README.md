@@ -28,14 +28,37 @@ Cloudflare Workers + D1。無料枠に収まる規模なので、運営費は 0 
 
 ## 置き方
 
-```sh
-npm install -g wrangler
-wrangler login
+Node.js が入っていること。Cloudflare のアカウントは既存のもので構わない
+（新しく作る必要はない）。
 
+```sh
+npx wrangler login        # ブラウザが開くので、置きたいアカウントで許可する
+bash server/setup.sh      # あとは全部やる
+```
+
+`setup.sh` は、データベースを作り、その id を `wrangler.toml` に書き込み、
+表を用意し、Worker を上げるところまでやって、最後に URL を出す。
+何度流しても構わない（二度目からは既にあるものを使い回す）。
+
+手でやるなら：
+
+```sh
 cd server
-wrangler d1 create sushitsumu          # 出てきた database_id を wrangler.toml に貼る
-wrangler d1 execute sushitsumu --remote --file=./schema.sql
-wrangler deploy                        # https://sushitsumu-rank.<自分>.workers.dev が出る
+npx wrangler d1 create sushitsumu                              # 出た uuid を wrangler.toml の database_id へ
+npx wrangler d1 execute sushitsumu --remote --file=./schema.sql -y
+npx wrangler deploy                                            # workers.dev の URL が出る
+```
+
+初回の `deploy` では workers.dev の名前を決めるよう聞かれることがある。
+
+**一つのログインで複数のアカウントを扱っている場合**は、どれに置くか
+聞かれる。迷わせたくなければ `wrangler.toml` の `account_id` に書いておく。
+
+置けたか確かめる：
+
+```sh
+curl 'https://<出てきたURL>/top?kind=normal&mode=all&limit=5'
+# → [] が返れば動いている（まだ誰も載っていないので空）
 ```
 
 出た URL を `index.html` の
