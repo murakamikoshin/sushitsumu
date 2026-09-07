@@ -889,6 +889,20 @@ function rr(c, x, y, w, h, r) {
   c.lineTo(x, y + r);           c.quadraticCurveTo(x, y, x + r, y);
   c.closePath();
 }
+/* 角ごとに半径を変えられる角丸矩形 */
+function rr4(c, x, y, w, h, rtl, rtr, rbr, rbl) {
+  var m = Math.min(w, h) / 2;
+  rtl = Math.min(rtl, m); rtr = Math.min(rtr, m);
+  rbr = Math.min(rbr, m); rbl = Math.min(rbl, m);
+  c.beginPath();
+  c.moveTo(x + rtl, y);
+  c.lineTo(x + w - rtr, y);        c.quadraticCurveTo(x + w, y, x + w, y + rtr);
+  c.lineTo(x + w, y + h - rbr);    c.quadraticCurveTo(x + w, y + h, x + w - rbr, y + h);
+  c.lineTo(x + rbl, y + h);        c.quadraticCurveTo(x, y + h, x, y + h - rbl);
+  c.lineTo(x, y + rtl);            c.quadraticCurveTo(x, y, x + rtl, y);
+  c.closePath();
+}
+
 function lg(c, x0, y0, x1, y1, stops) {
   var g = c.createLinearGradient(x0, y0, x1, y1);
   for (var i = 0; i < stops.length; i++) g.addColorStop(stops[i][0], stops[i][1]);
@@ -974,7 +988,8 @@ function nigiri(c, w, h, fill, detail, edge) {
    シャリの上に黒い帯を載せる描き方だと、帯が別の物に見えて軍艦にならない。
    海苔を外形にし、その内側の窪みへ具を盛る。シャリは底から少しだけ覗かせる。 */
 function gunkan(c, w, h, topping) {
-  var r = Math.min(h * 0.20, w * 0.11);
+  var rTop = Math.min(h * 0.34, w * 0.19);   // 巻きの上の縁は大きく落ちる
+  var rBot = Math.min(h * 0.18, w * 0.10);
   var nt = Math.max(3.5, w * 0.055);   // 海苔の厚み（左右に縁として見える）
   var noriBot = h * 0.43;              // 海苔の下端（巻いてあるので、シャリはほぼ隠れる）
   var rimY = -h * 0.04;                // 海苔の縁（具はここから上）
@@ -1007,11 +1022,11 @@ function gunkan(c, w, h, topping) {
   ng.addColorStop(0.82, '#1d261d');
   ng.addColorStop(1, '#0b0f0b');
   c.fillStyle = ng;
-  rr(c, -w / 2, -h / 2, w, noriBot + h / 2, r);
+  rr4(c, -w / 2, -h / 2, w, noriBot + h / 2, rTop, rTop, rBot, rBot);
   c.fill();
 
   c.save();
-  rr(c, -w / 2, -h / 2, w, noriBot + h / 2, r);
+  rr4(c, -w / 2, -h / 2, w, noriBot + h / 2, rTop, rTop, rBot, rBot);
   c.clip();
   // 海苔の繊維
   c.strokeStyle = 'rgba(255,255,255,.05)';
@@ -1041,10 +1056,16 @@ function gunkan(c, w, h, topping) {
 
   // 具（海苔の縁から上へ浅く盛り上がる。深い窓にすると画面に見えてしまう）
   c.save();
+  var tx0 = -w / 2 + nt, tx1 = w / 2 - nt, tsp = tx1 - tx0;
   c.beginPath();
-  c.moveTo(-w / 2 + nt, rimY);
-  c.quadraticCurveTo(-w / 2 + nt * 0.6, crest, 0, crest);
-  c.quadraticCurveTo(w / 2 - nt * 0.6, crest, w / 2 - nt, rimY);
+  c.moveTo(tx0, rimY);
+  c.bezierCurveTo(tx0 + tsp * 0.01, crest + h * 0.12,
+                  tx0 + tsp * 0.14, crest,
+                  tx0 + tsp * 0.36, crest);
+  c.lineTo(tx1 - tsp * 0.36, crest);
+  c.bezierCurveTo(tx1 - tsp * 0.14, crest,
+                  tx1 - tsp * 0.01, crest + h * 0.12,
+                  tx1, rimY);
   c.closePath();
   c.clip();
   topping(c, w, h);
@@ -1062,16 +1083,16 @@ function gunkan(c, w, h, topping) {
   c.strokeStyle = 'rgba(196,186,168,.35)';
   c.lineWidth = 1.4;
   c.beginPath();
-  c.moveTo(-w / 2 + nt * 0.5, rimY - h * 0.02);
-  c.lineTo(-w / 2 + nt * 0.5, -h * 0.34);
-  c.moveTo(w / 2 - nt * 0.5, rimY - h * 0.02);
-  c.lineTo(w / 2 - nt * 0.5, -h * 0.34);
+  c.moveTo(-w / 2 + nt * 0.7, rimY - h * 0.02);
+  c.lineTo(-w / 2 + nt * 0.7, -h * 0.17);
+  c.moveTo(w / 2 - nt * 0.7, rimY - h * 0.02);
+  c.lineTo(w / 2 - nt * 0.7, -h * 0.17);
   c.stroke();
 
   // 全体の縁
   c.strokeStyle = 'rgba(0,0,0,.55)';
   c.lineWidth = 1.4;
-  rr(c, -w / 2, -h / 2, w, noriBot + h / 2, r);
+  rr4(c, -w / 2, -h / 2, w, noriBot + h / 2, rTop, rTop, rBot, rBot);
   c.stroke();
 }
 
@@ -1221,11 +1242,11 @@ function drawItem(c, level) {
         cc.fillStyle = '#7e1517';
         cc.fillRect(-gw, -gh, gw * 2, gh * 2);
         var pr = gh * 0.095;
-        var cols = 8, rows = 3;
+        var cols = 8, rows = 4;   // 最下段は海苔の縁で切れる
         for (var row = 0; row < rows; row++) {
           for (var col = 0; col < cols; col++) {
             var px = -gw * 0.44 + col * (gw * 0.125) + (row % 2 ? gw * 0.062 : 0);
-            var py = -gh * 0.42 + row * (gh * 0.145);
+            var py = -gh * 0.45 + row * (gh * 0.145);
             var rgd = cc.createRadialGradient(px - pr * 0.35, py - pr * 0.42, pr * 0.1, px, py, pr);
             rgd.addColorStop(0, '#ffc078');
             rgd.addColorStop(0.5, '#f0611f');
@@ -1258,7 +1279,7 @@ function drawItem(c, level) {
           var t = (u + 0.5) / n;
           var cx = x0 + span * t;
           // 中央の弁ほど高く盛る
-          var topY = crestY + (1 - Math.sin(Math.PI * t)) * gh * 0.15
+          var topY = crestY - gh * 0.035 + (1 - Math.sin(Math.PI * t)) * gh * 0.15
                             + (u % 2 ? gh * 0.022 : 0);
 
           function lobePath() {
@@ -1310,7 +1331,7 @@ function drawItem(c, level) {
         // 右端の弁の輪郭
         var tl = (n - 0.5) / n;
         var cxr = x0 + span * tl;
-        var topR = crestY + (1 - Math.sin(Math.PI * tl)) * gh * 0.15;
+        var topR = crestY - gh * 0.035 + (1 - Math.sin(Math.PI * tl)) * gh * 0.15;
         cc.strokeStyle = 'rgba(134,80,6,.6)';
         cc.lineWidth = Math.max(1.4, gw * 0.013);
         cc.beginPath();
