@@ -168,6 +168,92 @@ body.titling .hud { opacity: 0; pointer-events: none; }
   box-shadow: 0 26px 62px rgba(0,0,0,.68), 0 6px 16px rgba(0,0,0,.35);
 }
 
+/* PC でのつまみかたの案内。触れる端末には出さない */
+.kbd {
+  display: none; margin-top: 4px;
+  font-size: 9px; letter-spacing: .12em; line-height: 2;
+  color: rgba(230,205,166,.44);
+}
+.kbd b { color: rgba(230,205,166,.72); font-weight: 400; font-family: var(--gothic); }
+@media (pointer: coarse) { .kbd { display: none !important; } }
+
+/* 右の柱は広い画面でだけ立てる */
+.deskPad { display: none; }
+#sidePanel { width: 168px; align-self: stretch; }
+.sideTitle {
+  font-size: 9px; letter-spacing: .24em; text-indent: .24em;
+  color: rgba(230,205,166,.7); line-height: 1.6; min-height: 1.6em;
+}
+.sideList {
+  list-style: none; margin-top: 9px;
+  border-top: 1px dashed rgba(230,205,166,.26);
+}
+.sideList li {
+  display: flex; align-items: baseline; gap: 7px;
+  padding: 5px 1px; font-size: 11px;
+  border-bottom: 1px dashed rgba(230,205,166,.14);
+  color: rgba(250,246,236,.66);
+}
+.sideList .k {
+  flex: 0 0 auto; width: 1.5em; text-align: right;
+  font-family: var(--gothic); font-size: 10px; color: rgba(230,205,166,.55);
+  font-variant-numeric: tabular-nums;
+}
+.sideList .k.g1 { color: #d9ab29; }
+.sideList .k.g2 { color: #b9b9b9; }
+.sideList .k.g3 { color: #c08a4e; }
+.sideList .n { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sideList .s {
+  flex: 0 0 auto; font-family: var(--gothic); font-size: 10.5px;
+  font-variant-numeric: tabular-nums; color: rgba(250,246,236,.82);
+}
+.sideList li.me { color: var(--kin); }
+.sideList li.me .n { font-weight: 600; }
+.sideEmpty { font-size: 9.5px; color: rgba(230,205,166,.4); padding: 12px 0; line-height: 1.9; border: 0; }
+/* 番付が使えない配り方では、柱は場所だけ取って何も出さない */
+body:not(.has-rank) #sidePanel .sideTitle,
+body:not(.has-rank) #sidePanel .sideList { display: none; }
+
+/* ---- 広い画面（PC）----
+   桶は 9:16 と決まっているので、横に広い画面では必ず余りが出る。
+   その余りを「空き地」に見せないために、
+     ・ヘッダーを桶の左脇に立てて、縦を桶に明け渡す（そのぶん桶が大きくなる）
+     ・桶と同じ幅の余白を右にも置いて、桶を画面の真ん中に据える
+     ・桶のうしろに淡い明かりを置いて、卓が照らされているように見せる
+   ============================================================ */
+@media (min-width: 860px) and (min-height: 600px) {
+  /* 桶のうしろの明かり。ここだけが照らされている卓に見せる */
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(46% 68% at 50% 44%, rgba(120,168,214,.17) 0%, rgba(10,18,26,0) 72%),
+      radial-gradient(120% 52% at 50% 108%, rgba(201,162,39,.07) 0%, rgba(10,18,26,0) 60%);
+  }
+  #app {
+    /* position は fixed のまま触らない。relative にすると inset:0 が効かなくなり、
+       高さが中身ぶんに潰れて桶が豆粒になる */
+    z-index: 1;
+    flex-direction: row; align-items: center; justify-content: center;
+    gap: 30px;
+  }
+  /* 左右の柱は、桶の上端に頭を揃える。真ん中で浮かせるより据わりが良い */
+  .hud {
+    width: 168px; max-width: none; margin: 0;
+    flex-direction: column; align-items: flex-start; justify-content: flex-start;
+    gap: 26px; padding: 0;
+    align-self: stretch;
+  }
+  .hud-r { align-items: flex-start; }
+  .deskPad { width: 168px; flex: 0 0 auto; }   /* 右にも同じ幅を置いて桶を真ん中に */
+  /* 桶の幅は下の resize が入れる。伸ばすとヘッダーが端に取り残されるので伸ばさない */
+  .stage { flex: 0 0 auto; height: 100%; }
+  .score { font-size: 40px; }
+  .tray { width: 62px; height: 62px; }
+  #nextCv { width: 50px; height: 50px; }
+  .kbd { display: block; font-size: 10px; }
+  .deskPad { display: block; }
+}
+
 /* ---- 中央ポップアップ（へい大将！など） ---- */
 #popLayer {
   position: absolute;
@@ -367,6 +453,34 @@ body:not(.has-rank) .needs-rank { display: none !important; }
 .langLink span[aria-hidden] { filter: grayscale(1); opacity: .5; font-size: 12px; }
 .langLink #langBtn2Name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* ---- 寿司図鑑 ---- */
+.btnRow.tight { margin-top: 18px; gap: 8px; }
+.dexCount {
+  font-size: 10px; letter-spacing: .18em; text-indent: .18em;
+  color: #9a8a72; margin-bottom: 12px;
+}
+.dexCount b { font-family: var(--gothic); font-weight: 600; color: var(--shu); font-size: 13px; letter-spacing: 0; }
+.dexGrid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+  max-height: 46vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  touch-action: pan-y; overscroll-behavior: contain;
+  margin-bottom: 18px;
+}
+.dexCell {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 7px 3px 6px;
+  background: rgba(185,148,95,.07);
+  border: 1px solid rgba(185,148,95,.3); border-radius: 2px;
+}
+.dexCell.got { background: rgba(200,64,47,.06); border-color: rgba(185,148,95,.6); }
+.dexCell canvas { display: block; width: 56px; height: 40px; }
+.dexName {
+  font-size: 8.5px; line-height: 1.35; text-align: center;
+  color: #8a7a63; letter-spacing: .02em;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.dexCell.got .dexName { color: #4a3212; }
+
 /* ---- 言葉えらび ---- */
 .langGrid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 7px;
@@ -455,6 +569,7 @@ body.lat .rankNote { font-size: 10.5px; }
     <div class="hud-r">
       <div class="lbl" data-t="lblNext">つぎ</div>
       <div class="tray"><canvas id="nextCv" width="132" height="132"></canvas></div>
+      <div class="kbd" id="kbdHint"></div>
     </div>
   </header>
 
@@ -462,6 +577,8 @@ body.lat .rankNote { font-size: 10.5px; }
     <canvas id="game"></canvas>
     <div id="popLayer"></div>
 
+    <!-- 桶を画面の真ん中に据えるための、左のヘッダーと同じ幅の余白 -->
+    <!-- （中身は無い。広い画面でだけ効く） -->
     <!-- タイトル -->
     <div class="modal" id="titleModal">
       <div class="card">
@@ -472,7 +589,10 @@ body.lat .rankNote { font-size: 10.5px; }
           <button class="modeBtn" id="startBtn"><span data-t="modeFree">お 任 せ</span><small data-t="modeFreeSub">心ゆくまで積む</small></button>
           <button class="modeBtn alt" id="startOrderBtn"><span data-t="modeOrder">お 品 書 き</span><small data-t="modeOrderSub">注文で祝儀、連鎖で加増</small></button>
         </div>
-        <button class="btn ghost small needs-rank" id="openRank" data-t="openRank">番 付 を 見 る</button>
+        <div class="btnRow tight">
+          <button class="btn ghost small needs-rank" id="openRank" data-t="openRank">番 付 を 見 る</button>
+          <button class="btn ghost small" id="openDex" data-t="dexOpen">寿 司 図 鑑</button>
+        </div>
         <p class="hint">
           <span data-t="hint1">指でなぞって位置を決め、離せば落ちる。</span><br>
           <span data-t="hint2">同じネタが触れ合えば合体。</span><br>
@@ -502,10 +622,22 @@ body.lat .rankNote { font-size: 10.5px; }
         </div>
         <div class="rankNote needs-rank" id="sendNote"></div>
 
-        <div class="btnRow">
-          <button class="btn ghost needs-rank" id="openRank2" data-t="rankShort">番 付</button>
-          <button class="btn" id="retryBtn" data-t="retry">もう一丁</button>
+        <div class="btnRow tight">
+          <button class="btn ghost small needs-rank" id="openRank2" data-t="rankShort">番 付</button>
+          <button class="btn ghost small" id="toTitleBtn" data-t="toTitle">タイトルへ</button>
         </div>
+        <button class="btn" id="retryBtn" data-t="retry">もう一丁</button>
+      </div>
+    </div>
+
+    <!-- 寿司図鑑 -->
+    <div class="modal" id="dexModal" hidden>
+      <div class="card">
+        <h2 data-t="dexTitle">寿司図鑑</h2>
+        <div class="rule"></div>
+        <div class="dexCount" id="dexCount"></div>
+        <div class="dexGrid" id="dexGrid"></div>
+        <button class="btn" id="closeDex" data-t="close">閉 じ る</button>
       </div>
     </div>
 
@@ -550,6 +682,12 @@ body.lat .rankNote { font-size: 10.5px; }
       </div>
     </div>
   </main>
+
+  <!-- 広い画面でだけ立つ、番付の柱。桶を真ん中に据える重しも兼ねる -->
+  <aside class="deskPad" id="sidePanel">
+    <div class="sideTitle" id="sideScope"></div>
+    <ol class="sideList" id="sideList"></ol>
+  </aside>
 
   <!-- 広告のあいだの幕。SDK が無い時は一度も出ない -->
   <div id="adCurtain" hidden>
@@ -667,12 +805,16 @@ TXT.ja = {
   hint1:'指でなぞって位置を決め、離せば落ちる。',
   hint2:'同じネタが触れ合えば合体。',
   hint3:'「ガリ」は触れたネタを一つ消す。',
-  over:'しまい', namePh:'名前（12文字まで）', send:'載 せ る', retry:'もう一丁',
+  over:'しまい', namePh:'名前（12文字まで）', send:'載 せ る', retry:'もう一丁', toTitle:'タイトルへ',
   rankTitle:'番付', tabDay:'本 日', tabAll:'総 合',
   tabNormal:'お 任 せ', tabOrder:'お 品 書 き', close:'閉 じ る',
   libTitle:'準備中', libBody:'物理エンジンを初期化できませんでした。<br>ページを再読み込みしてください。',
   adTitle:'広告', adBody:'このあと、すぐに再開します',
   rotate:'画面を縦にして<br>お楽しみください',
+  kbdMove:'左右', kbdDrop:'落とす', kbdKeys:'← →', kbdDropKey:'スペース',
+  dexOpen:'寿 司 図 鑑', dexTitle:'寿司図鑑', dexUnknown:'？？？',
+  dexCountPre:'これまでに ', dexCountMid:' / ', dexCountPost:' 種',
+  gariName:'ガリ',
   danger:'の れ ん 際', gari:'ガ リ',
   gariPop:'お口直し！', jackpot:'大 入 袋 ！', megaChain:'大 連 鎖 ！', newBest:'自己最高！',
   chainSuffix:' 連 ！', chainFloat:'連鎖 ', chainKanji:true,
@@ -713,12 +855,16 @@ TXT.en = {
   hint1:'Drag to aim, release to drop.',
   hint2:'Matching neta merge on contact.',
   hint3:'A piece of “gari” removes one neta it touches.',
-  over:'THAT’S A WRAP', namePh:'Name (up to 12)', send:'POST', retry:'ONE MORE',
+  over:'THAT’S A WRAP', namePh:'Name (up to 12)', send:'POST', retry:'ONE MORE', toTitle:'TITLE',
   rankTitle:'LEADERBOARD', tabDay:'TODAY', tabAll:'ALL TIME',
   tabNormal:'OMAKASE', tabOrder:'ORDERS', close:'CLOSE',
   libTitle:'NOT READY', libBody:'The physics engine could not start.<br>Please reload the page.',
   adTitle:'AD', adBody:'Back to the game in a moment',
   rotate:'Please turn your device<br>upright to play',
+  kbdMove:'Move', kbdDrop:'Drop', kbdKeys:'\u2190 \u2192', kbdDropKey:'Space',
+  dexOpen:'SUSHI BOOK', dexTitle:'SUSHI BOOK', dexUnknown:'???',
+  dexCountPre:'Found ', dexCountMid:' / ', dexCountPost:'',
+  gariName:'Gari',
   danger:'OVER THE LINE', gari:'GARI',
   gariPop:'Palate cleansed!', jackpot:'JACKPOT!', megaChain:'MEGA CHAIN!', newBest:'NEW BEST!',
   chainSuffix:' CHAIN!', chainFloat:'-chain ', chainKanji:false,
@@ -749,6 +895,10 @@ TXT.en = {
 };
 
 TXT.es = {
+  toTitle:'AL INICIO',
+  kbdMove:'Mover', kbdDrop:'Soltar', kbdKeys:'\u2190 \u2192', kbdDropKey:'Espacio',
+  dexOpen:'LIBRO DE SUSHI', dexTitle:'LIBRO DE SUSHI', dexUnknown:'???',
+  dexCountPre:'Hallados ', dexCountMid:' / ', dexCountPost:'', gariName:'Gari',
   title:'SUSHI TSUMU', sub:'UN ROMPECABEZAS EDOMAE',
   lblScore:'PUNTOS', lblHi:'RÉCORD', lblNext:'SIGUIENTE',
   sndOn:'SONIDO', sndOff:'SILENCIO', langTitle:'IDIOMA',
@@ -792,6 +942,10 @@ TXT.es = {
 };
 
 TXT.pt = {
+  toTitle:'AO INÍCIO',
+  kbdMove:'Mover', kbdDrop:'Soltar', kbdKeys:'\u2190 \u2192', kbdDropKey:'Espaço',
+  dexOpen:'LIVRO DE SUSHI', dexTitle:'LIVRO DE SUSHI', dexUnknown:'???',
+  dexCountPre:'Encontrados ', dexCountMid:' / ', dexCountPost:'', gariName:'Gari',
   title:'SUSHI TSUMU', sub:'UM QUEBRA-CABEÇA EDOMAE',
   lblScore:'PONTOS', lblHi:'RECORDE', lblNext:'PRÓXIMO',
   sndOn:'SOM', sndOff:'SEM SOM', langTitle:'IDIOMA',
@@ -835,6 +989,10 @@ TXT.pt = {
 };
 
 TXT.fr = {
+  toTitle:'ACCUEIL',
+  kbdMove:'Déplacer', kbdDrop:'Lâcher', kbdKeys:'\u2190 \u2192', kbdDropKey:'Espace',
+  dexOpen:'LIVRE DE SUSHIS', dexTitle:'LIVRE DE SUSHIS', dexUnknown:'???',
+  dexCountPre:'Trouvés ', dexCountMid:' / ', dexCountPost:'', gariName:'Gari',
   title:'SUSHI TSUMU', sub:'UN CASSE-TÊTE EDOMAE',
   lblScore:'SCORE', lblHi:'RECORD', lblNext:'SUIVANT',
   sndOn:'SON', sndOff:'MUET', langTitle:'LANGUE',
@@ -878,6 +1036,10 @@ TXT.fr = {
 };
 
 TXT.de = {
+  toTitle:'ZUM ANFANG',
+  kbdMove:'Bewegen', kbdDrop:'Fallen', kbdKeys:'\u2190 \u2192', kbdDropKey:'Leertaste',
+  dexOpen:'SUSHI-BUCH', dexTitle:'SUSHI-BUCH', dexUnknown:'???',
+  dexCountPre:'Gefunden ', dexCountMid:' / ', dexCountPost:'', gariName:'Gari',
   title:'SUSHI TSUMU', sub:'EIN EDOMAE-MERGE-PUZZLE',
   lblScore:'PUNKTE', lblHi:'REKORD', lblNext:'NÄCHSTE',
   sndOn:'TON AN', sndOff:'TON AUS', langTitle:'SPRACHE',
@@ -921,6 +1083,10 @@ TXT.de = {
 };
 
 TXT.it = {
+  toTitle:'ALL’INIZIO',
+  kbdMove:'Muovi', kbdDrop:'Lascia', kbdKeys:'\u2190 \u2192', kbdDropKey:'Spazio',
+  dexOpen:'LIBRO DEI SUSHI', dexTitle:'LIBRO DEI SUSHI', dexUnknown:'???',
+  dexCountPre:'Trovati ', dexCountMid:' / ', dexCountPost:'', gariName:'Gari',
   title:'SUSHI TSUMU', sub:'UN ROMPICAPO EDOMAE',
   lblScore:'PUNTI', lblHi:'RECORD', lblNext:'PROSSIMO',
   sndOn:'AUDIO', sndOff:'MUTO', langTitle:'LINGUA',
@@ -964,6 +1130,10 @@ TXT.it = {
 };
 
 TXT.pl = {
+  toTitle:'DO MENU',
+  kbdMove:'Ruch', kbdDrop:'Upuść', kbdKeys:'\u2190 \u2192', kbdDropKey:'Spacja',
+  dexOpen:'KSIĘGA SUSHI', dexTitle:'KSIĘGA SUSHI', dexUnknown:'???',
+  dexCountPre:'Znaleziono ', dexCountMid:' / ', dexCountPost:'', gariName:'Gari',
   title:'SUSHI TSUMU', sub:'ŁAMIGŁÓWKA W STYLU EDOMAE',
   lblScore:'WYNIK', lblHi:'REKORD', lblNext:'NASTĘPNY',
   sndOn:'DŹWIĘK', sndOff:'WYCISZ', langTitle:'JĘZYK',
@@ -1007,6 +1177,10 @@ TXT.pl = {
 };
 
 TXT.tr = {
+  toTitle:'BAŞA DÖN',
+  kbdMove:'Hareket', kbdDrop:'Bırak', kbdKeys:'\u2190 \u2192', kbdDropKey:'Boşluk',
+  dexOpen:'SUŞİ KİTABI', dexTitle:'SUŞİ KİTABI', dexUnknown:'???',
+  dexCountPre:'Bulunan ', dexCountMid:' / ', dexCountPost:'', gariName:'Gari',
   title:'SUSHI TSUMU', sub:'BİR EDOMAE BİRLEŞTİRME BULMACASI',
   lblScore:'PUAN', lblHi:'REKOR', lblNext:'SIRADAKİ',
   sndOn:'SES AÇIK', sndOff:'SES KAPALI', langTitle:'DİL',
@@ -1050,6 +1224,10 @@ TXT.tr = {
 };
 
 TXT.ru = {
+  toTitle:'В НАЧАЛО',
+  kbdMove:'Двигать', kbdDrop:'Бросить', kbdKeys:'\u2190 \u2192', kbdDropKey:'Пробел',
+  dexOpen:'КНИГА СУСИ', dexTitle:'КНИГА СУСИ', dexUnknown:'???',
+  dexCountPre:'Найдено ', dexCountMid:' / ', dexCountPost:'', gariName:'Гари',
   title:'SUSHI TSUMU', sub:'ГОЛОВОЛОМКА В СТИЛЕ ЭДОМАЭ',
   lblScore:'ОЧКИ', lblHi:'РЕКОРД', lblNext:'ДАЛЕЕ',
   sndOn:'ЗВУК ВКЛ', sndOff:'ЗВУК ВЫКЛ', langTitle:'ЯЗЫК',
@@ -1094,6 +1272,10 @@ TXT.ru = {
 };
 
 TXT.id = {
+  toTitle:'KE AWAL',
+  kbdMove:'Geser', kbdDrop:'Jatuhkan', kbdKeys:'\u2190 \u2192', kbdDropKey:'Spasi',
+  dexOpen:'BUKU SUSHI', dexTitle:'BUKU SUSHI', dexUnknown:'???',
+  dexCountPre:'Ditemukan ', dexCountMid:' / ', dexCountPost:'', gariName:'Gari',
   title:'SUSHI TSUMU', sub:'TEKA-TEKI GABUNG ALA EDOMAE',
   lblScore:'SKOR', lblHi:'REKOR', lblNext:'BERIKUTNYA',
   sndOn:'SUARA', sndOff:'SENYAP', langTitle:'BAHASA',
@@ -1137,6 +1319,10 @@ TXT.id = {
 };
 
 TXT.vi = {
+  toTitle:'VỀ ĐẦU',
+  kbdMove:'Di chuyển', kbdDrop:'Thả', kbdKeys:'\u2190 \u2192', kbdDropKey:'Space',
+  dexOpen:'SỔ SUSHI', dexTitle:'SỔ SUSHI', dexUnknown:'???',
+  dexCountPre:'Đã tìm ', dexCountMid:' / ', dexCountPost:'', gariName:'Gari',
   title:'SUSHI TSUMU', sub:'TRÒ GHÉP HÌNH KIỂU EDOMAE',
   lblScore:'ĐIỂM', lblHi:'KỶ LỤC', lblNext:'TIẾP THEO',
   sndOn:'CÓ ÂM', sndOff:'TẮT ÂM', langTitle:'NGÔN NGỮ',
@@ -1180,6 +1366,10 @@ TXT.vi = {
 };
 
 TXT.ko = {
+  toTitle:'처음으로',
+  kbdMove:'좌우', kbdDrop:'떨어뜨리기', kbdKeys:'\u2190 \u2192', kbdDropKey:'스페이스',
+  dexOpen:'스 시 도 감', dexTitle:'스시 도감', dexUnknown:'???',
+  dexCountPre:'지금까지 ', dexCountMid:' / ', dexCountPost:' 종', gariName:'가리',
   title:'SUSHI TSUMU', sub:'에도마에 합체 퍼즐',
   lblScore:'점수', lblHi:'최고 기록', lblNext:'다음',
   sndOn:'소리 켬', sndOff:'소리 끔', langTitle:'언어',
@@ -1224,6 +1414,10 @@ TXT.ko = {
 };
 
 TXT.zh = {
+  toTitle:'回标题',
+  kbdMove:'左右', kbdDrop:'落下', kbdKeys:'\u2190 \u2192', kbdDropKey:'空格',
+  dexOpen:'寿 司 图 鉴', dexTitle:'寿司图鉴', dexUnknown:'???',
+  dexCountPre:'已发现 ', dexCountMid:' / ', dexCountPost:' 种', gariName:'姜片',
   title:'SUSHI TSUMU', sub:'江户前合体解谜',
   lblScore:'分数', lblHi:'最高分', lblNext:'下一个',
   sndOn:'声音开', sndOff:'声音关', langTitle:'语言',
@@ -1420,6 +1614,7 @@ function saveHi(v) {
    5. ボディ生成
    ============================================================ */
 function makeSushi(level, x, y) {
+  markSeen(level);            // 図鑑に控える。作った時が「出会った」時
   var d = SUSHI[level];
   var opt = {
     label: 'sushi',
@@ -1455,6 +1650,7 @@ function makeGari(x, y) {
     slop: 0.02
   }, 10);
   b.gari = { used: false, born: performance.now() };
+  markSeen(GARI_IX);
   return b;
 }
 
@@ -2014,16 +2210,41 @@ var stage = document.getElementById('stage');
 var hud = document.querySelector('.hud');
 var scale = 1;
 
+/* 広い画面ではヘッダーを桶の左脇に立てる。組み方が変わるので、
+   桶の大きさの決め方も変わる（下の resize を参照） */
+var deskQ = window.matchMedia('(min-width: 860px) and (min-height: 600px)');
+function onDeskChange() { resize(); loadSidePanel(); }
+if (deskQ.addEventListener) deskQ.addEventListener('change', onDeskChange);
+else if (deskQ.addListener) deskQ.addListener(onDeskChange);
+
+var DESK_SIDE = 168, DESK_GAP = 30;   /* CSS の .hud/.deskPad の幅と gap に合わせる */
+
 function resize() {
-  var r = stage.getBoundingClientRect();
-  var availW = r.width, availH = r.height;
+  var availW, availH;
+  if (deskQ.matches) {
+    // 横並びの時、桶の幅を測ってから決めると堂々巡りになる（桶が広がる→
+    // 場所が無くなる→桶が縮む）。画面の側から先に決めてしまう
+    var app = document.getElementById('app');
+    var ar = app.getBoundingClientRect(), cs = getComputedStyle(app);
+    availH = ar.height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    availW = ar.width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)
+             - DESK_SIDE * 2 - DESK_GAP * 2;
+  } else {
+    var r = stage.getBoundingClientRect();
+    availW = r.width; availH = r.height;
+  }
   if (availW <= 0 || availH <= 0) return;
   var s = Math.min(availW / W, availH / H);
   var cssW = Math.floor(W * s), cssH = Math.floor(H * s);
   var dpr = Math.min(window.devicePixelRatio || 1, 2);  // iOS(x3)は重いので2で頭打ち
   cv.style.width  = cssW + 'px';
   cv.style.height = cssH + 'px';
-  hud.style.width = cssW + 'px';   // スコアと NEXT を桶の左右端に揃える
+  // 縦並びの時だけ、スコアと NEXT を桶の左右端に揃える。
+  // 横並び（PC）でこれをやると、ヘッダーが桶の幅まで広がって場所を奪い、
+  // 桶がさらに縮み…と際限なく小さくなる。あちらは CSS の幅に任せる
+  hud.style.width = deskQ.matches ? '' : cssW + 'px';
+  // 横並びでは桶の幅をそのまま入れて、ヘッダーが桶の脇に寄るようにする
+  stage.style.width = deskQ.matches ? cssW + 'px' : '';
   cv.width  = Math.round(cssW * dpr);
   cv.height = Math.round(cssH * dpr);
   scale = (cssW * dpr) / W;
@@ -2065,6 +2286,45 @@ function onUp() {
   dropCurrent();
   previewY = DROP_Y;
 }
+
+/* ---- 鍵盤（PC）----
+   PC では引きずるより、左右で狙って落とす方が速い。
+   触れる端末には案内も出さないし、何も変わらない。 */
+var keyDir = 0, keyRepeat = 0;
+var KEY_SPEED = 190;          // 1秒あたりに動く幅（論理座標）
+function keyMove(dt) {
+  if (!keyDir || !current || state !== 'ready') return;
+  previewX += keyDir * KEY_SPEED * dt;
+  previewY = DROP_Y;
+  clampPreview();
+}
+window.addEventListener('keydown', function (e) {
+  if (e.repeat) return;
+  var k = e.key;
+  // 名前を打っている最中は横取りしない
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+
+  if (state === 'title') {
+    if (k === 'Enter' || k === ' ') { e.preventDefault(); beginGame('normal'); }
+    return;
+  }
+  if (state === 'over') {
+    if (k === 'Enter' || k === ' ') { e.preventDefault(); document.getElementById('retryBtn').click(); }
+    return;
+  }
+  if (k === 'ArrowLeft'  || k === 'a' || k === 'A') { keyDir = -1; e.preventDefault(); }
+  else if (k === 'ArrowRight' || k === 'd' || k === 'D') { keyDir = 1; e.preventDefault(); }
+  else if (k === ' ' || k === 'ArrowDown' || k === 'Enter' || k === 's' || k === 'S') {
+    e.preventDefault();
+    unlockAudio();
+    if (state === 'ready' && current && !dropLock) { previewY = DROP_Y; dropCurrent(); }
+  }
+}, { passive: false });
+window.addEventListener('keyup', function (e) {
+  var k = e.key;
+  if (k === 'ArrowLeft' || k === 'a' || k === 'A' || k === 'ArrowRight' || k === 'd' || k === 'D') keyDir = 0;
+});
+window.addEventListener('blur', function () { keyDir = 0; });
 
 if (window.PointerEvent) {
   cv.addEventListener('pointerdown', function (e) {
@@ -3296,6 +3556,7 @@ function loop(now) {
     flushOps();
     sweepStrays();
     orderTick(dt);
+    keyMove(dt / 1000);
     checkGameOver(dt / 1000);
   }
   stepParticles();
@@ -3500,6 +3761,7 @@ function beginGame(mode) {
   resize();
   resetGame();
   adGameStart();
+  loadSidePanel();                     // 遊び方によって出す番付が変わる
 }
 document.getElementById('startBtn').addEventListener('click', function (e) {
   e.preventDefault(); beginGame('normal');
@@ -3507,6 +3769,23 @@ document.getElementById('startBtn').addEventListener('click', function (e) {
 document.getElementById('startOrderBtn').addEventListener('click', function (e) {
   e.preventDefault(); beginGame('order');
 });
+/* 遊びを畳んでタイトルへ戻す。beginGame の裏返し */
+function toTitle() {
+  if (adBusy) return;
+  adGameStop();
+  bgmStop(0.5);
+  document.getElementById('overModal').hidden = true;
+  document.getElementById('rankModal').hidden = true;
+  resetGame();
+  state = 'title';
+  document.body.classList.add('titling');
+  document.getElementById('titleModal').hidden = false;
+  resize();
+}
+document.getElementById('toTitleBtn').addEventListener('click', function (e) {
+  e.preventDefault(); toTitle();
+});
+
 document.getElementById('retryBtn').addEventListener('click', function (e) {
   e.preventDefault();
   if (adBusy) return;
@@ -3860,6 +4139,7 @@ function rankReady(api) {
   rankApi = api;
   document.body.classList.add('has-rank');
   nameInput.value = cleanName(lsGet('sushitsumu.name') || '');
+  loadSidePanel();
 }
 function initRanking() {
   if (RANK_API) { rankReady(httpBackend(RANK_API.replace(/\/+$/, ''))); return; }
@@ -3898,6 +4178,7 @@ function showRanks(day, all, scan) {
 /* 順位を向こうが数えて返してくれたならそれを使う。
    一覧を二度引かずに済むので、呼び出しも読み込み行数もずっと減る。 */
 function afterSubmit(res) {
+  loadSidePanel();                     // 自分の名前が載ったはずなので入れ直す
   if (res && res.day !== undefined) {
     showRanks(res.day, res.all, res.scan);
     return Promise.resolve();
@@ -3930,6 +4211,42 @@ function doSubmit() {
       code === 'mismatch'       ? t('errMismatch')  :
       t('errNet');
   }).then(function () { rankBusy = false; });
+}
+
+/* 広い画面の右柱。いま遊んでいる方の、本日の上位を出す */
+var SIDE_SHOW = 10;
+function loadSidePanel() {
+  if (!rankApi || !deskQ.matches) return;
+  var kind = gameMode;
+  document.getElementById('sideScope').textContent =
+    (kind === 'order' ? t('scopeOrder') : t('scopeFree')) + t('dot') + t('today');
+  rankApi.top(kind, 'day', SIDE_SHOW).then(function (rows) {
+    var el = document.getElementById('sideList');
+    el.innerHTML = '';
+    if (!rows || !rows.length) {
+      var li = document.createElement('li');
+      li.className = 'sideEmpty';
+      li.textContent = t('emptyDay');
+      el.appendChild(li);
+      return;
+    }
+    var me = playerId();
+    rows.forEach(function (row, i) {
+      var li = document.createElement('li');
+      if (row.id === me) li.className = 'me';
+      var k = document.createElement('span');
+      k.className = 'k' + (i < 3 ? ' g' + (i + 1) : '');
+      k.textContent = String(i + 1);
+      var n = document.createElement('span');
+      n.className = 'n';
+      n.textContent = cleanName(row.name) || t('anon');   // 他人の名前。textContent で入れる
+      var sc = document.createElement('span');
+      sc.className = 's';
+      sc.textContent = fmt(Math.max(0, Math.floor(row.score)));
+      li.appendChild(k); li.appendChild(n); li.appendChild(sc);
+      el.appendChild(li);
+    });
+  })['catch'](function () { /* 柱は無くても遊べる。黙って諦める */ });
 }
 
 function rankMessage(text) {
@@ -4003,6 +4320,97 @@ document.getElementById('openRank').addEventListener('click', function () { open
 document.getElementById('openRank2').addEventListener('click', function () { openRankModal('day'); });
 
 /* ============================================================
+   18.5 寿司図鑑
+   作ったことのあるネタだけ姿が見える。まだのものは影だけ。
+   端末ごとの控えなので、人それぞれ埋まり方が違う。
+   ============================================================ */
+var DEX_N = SUSHI.length + 1;        // ネタ 11 種 ＋ ガリ
+var GARI_IX = SUSHI.length;
+var seen = (function () {
+  var v = lsGet('sushitsumu.dex') || '';
+  var a = [], i;
+  for (i = 0; i < DEX_N; i++) a.push(v.charAt(i) === '1');
+  return a;
+})();
+function markSeen(ix) {
+  if (ix < 0 || ix >= DEX_N || seen[ix]) return;
+  seen[ix] = true;
+  lsSet('sushitsumu.dex', seen.map(function (v) { return v ? '1' : '0'; }).join(''));
+}
+function dexName(ix) { return ix === GARI_IX ? t('gariName') : netaName(ix); }
+function dexSprite(ix) { return ix === GARI_IX ? gariSprite : sprites[ix]; }
+
+/* 影は絵の形そのものから起こす（source-in で抜く） */
+function drawDexCell(cv, ix) {
+  var sp = dexSprite(ix);
+  if (!sp) return;
+  var c = cv.getContext('2d');
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var cw = 56, ch = 40;
+  cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  c.clearRect(0, 0, cw, ch);
+  var k = Math.min((cw - 6) / sp.w, (ch - 6) / sp.h, 1.6);
+  c.save();
+  c.translate(cw / 2, ch / 2);
+  c.scale(k, k);
+  if (seen[ix]) {
+    paintSprite(c, sp);
+    c.restore();
+    return;
+  }
+  c.restore();
+  // まだのものは影。いったん絵を描いてから、その形だけを塗り潰す
+  var tmp = document.createElement('canvas');
+  tmp.width = cv.width; tmp.height = cv.height;
+  var x = tmp.getContext('2d');
+  x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  x.translate(cw / 2, ch / 2);
+  x.scale(k, k);
+  paintSprite(x, sp);
+  x.setTransform(1, 0, 0, 1, 0, 0);
+  x.globalCompositeOperation = 'source-in';
+  x.fillStyle = 'rgba(74,50,18,.26)';
+  x.fillRect(0, 0, tmp.width, tmp.height);
+  c.setTransform(1, 0, 0, 1, 0, 0);
+  c.drawImage(tmp, 0, 0);
+}
+
+function buildDex() {
+  var grid = document.getElementById('dexGrid');
+  grid.innerHTML = '';
+  var got = 0, i;
+  for (i = 0; i < DEX_N; i++) {
+    if (seen[i]) got++;
+    var cell = document.createElement('div');
+    cell.className = 'dexCell' + (seen[i] ? ' got' : '');
+    var cv = document.createElement('canvas');
+    var nm = document.createElement('div');
+    nm.className = 'dexName';
+    nm.textContent = seen[i] ? dexName(i) : t('dexUnknown');
+    cell.appendChild(cv); cell.appendChild(nm);
+    grid.appendChild(cell);
+    drawDexCell(cv, i);
+  }
+  var cnt = document.getElementById('dexCount');
+  cnt.innerHTML = '';
+  cnt.appendChild(document.createTextNode(t('dexCountPre')));
+  var b = document.createElement('b');
+  b.textContent = got + t('dexCountMid') + DEX_N;
+  cnt.appendChild(b);
+  cnt.appendChild(document.createTextNode(t('dexCountPost')));
+}
+
+document.getElementById('openDex').addEventListener('click', function (e) {
+  e.preventDefault();
+  buildDex();
+  document.getElementById('dexModal').hidden = false;
+});
+document.getElementById('closeDex').addEventListener('click', function () {
+  document.getElementById('dexModal').hidden = true;
+});
+
+/* ============================================================
    19. 広告
    ポータル（CrazyGames / Poki / Google H5 Games Ads）に載せた時だけ
    何プレイかに一本、区切りで挟む。SDK が無ければ丸ごと素通りするので、
@@ -4015,6 +4423,15 @@ var adHost = null, adReady = false, adBusy = false;
 
 /* 置き場所を見て裏側を選ぶ。増やす時はここに一つ足すだけ */
 function detectAdHost() {
+  // ?ad=demo を付けると、SDK が無くても幕の出方だけ確かめられる。
+  // ポータルに載せる前に、遊びの流れが途切れないか見るためのもの
+  if (/[?&]ad=demo\b/.test(location.search)) return {
+    name: 'demo',
+    boot: function () {}, start: function () {}, stop: function () {}, happy: function () {},
+    show: function () {
+      return new Promise(function (done) { setTimeout(done, 3000); });
+    }
+  };
   var CG = window.CrazyGames && window.CrazyGames.SDK;
   if (CG) return {
     name: 'crazygames',
@@ -4079,7 +4496,11 @@ function adMute(on) {
   try { if (on) actx.suspend(); else actx.resume(); } catch (e) {}
 }
 function adCurtain(on) {
-  document.getElementById('adCurtain').hidden = !on;
+  var el = document.getElementById('adCurtain');
+  if (on && adHost && adHost.name === 'demo') {
+    el.querySelector('.noren').textContent = t('adTitle') + '（demo）';
+  }
+  el.hidden = !on;
 }
 function playCount() { return parseInt(lsGet('sushitsumu.plays') || '0', 10) || 0; }
 function countPlay() { lsSet('sushitsumu.plays', String(playCount() + 1)); }
@@ -4127,11 +4548,22 @@ function applyLang() {
   document.getElementById('libBody').innerHTML = t('libBody');
   applySound();
   document.getElementById('langBtn').textContent = langInfo(lang).s;
+  // PC のつまみかた。b は書体を変えたいので要素を組んで入れる
+  var kb = document.getElementById('kbdHint');
+  kb.innerHTML = '';
+  [[t('kbdKeys'), t('kbdMove')], [t('kbdDropKey'), t('kbdDrop')]].forEach(function (row, i) {
+    if (i) kb.appendChild(document.createElement('br'));
+    var b = document.createElement('b');
+    b.textContent = row[0];
+    kb.appendChild(b);
+    kb.appendChild(document.createTextNode(' ' + row[1]));
+  });
   document.getElementById('langBtn2Name').textContent = langInfo(lang).n;
   buildBarrel();                       // 暖簾の屋号を書き直す
   if (state === 'over') showResult();  // 結果を開いたまま切り替えた時
   if (current) drawNextPreview();
   if (rankApi && !rankModal.hidden) loadRank();
+  loadSidePanel();
   var g = document.getElementById('langGrid');
   var on = g.querySelectorAll('button');
   for (i = 0; i < on.length; i++) on[i].classList.toggle('is-on', on[i].dataset.lang === lang);
