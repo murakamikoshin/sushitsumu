@@ -1,2 +1,5 @@
 node_modules/
 store/.work/
+tools/sim/node_modules/
+tools/sim/lab*.html
+tools/sim/runs*.json
