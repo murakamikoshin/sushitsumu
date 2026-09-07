@@ -70,6 +70,10 @@ Cloudflare Pages に置く静的サイト。枠組み（Next.js など）は使�
 
 ## 検査
 
+    node tools/check.mjs             # 全部いっぺんに
+
+一つずつ走らせるなら
+
     node site/tools/audit.mjs        # 置かれた形を見る
     node site/tools/interact.mjs     # 押した後まで見る
     node site/tools/voice-check.mjs  # 出迎えの声が鳴っているか
