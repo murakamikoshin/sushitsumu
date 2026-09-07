@@ -523,6 +523,15 @@ for (const file of pages) {
       { '@context': 'https://schema.org', '@graph': ld })}</script>` : '',
   ].filter(Boolean).join('\n');
   html = html.replace('</head>', head + '\n</head>');
+  /* ホーム画面に置いたときの絵と、manifest。
+     SVG だけだと iOS で何も出ない。消してから入れ直す */
+  html = html.replace(/\n?\s*<link rel="apple-touch-icon"[^>]*>/g, '')
+             .replace(/\n?\s*<link rel="manifest"[^>]*>/g, '');
+  html = html.replace('<script>document.documentElement.className+=" js"</script>',
+    '<link rel="apple-touch-icon" href="/assets/icon/icon-180.png">\n'
+    + '<link rel="manifest" href="/site.webmanifest">\n'
+    + '<script>document.documentElement.className+=" js"</script>');
+
   const ogPath = ogFor(rel);      /* 構造化データと同じ絵を指す */
   html = html.replace(/\n?\s*<meta property="og:image"[^>]*>/g, '')
              .replace(/\n?\s*<meta property="og:image:width"[^>]*>/g, '')

@@ -53,6 +53,7 @@ Cloudflare Pages に置く静的サイト。枠組み（Next.js など）は使�
 | `shots.mjs` | ゲームの画面写真を撮る（自動で遊ばせて、いい所を残す） |
 | `voice-check.mjs` | 出迎えの声が鳴っているかを見る |
 | `interact.mjs` | 押した後まで動くかを見る |
+| `icons.mjs` | favicon.svg から貼り付け用の PNG と manifest を起こす |
 
 文章を書き足したら `fonts.py`、絵を差し替えたら `images.py`、
 ページを足したら `ogimages.mjs` を走らせ直す。
