@@ -5,7 +5,7 @@
    作品が増えたら data/works.json に一行足して、これを走らせるだけ。
        node site/build.mjs
    ============================================================ */
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 
 const here = import.meta.dirname;
 
@@ -16,6 +16,11 @@ const here = import.meta.dirname;
        GAME_DIR=~/Desktop/sushitsumu/sushitsumu node build.mjs
        node build.mjs ~/Desktop/sushitsumu/sushitsumu
    すでに写し終わっていれば、見つからなくても一覧は書き出す。 */
+const HOME = process.env.HOME || '';
+const tidy = (d) => {
+  d = String(d).trim().replace(/^~(?=$|\/)/, HOME).replace(/\/+$/, '');
+  return d.endsWith('/index.html') ? d.slice(0, -'/index.html'.length) : d;
+};
 const told = process.argv[2] || process.env.GAME_DIR;
 const CANDIDATES = [
   told,
@@ -23,8 +28,24 @@ const CANDIDATES = [
   here + '/../sushitsumu',
   here + '/../../sushitsumu',
   here + '/../../sushitsumu/sushitsumu',
-].filter(Boolean).map((d) => d.replace(/^~/, process.env.HOME || '~'));
+  HOME + '/Desktop/sushitsumu/sushitsumu',
+  HOME + '/sushitsumu',
+].filter(Boolean).map(tidy);
 const root = CANDIDATES.find((d) => existsSync(d + '/index.html'));
+
+/* 見つからないとき、何が起きているかその場で分かるようにする */
+function why() {
+  return CANDIDATES.map(function (d) {
+    if (!existsSync(d)) return '  ✗ ' + d + '  … その場所が無い';
+    var inside;
+    try {
+      inside = readdirSync(d).slice(0, 12).join(' ');
+    } catch (e) {
+      return '  ✗ ' + d + '  … 中が読めない（' + e.code + '）';
+    }
+    return '  ✗ ' + d + '  … 場所はあるが index.html が無い\n      中身: ' + inside;
+  }).join('\n');
+}
 
 /* ---- ゲーム本体と絵を、配る形に並べる ---- */
 if (root) {
@@ -40,9 +61,9 @@ if (root) {
 } else if (existsSync(here + '/works/sushitsumu/play/index.html')) {
   console.log('site: ゲーム本体は写し済みのものを使います');
 } else {
-  console.warn('site: ゲーム本体が見つかりません。一覧だけ書き出します。');
-  console.warn('      GAME_DIR=<sushitsumu の場所> node build.mjs で教えてください。');
-  console.warn('      探した場所:\n        ' + CANDIDATES.join('\n        '));
+  console.warn('site: ゲーム本体（index.html）が見つかりません。一覧だけ書き出します。');
+  console.warn(why());
+  console.warn('  → 場所を教える: GAME_DIR=<sushitsumu の場所> node build.mjs');
 }
 
 /* ---- 部品 ---- */
