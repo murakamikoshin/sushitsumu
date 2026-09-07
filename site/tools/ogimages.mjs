@@ -19,7 +19,11 @@ function pages(dir = SITE_DIR, out = []) {
       if (['vendor', 'assets', 'data', 'tools', 'node_modules', '.git'].includes(e.name)) continue;
       if (full.endsWith('/works/sushitsumu/play')) continue;
       pages(full, out);
-    } else if (e.name === 'index.html') out.push(full);
+    } else if (e.name === 'index.html' ||
+               (e.name.endsWith('.html') && e.name !== '404.html')) {
+      /* 遊び方のように index.html でない頁にも、共有カードを作る */
+      out.push(full);
+    }
   }
   return out;
 }
@@ -36,7 +40,9 @@ for (const f of pages()) {
   const lead = (html.match(/class="lead"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1]
     .replace(/<br\s*\/?>/g, ' ').replace(/<[^>]+>/g, '').trim().slice(0, 52);
   const home = rel === '/index.html';
-  const name = 'og' + (home ? '_home' : rel.replace(/\/index\.html$/, '').replace(/\//g, '_')) + '.jpg';
+  /* build.mjs の og パス組み立てと同じ規則にする。ずれると 404 になる */
+  const name = 'og' + (home ? '_home'
+    : rel.replace(/\/index\.html$/, '').replace(/\.html$/, '').replace(/\//g, '_')) + '.jpg';
 
   await p.setContent(`<style>${css}
     html,body{margin:0;width:1200px;height:630px;overflow:hidden}

@@ -523,9 +523,7 @@ for (const file of pages) {
       { '@context': 'https://schema.org', '@graph': ld })}</script>` : '',
   ].filter(Boolean).join('\n');
   html = html.replace('</head>', head + '\n</head>');
-  const ogName = 'og' + (rel === '/index.html' ? '_home' : rel.replace(/\/index\.html$/, '').replace(/\//g, '_')) + '.jpg';
-  const ogPath = existsSync(here + '/assets/og/' + ogName)
-    ? `${SITE}/assets/og/${ogName}` : `${SITE}/assets/sushitsumu-wide.jpg`;
+  const ogPath = ogFor(rel);      /* 構造化データと同じ絵を指す */
   html = html.replace(/\n?\s*<meta property="og:image"[^>]*>/g, '')
              .replace(/\n?\s*<meta property="og:image:width"[^>]*>/g, '')
              .replace(/\n?\s*<meta property="og:image:height"[^>]*>/g, '');
