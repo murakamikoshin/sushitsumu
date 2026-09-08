@@ -6,16 +6,16 @@
    ============================================================ */
 /* font-face:start */
 /* ここは site/tools/fonts.py が書きます。手で直さないこと */
-@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;src:url("/vendor/fonts/koshin-ja-400.woff2") format("woff2");}
-@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;src:url("/vendor/fonts/koshin-la-400.woff2") format("woff2");unicode-range:U+0000-00FF,U+2000-206F;}
-@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;src:url("/vendor/fonts/koshin-ex0-400.woff2") format("woff2");unicode-range:U+2192;}
-@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;src:url("/vendor/fonts/koshin-ex1-400.woff2") format("woff2");unicode-range:U+203B;}
-@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;src:url("/vendor/fonts/koshin-ex2-400.woff2") format("woff2");unicode-range:U+2190;}
-@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;src:url("/vendor/fonts/koshin-ja-600.woff2") format("woff2");}
-@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;src:url("/vendor/fonts/koshin-la-600.woff2") format("woff2");unicode-range:U+0000-00FF,U+2000-206F;}
-@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;src:url("/vendor/fonts/koshin-ex0-600.woff2") format("woff2");unicode-range:U+2192;}
-@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;src:url("/vendor/fonts/koshin-ex1-600.woff2") format("woff2");unicode-range:U+203B;}
-@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;src:url("/vendor/fonts/koshin-ex2-600.woff2") format("woff2");unicode-range:U+2190;}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;src:url("/vendor/fonts/koshin-ja-400.woff2?v=4919956a") format("woff2");}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;src:url("/vendor/fonts/koshin-la-400.woff2?v=a2a393f5") format("woff2");unicode-range:U+0000-00FF,U+2000-206F;}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;src:url("/vendor/fonts/koshin-ex0-400.woff2?v=2ded2e4b") format("woff2");unicode-range:U+2192;}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;src:url("/vendor/fonts/koshin-ex1-400.woff2?v=dbd7678f") format("woff2");unicode-range:U+203B;}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:400;font-display:swap;src:url("/vendor/fonts/koshin-ex2-400.woff2?v=93efab10") format("woff2");unicode-range:U+2190;}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;src:url("/vendor/fonts/koshin-ja-600.woff2?v=b44f52ee") format("woff2");}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;src:url("/vendor/fonts/koshin-la-600.woff2?v=bc0ac937") format("woff2");unicode-range:U+0000-00FF,U+2000-206F;}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;src:url("/vendor/fonts/koshin-ex0-600.woff2?v=8d1e485d") format("woff2");unicode-range:U+2192;}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;src:url("/vendor/fonts/koshin-ex1-600.woff2?v=a6a59c90") format("woff2");unicode-range:U+203B;}
+@font-face{font-family:"Koshin Mincho";font-style:normal;font-weight:600;font-display:swap;src:url("/vendor/fonts/koshin-ex2-600.woff2?v=9bd51c3d") format("woff2");unicode-range:U+2190;}
 /* font-face:end */
 
 /* ============================================================

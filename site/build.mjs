@@ -7,6 +7,7 @@
    ============================================================ */
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 
 const here = import.meta.dirname;
 
@@ -117,6 +118,18 @@ const notes = read('/data/notes.json');
 const kinds = read('/data/kinds.json');
 const conf  = existsSync(here + '/data/site.json') ? read('/data/site.json') : { social: [], ads: {} };
 const stack = existsSync(here + '/data/stack.json') ? read('/data/stack.json') : { groups: [] };
+
+/* ---- 中身が変わったら、名前も変える ----
+   style.css と motion.js は名前が変わらないので、一度読ませると
+   ブラウザがしばらく持ち続ける（_headers で一日）。直して配っても
+   古いものが動き続けてしまうので、中身の印を尻に付けて別物にする。
+   書体も同じ。字を足して作り直したのに古いものを掴むと、豆腐になる。 */
+const stamp = (rel) => {
+  const f = here + rel;
+  if (!existsSync(f)) return '';
+  return createHash('sha1').update(readFileSync(f)).digest('hex').slice(0, 8);
+};
+const stamped = (rel) => { const v = stamp(rel); return v ? rel + '?v=' + v : rel; };
 
 /* 絵の在り処は拡張子なしで持つ決まり。古い書き方（.png 付き）も受ける */
 const base = (p) => String(p || '').replace(/\.(png|jpe?g|webp|avif|gif)$/i, '');
@@ -441,6 +454,18 @@ function ldFor(file, url) {
   return null;
 }
 
+/* style.css の中の書体にも印を付ける。書体は style.css より長く持たせて
+   いるので、字を足して作り直したときに古いものを掴むと豆腐になる */
+{
+  const cssPath = here + '/style.css';
+  if (existsSync(cssPath)) {
+    const before = readFileSync(cssPath, 'utf8');
+    const after = before.replace(/url\("(\/vendor\/fonts\/[^"?]+)(\?v=[0-9a-f]+)?"\)/g,
+      (m, path) => 'url("' + stamped(path) + '")');
+    if (after !== before) writeFileSync(cssPath, after);
+  }
+}
+
 for (const file of pages) {
   const rel = file.slice(here.length);
   let html = readFileSync(file, 'utf8');
@@ -542,6 +567,12 @@ for (const file of pages) {
     '<link rel="apple-touch-icon" href="/assets/icon/icon-180.png">\n'
     + '<link rel="manifest" href="/site.webmanifest">\n'
     + '<script>document.documentElement.className+=" js"</script>');
+
+  /* 中身の印を付け直す。古い印は消してから入れるので、組み直しても増えない */
+  html = html.replace(/(["'])(\/(?:style\.css|motion\.js))(\?v=[0-9a-f]+)?\1/g,
+    (m, q, path) => q + stamped(path) + q);
+  html = html.replace(/(["'])(\/vendor\/[A-Za-z0-9@._/-]+\.(?:js|woff2|css))(\?v=[0-9a-f]+)?\1/g,
+    (m, q, path) => q + stamped(path) + q);
 
   const ogPath = ogFor(rel);      /* 構造化データと同じ絵を指す */
   html = html.replace(/\n?\s*<meta property="og:image"[^>]*>/g, '')

@@ -20,9 +20,9 @@
 /vendor/*
   Cache-Control: public, max-age=2592000
 
+# style.css と motion.js は ?v=中身の印 が付くので、
+# 直せば別物として取りに行く。だから長く持たせてよい
 /style.css
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=2592000
 /motion.js
-  Cache-Control: public, max-age=86400
-/voice.js
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=2592000
