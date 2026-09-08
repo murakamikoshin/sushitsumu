@@ -1700,7 +1700,16 @@ function langInfo(c) {
 /* ブラウザの申告から一番近いものを選ぶ。pt-BR なら pt、zh-Hans なら zh */
 function pickLang() {
   var saved = lsGet('sushitsumu.lang');
-  if (saved && TXT[saved]) return saved;
+  if (saved && TXT[saved]) return saved;      // 一度選んだものが最優先
+  // 置き場所ごとの既定。URL の ?lang= か、埋め込む側が置く __lang0 で決める。
+  // ゲームポータルへ出す本体には何も入らないので、これまで通りブラウザの設定を見る
+  var q = (String(location.search).match(/[?&]lang=([A-Za-z-]+)/) || [])[1];
+  if (q) {
+    q = q.toLowerCase();
+    if (TXT[q]) return q;
+    if (TXT[q.split('-')[0]]) return q.split('-')[0];
+  }
+  if (window.__lang0 && TXT[window.__lang0]) return window.__lang0;
   var list = (navigator.languages && navigator.languages.length)
     ? navigator.languages : [navigator.language || navigator.userLanguage || 'en'];
   for (var i = 0; i < list.length; i++) {

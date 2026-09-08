@@ -51,20 +51,27 @@ function why() {
   }).join('\n');
 }
 
+/* サイトに埋める写しが、最初に出す言葉 */
+const PLAY_LANG = process.env.PLAY_LANG || 'ja';
+
 /* ---- ゲーム本体と絵を、配る形に並べる ---- */
 if (root) {
   mkdirSync(here + '/works/sushitsumu/play', { recursive: true });
   mkdirSync(here + '/assets', { recursive: true });
-  /* 本体はそのまま写すが、検索の当たり先だけ作品ページに寄せる。
-     遊ぶだけの頁と作品ページが並ぶと、どちらも中途半端に扱われる。
-     配る本体（CrazyGames へ出すもの）には手を入れない */
+  /* 本体はそのまま写すが、この置き場所のぶんだけ足す。
+     ・検索の当たり先を作品ページに寄せる（遊ぶだけの頁と並ぶと共倒れ）
+     ・見出しの絵（無いと /favicon.ico を探しに行って 404）
+     ・最初に出す言葉。ここは日本向けなので日本語から始める。
+       選び直せば覚えるし、URL に ?lang=en と付ければそちらが勝つ。
+     配る本体（ゲームポータルへ出すもの）には何も入らないので、
+     あちらはこれまで通りブラウザの設定を見る */
   writeFileSync(here + '/works/sushitsumu/play/index.html',
     readFileSync(root + '/index.html', 'utf8').replace(
       '<meta name="viewport"',
       '<meta name="robots" content="noindex,follow">\n'
       + '<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n'
-      + '<meta name="viewport"'));
-  for (const [from, to] of [
+      + `<script>window.__lang0=${JSON.stringify(PLAY_LANG)}</script>\n`
+      + '<meta name="viewport"'));  for (const [from, to] of [
     ['cover-square-800x800.png', 'sushitsumu-square.png'],
     ['cover-portrait-800x1200.png', 'sushitsumu-portrait.png'],
     ['cover-landscape-1920x1080.png', 'sushitsumu-landscape.png'],
