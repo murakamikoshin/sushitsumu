@@ -42,9 +42,20 @@
 
 ## 出す
 
-- **ゲーム** … `index.html` を一枚そのまま。ゲームポータルへは `store/` の表紙を添える
-- **サイト** … `site/` で `npx wrangler pages deploy . --project-name koshin-studio`
-- **番付** … `server/README.md`
+**ゲームポータル（CrazyGames など）** … `index.html` を一枚そのまま渡す。何も足さない。
+表紙は `store/` のものを添える。
+
+**Koshin Studio の一台** … 置き場所ごとの一手間（日本語で開始・noindex・
+見出しの絵・広告）を足して `dist/` に組んでから出す。
+
+    node tools/dist.mjs
+    npx wrangler pages deploy dist --project-name sushitsumu
+
+設定は `deploy.json`（無くてもよい）。`lang` と `adsClient` を持つ。
+
+**サイト（Koshin Studio）** … 別リポジトリ `murakamikoshin/koshin-studio`。
+
+**番付** … `server/README.md`
 
 ## 寸法を触ったら
 

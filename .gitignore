@@ -10,3 +10,6 @@ tools/sim/runs*.json
 site/assets/*.png
 site/assets/shots/raw/
 site/works/sushitsumu/play/
+
+# 配信用に組んだもの（tools/dist.mjs が作る）
+dist/
