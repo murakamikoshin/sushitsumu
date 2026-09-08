@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://koshin-studio.pages.dev/sitemap.xml
+Sitemap: https://koshinstudio.com/sitemap.xml
