@@ -16,7 +16,10 @@
 
   /* ---------- 滑らかなスクロール ---------- */
   if (window.Lenis && !calm && !('ontouchstart' in window)) {
-    var lenis = new window.Lenis({ duration: 1.05, smoothWheel: true });
+    /* 1.05 秒は長すぎた。ホイールを一回まわすたび、
+       止まるまで 1 秒かかって「もっさり」の元になっていた。
+       0.45 秒なら、滑らかさは残しつつ、指の動きに追いつく */
+    var lenis = new window.Lenis({ duration: 0.45, smoothWheel: true });
     if (G) {
       lenis.on('scroll', window.ScrollTrigger.update);
       G.ticker.add(function (t) { lenis.raf(t * 1000); });
@@ -61,6 +64,15 @@
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
       btn.querySelector('i').textContent = open ? '品書きを閉じる' : '品書きを開く';
     }
+    /* 品書きの後ろに敷く暗幕。押したら閉じる。
+       header は backdrop-filter を持っていて、その中に置くと
+       位置の基準が header になってしまうので body に付ける */
+    var scrim = document.createElement('div');
+    scrim.className = 'nav-scrim';
+    scrim.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(scrim);
+    scrim.addEventListener('click', function () { set(false); });
+
     btn.addEventListener('click', function () {
       set(!document.body.classList.contains('nav-open'));
     });
@@ -234,22 +246,52 @@
     }
     bsize(); window.addEventListener('resize', bsize);
     var COL = ['#7ec8e3', '#b9e6f5', '#e9eef6', '#2f6fd0', '#c8d6e6'];
-    function pop(cx, cy) {
-      for (var i = 0; i < 92; i++) {
-        var a = Math.random() * 6.2832, v = 2.4 + Math.random() * 9.5;
+    /* 弾けるのは押した一字だけ。ロゴ全体を揺らすと、
+       どこを押しても同じに見えて、押した手応えが消える */
+    var chars = [].slice.call(xl.querySelectorAll('.ks-ch'));
+
+    function pop(cx, cy, n) {
+      for (var i = 0; i < n; i++) {
+        var a = Math.random() * 6.2832, v = 2.4 + Math.random() * 8.2;
         bits.push({ x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 2.2,
-          r: 1.1 + Math.random() * 3.4, life: 1,
+          r: 1.1 + Math.random() * 3.2, life: 1,
           c: COL[(Math.random() * COL.length) | 0], sp: Math.random() * 6.28 });
       }
-      if (G && !calm) {
-        G.fromTo(xl, { scale: .965 }, { scale: 1, duration: .85, ease: 'elastic.out(1,.42)' });
-        G.fromTo('.ks-l2', { filter: 'brightness(2.4)' },
-          { filter: 'brightness(1)', duration: .8, ease: 'power2.out' });
-      }
     }
+
+    /* 押した所に一番近い字を探す。字の隙間を押されても取りこぼさない */
+    function charAt(px, py) {
+      var best = null, bestD = Infinity;
+      for (var i = 0; i < chars.length; i++) {
+        var b = chars[i].getBoundingClientRect();
+        if (!b.width || !b.height) continue;
+        var dx = Math.max(b.left - px, 0, px - b.right);
+        var dy = Math.max(b.top - py, 0, py - b.bottom);
+        var d = dx * dx + dy * dy;
+        if (d < bestD) { bestD = d; best = chars[i]; }
+        if (d === 0) break;
+      }
+      return best;
+    }
+
     xl.addEventListener('pointerdown', function (e) {
-      var r = xl.getBoundingClientRect();
-      pop(e.clientX || r.left + r.width / 2, e.clientY || r.top + r.height / 2);
+      var px = e.clientX, py = e.clientY;
+      if (px == null || py == null) {
+        var r0 = xl.getBoundingClientRect();
+        px = r0.left + r0.width / 2; py = r0.top + r0.height / 2;
+      }
+      var ch = charAt(px, py);
+      if (!ch) return;
+      var b = ch.getBoundingClientRect();
+      pop(b.left + b.width / 2, b.top + b.height / 2, 34);
+      if (G && !calm) {
+        /* 下段は「字＝マスク、色＝矩形」なので、包んでいる <g> ごと動かす。
+           矩形だけ動かすと、字が止まったまま色だけ滑る */
+        G.fromTo(ch, { scale: .88 },
+          { scale: 1, duration: .9, ease: 'elastic.out(1,.4)', transformOrigin: '50% 50%' });
+        G.fromTo(ch, { filter: 'brightness(2.6)' },
+          { filter: 'brightness(1)', duration: .7, ease: 'power2.out' });
+      }
     });
     (function bloop() {
       requestAnimationFrame(bloop);

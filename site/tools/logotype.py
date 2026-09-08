@@ -176,40 +176,56 @@ WORD1, WORD2 = 'KOSHIN', 'STUDIO'
 TRACK = 96          # 字間
 
 def line(word):
-    x, parts = 0, []
+    """字ごとに <g> を作る。押した字だけを弾けさせたいので、
+    一字ずつ触れる形にしておく。cells には (x, 送り幅, 中身) を残す。"""
+    x, parts, cells = 0, [], []
     for ch in word:
         adv, shapes = G[ch]
         inner = ''.join(f'<path d="{d}"/>' for d in shapes)
-        parts.append(f'<g transform="translate({x},0)">{inner}</g>')
+        parts.append(f'<g class="ks-ch" transform="translate({x},0)">{inner}</g>')
+        cells.append((x, adv, inner))
         x += adv + TRACK
-    return ''.join(parts), x - TRACK
+    return ''.join(parts), x - TRACK, cells
 
-l1, w1 = line(WORD1)
-l2, w2 = line(WORD2)
+l1, w1, c1 = line(WORD1)
+l2, w2, c2 = line(WORD2)
 W = max(w1, w2)
 GAP = 150
 H = CAP * 2 + GAP
 
+# 下段は「字＝マスク、色＝矩形」で塗る。字ごとに弾けさせたいので、
+# 一枚の大きな矩形ではなく、字ごとにマスクと矩形を用意する。
+# グラデーションは userSpaceOnUse なので、分けても継ぎ目は出ない。
+# 矩形は <g> で包む。変形を <g> に掛ければ、マスクも一緒に動く
+# （矩形だけ動かすと、字が止まったまま色だけ滑ってしまう）。
+off2 = (W - w2) / 2
+masks = ''.join(
+    f'\n    <mask id="ksM{i}" maskUnits="userSpaceOnUse" x="0" y="0" width="{W}" height="{H}">'
+    f'<g fill="#fff" transform="translate(0,{H}) scale(1,-1)">'
+    f'<g transform="translate({off2 + x},0)">{inner}</g></g></mask>'
+    for i, (x, adv, inner) in enumerate(c2))
+rects = ''.join(
+    f'\n    <g class="ks-ch"><rect x="{off2 + x}" y="{H - CAP - 1}" width="{adv}" height="{CAP + 2}"'
+    f' fill="url(#ksGrad)" mask="url(#ksM{i})"/></g>'
+    for i, (x, adv, inner) in enumerate(c2))
+
 svg = f'''<svg class="ks-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" role="img" aria-label="Koshin Studio" preserveAspectRatio="xMidYMid meet">
   <defs>
     <!-- グラデーションは、字ごとの座標系で解決されると先頭の色しか拾わない。
-         だから文字は「マスク」にして、色は一枚の矩形に塗る。 -->
+         だから文字は「マスク」にして、色は矩形の側に塗る。
+         矩形は字ごとに分けてある（押した字だけを弾けさせるため）。
+         userSpaceOnUse なので、分けても色の繋がりは変わらない。 -->
     <linearGradient id="ksGrad" gradientUnits="userSpaceOnUse" x1="{(W-w2)/2}" y1="0" x2="{(W-w2)/2+w2}" y2="0">
       <stop offset="0%" stop-color="#eef6fc"/><stop offset="24%" stop-color="#9adcf0"/>
       <stop offset="54%" stop-color="#4f95e0"/><stop offset="80%" stop-color="#2a63c4"/>
       <stop offset="100%" stop-color="#7ec8e3"/>
     </linearGradient>
-    <mask id="ksMask" maskUnits="userSpaceOnUse" x="0" y="0" width="{W}" height="{H}">
-      <g fill="#fff" transform="translate(0,{H}) scale(1,-1)">
-        <g transform="translate({(W-w2)/2},0)">{l2}</g>
-      </g>
-    </mask>
+{masks}
   </defs>
   <g class="ks-l1" fill="currentColor" transform="translate(0,{H}) scale(1,-1)">
     <g transform="translate({(W-w1)/2},{CAP+GAP})">{l1}</g>
   </g>
-  <g class="ks-l2">
-    <rect x="0" y="{H-CAP-1}" width="{W}" height="{CAP+2}" fill="url(#ksGrad)" mask="url(#ksMask)"/>
+  <g class="ks-l2">{rects}
   </g>
 </svg>
 '''

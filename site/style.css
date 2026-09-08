@@ -189,7 +189,9 @@ ul.plain a{color:var(--text)}
 /* ---- 現れ方 ----
    JS が動く時だけ隠す。動かない環境では最初から見えている状態にする
    （ここを CSS だけで隠すと、JS が落ちた瞬間に本文が読めなくなる） */
-.rv{transition:opacity .9s var(--ease),transform .9s var(--ease)}
+/* 0.9 秒は、読もうとしてから字が揃うまでが長い。
+   0.5 秒だと、送った先が既にそこにある感じになる */
+.rv{transition:opacity .5s var(--ease),transform .5s var(--ease)}
 .js .rv{opacity:0;transform:translateY(22px)}
 .js .rv.on{opacity:1;transform:none}
 
@@ -448,12 +450,18 @@ body.nav-open .menu-btn span:nth-child(3){transform:translateY(-6.5px) rotate(-4
   header.site .wrap{gap:10px}
   header.site .logo{font-size:14px;letter-spacing:.14em}
   .menu-btn{display:flex}
+  /* 品書きの地は透かさない。3% でも、後ろの大きな字は幽霊のように残る。
+     暈し（backdrop-filter）も要らなくなるので外す＝そのぶん軽い */
   header.site nav{position:fixed;left:0;right:0;top:60px;margin:0;
     flex-direction:column;gap:0;align-items:stretch;
-    background:rgba(9,15,28,.97);backdrop-filter:blur(16px);
+    background:#0a1120;
     border-bottom:1px solid var(--line);
     max-height:0;overflow:hidden;transition:max-height .42s var(--ease)}
   body.nav-open header.site nav{max-height:340px}
+  /* 品書きの後ろは暗幕で落とす。押せば閉じる */
+  .nav-scrim{position:fixed;inset:60px 0 0;z-index:19;background:rgba(4,8,15,.66);
+    opacity:0;pointer-events:none;transition:opacity .32s var(--ease)}
+  body.nav-open .nav-scrim{opacity:1;pointer-events:auto}
   header.site nav a{padding:16px 24px;font-size:14px;letter-spacing:.14em;
     border-bottom:1px solid var(--line);min-height:52px}
   header.site nav a.nav-cta{border-radius:0;border:0;border-bottom:1px solid var(--line);
