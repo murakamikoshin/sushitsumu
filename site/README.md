@@ -51,7 +51,6 @@ Cloudflare Pages に置く静的サイト。枠組み（Next.js など）は使�
 | `logotype.py` | ロゴの字（KOSHIN STUDIO）を起こす |
 | `ogimages.mjs` | ページごとの共有カード（1200×630）を撮る |
 | `shots.mjs` | ゲームの画面写真を撮る（自動で遊ばせて、いい所を残す） |
-| `voice-check.mjs` | 出迎えの声が鳴っているかを見る |
 | `interact.mjs` | 押した後まで動くかを見る |
 | `icons.mjs` | favicon.svg から貼り付け用の PNG と manifest を起こす |
 
@@ -77,7 +76,6 @@ Cloudflare Pages に置く静的サイト。枠組み（Next.js など）は使�
 
     node site/tools/audit.mjs        # 置かれた形を見る
     node site/tools/interact.mjs     # 押した後まで見る
-    node site/tools/voice-check.mjs  # 出迎えの声が鳴っているか
     node tools/fresh-check.mjs       # 新しく clone した所で組んで、欠けが無いか
 
 `audit.mjs` は全ページ × 4 つの画面幅を回って数える。
@@ -91,8 +89,8 @@ Cloudflare Pages に置く静的サイト。枠組み（Next.js など）は使�
 - **JS を切った状態**で本文が読めるか
 - 動きを嫌う設定での見え方、鍵盤での辿りやすさ、重さ
 
-`interact.mjs` は実際に押す。品書きの開閉、声の入切と記憶、
-ロゴの弾ける演出、Works の絞り込み、Tab での辿り着きやすさ。
+`interact.mjs` は実際に押す。品書きの開閉、ロゴの弾ける演出、
+Works の絞り込み、Tab での辿り着きやすさ。
 
 ## 出す
 
@@ -118,7 +116,6 @@ site 側にも commit しておく（Pages のビルド機から隣のリポジ�
       404.html
       data/                 一覧のもと（JSON）
       style.css  motion.js  見た目と動き
-      voice.js              出迎えの声（合成。音の素材は持たない）
       vendor/               GSAP / ScrollTrigger / Lenis / 書体
       tools/                作る・測る道具
       build.mjs             組み立て

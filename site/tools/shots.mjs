@@ -67,7 +67,12 @@ await p.goto('file://' + PLAY);
 await p.waitForTimeout(1400);
 await p.screenshot({ path: OUT + '/title.png' });
 
-/* 2. 遊んでいるところ（たて） */
+/* 2. 遊んでいるところ（たて）
+   一戦目は記録を作るためだけの肩慣らし。画面には
+   「追いかけている記録」が出るので、まっさらだと 0 が写ってしまう */
+await p.goto(LAB);
+await p.waitForTimeout(1200);
+await playShot(p, OUT + '/warmup.png', 100000);
 await p.goto(LAB);
 await p.waitForTimeout(1200);
 let st = await playShot(p, OUT + '/play.png', 210000);
@@ -94,4 +99,5 @@ st = await playShot(p, OUT + '/desktop.png', 210000);
 console.log('よこ: ' + (st ? st.score + ' 点 / ' + st.drops + ' 個' : '撮れず'));
 
 await b.close();
+try { (await import('node:fs')).unlinkSync(OUT + '/warmup.png'); } catch (e) {}
 console.log('画面写真を ' + OUT + ' に置きました');

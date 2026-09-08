@@ -6,9 +6,9 @@
      1. tools/asciify.mjs        配布物に非 ASCII の字が残っていないか
      2. tools/i18n-fit.mjs       十四言語ぶんの字が枠に収まるか
      3. site/build.mjs           サイトを組み直す
-     4. site/tools/voice-check   出迎えの声が鳴っているか
-     5. site/tools/interact      押した後まで動くか
-     6. site/tools/audit         全ページ × 4 幅を見て回る
+     4. site/tools/interact      押した後まで動くか
+     5. site/tools/audit         全ページ × 4 幅を見て回る
+     6. tools/fresh-check       新しく clone した所で組んで、欠けが無いか
 
    どれか一つでも転んだら、そこで止めて 1 を返す。
    playwright-core が要る（`npm i playwright-core` を repo の根と
@@ -22,7 +22,6 @@ const JOBS = [
   ['字の点検',     ROOT + '/tools/asciify.mjs'],
   ['十四言語',     ROOT + '/tools/i18n-fit.mjs'],
   ['組み立て',     ROOT + '/site/build.mjs'],
-  ['出迎えの声',   ROOT + '/site/tools/voice-check.mjs'],
   ['押した後',     ROOT + '/site/tools/interact.mjs'],
   ['見て回る',     ROOT + '/site/tools/audit.mjs'],
   ['写した先',     ROOT + '/tools/fresh-check.mjs'],

@@ -14,7 +14,8 @@
    ============================================================ */
 import { chromium } from 'playwright-core';
 import { createServer } from 'node:http';
-import { readFileSync, existsSync, statSync, readdirSync, mkdirSync } from 'node:fs';
+import { readFileSync, existsSync, statSync, readdirSync, mkdirSync,
+  lstatSync, readlinkSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 
@@ -104,6 +105,18 @@ const lum = ([r, g, b]) => {
       { cwd: ROOT + '/..', encoding: 'utf8' }).split('\n').filter(Boolean));
   } catch (e) { /* git が無い所では見送る */ }
   if (tracked) {
+    /* この環境の中を指す symlink を git に入れてしまうと、
+       他の機械では実体が無い。wrangler は配るものを数える所で止まる。
+       一度やったので、見つけたら報せる */
+    for (const rel of tracked) {
+      if (!rel.startsWith('site/')) continue;
+      const f = ROOT + '/..' + '/' + rel;
+      let st = null;
+      try { st = lstatSync(f); } catch (e) { continue; }
+      if (!st.isSymbolicLink()) continue;
+      const to = readlinkSync(f);
+      add('高', rel, `git に symlink が入っている（配る先では実体が無い）→ ${to}`);
+    }
     const seen = new Set();
     for (const p of pages()) {
       const f = ROOT + (p.endsWith('/') ? p + 'index.html' : p);
