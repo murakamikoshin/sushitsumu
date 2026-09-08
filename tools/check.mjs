@@ -5,14 +5,13 @@
    走らせるもの:
      1. tools/asciify.mjs        配布物に非 ASCII の字が残っていないか
      2. tools/i18n-fit.mjs       十四言語ぶんの字が枠に収まるか
-     3. site/build.mjs           サイトを組み直す
-     4. site/tools/interact      押した後まで動くか
-     5. site/tools/audit         全ページ × 4 幅を見て回る
-     6. tools/fresh-check       新しく clone した所で組んで、欠けが無いか
+     3. tools/dist.mjs           配る形（dist/）に組む
+     4. tools/fresh-check.mjs    新しく clone した所で組んで、欠けが無いか
 
    どれか一つでも転んだら、そこで止めて 1 を返す。
-   playwright-core が要る（`npm i playwright-core` を repo の根と
-   site/tools に）。
+   playwright-core が要る（`npm i playwright-core`）。
+
+   サイト側の検査は koshin-studio の tools/check.mjs にある。
 */
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -21,9 +20,7 @@ const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const JOBS = [
   ['字の点検',     ROOT + '/tools/asciify.mjs'],
   ['十四言語',     ROOT + '/tools/i18n-fit.mjs'],
-  ['組み立て',     ROOT + '/site/build.mjs'],
-  ['押した後',     ROOT + '/site/tools/interact.mjs'],
-  ['見て回る',     ROOT + '/site/tools/audit.mjs'],
+  ['配る形',       ROOT + '/tools/dist.mjs'],
   ['写した先',     ROOT + '/tools/fresh-check.mjs'],
 ];
 

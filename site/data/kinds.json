@@ -1,6 +1,0 @@
-{
-  "game": { "label": "Games", "ja": "ゲーム",   "note": "あそぶもの" },
-  "app":  { "label": "Apps",  "ja": "アプリ",   "note": "つかうもの" },
-  "site": { "label": "Sites", "ja": "サイト",   "note": "読ませるもの" },
-  "cg":   { "label": "3D",    "ja": "3Dモデル", "note": "かたちを起こす" }
-}

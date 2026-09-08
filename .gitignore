@@ -5,11 +5,5 @@ node_modules
 store/.work/
 tools/sim/lab*.html
 tools/sim/runs*.json
-# 配る絵は追跡する（写しただけで公開できるように）。
-# 元絵と撮ったままの写真だけは重いので置いていく
-site/assets/*.png
-site/assets/shots/raw/
-site/works/sushitsumu/play/
-
 # 配信用に組んだもの（tools/dist.mjs が作る）
 dist/

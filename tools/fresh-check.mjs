@@ -1,9 +1,8 @@
 /* 「新しく clone した所」で、ちゃんと組めて、欠けが無いかを見る。
 
-   手元には、git に入れていない絵や、前に作ったままの残りがある。
-   そのせいで手元だけ動いて、配ると 404 になることがある。
-   commit 済みの中身だけを別の場所へ写して、組み直して、
-   全ページを読み込んでみる。
+   手元には git に入れていない残りものがある。そのせいで手元だけ動いて、
+   配ると 404 になることがある。commit 済みの中身だけを別の場所へ写し、
+   配る形（dist/）に組み直して、実際に読み込んでみる。
 
        node tools/fresh-check.mjs
 
@@ -11,7 +10,7 @@
 */
 import { chromium } from 'playwright-core';
 import { createServer } from 'node:http';
-import { readFileSync, existsSync, statSync, rmSync, mkdtempSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync, statSync, rmSync, mkdtempSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 
@@ -25,34 +24,9 @@ if (dirty) console.log('※ commit していない変更は写りません:\n' +
 
 console.log('写しています …');
 execFileSync('git', ['clone', '-q', REPO, dir]);
-execFileSync(process.execPath, [dir + '/site/build.mjs'], { stdio: 'ignore' });
+execFileSync(process.execPath, [dir + '/tools/dist.mjs'], { stdio: 'ignore', cwd: dir });
 
-/* .assetsignore に並べたものは配られない。写しからも落として、
-   「配らないと決めたものを、頁が指していないか」まで確かめる */
-const ROOT = dir + '/site';
-{
-  const f = ROOT + '/.assetsignore';
-  const pats = existsSync(f)
-    ? readFileSync(f, 'utf8').split('\n').map((x) => x.trim())
-        .filter((x) => x && !x.startsWith('#'))
-    : [];
-  let n = 0;
-  for (const pat of pats) {
-    const p0 = pat.replace(/^\//, '');
-    if (p0.includes('*')) {
-      const dirPart = p0.slice(0, p0.lastIndexOf('/') + 1);
-      const re = new RegExp('^' + p0.slice(dirPart.length).replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*') + '$');
-      const base = ROOT + '/' + dirPart;
-      if (!existsSync(base)) continue;
-      for (const e of readdirSync(base)) {
-        if (re.test(e)) { rmSync(base + e, { recursive: true, force: true }); n++; }
-      }
-    } else if (existsSync(ROOT + '/' + p0)) {
-      rmSync(ROOT + '/' + p0, { recursive: true, force: true }); n++;
-    }
-  }
-  console.log(`.assetsignore のぶん ${n} 件を落としました`);
-}
+const ROOT = dir + '/dist';
 const T = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg',
   '.webp': 'image/webp', '.png': 'image/png', '.woff2': 'font/woff2', '.ico': 'image/x-icon',
@@ -66,21 +40,23 @@ const srv = createServer((q, r) => {
   r.end(readFileSync(p));
 }).listen(PORT);
 
-const paths = ['/', '/works/', '/works/sushitsumu/', '/works/sushitsumu/guide.html',
-  '/works/sushitsumu/play/', '/notes/', '/notes/anago/', '/stack/', '/contact/',
-  '/profile/', '/privacy/', '/404.html'];
+/* 一枚だけの配り物。二つの入口（そのままと ?lang=en）で見る */
+const paths = ['/', '/?lang=en'];
 
 const b = await chromium.launch({ executablePath: CHROME });
-const c = await b.newContext({ viewport: { width: 1280, height: 860 }, locale: 'ja-JP' });
+const c = await b.newContext({ viewport: { width: 430, height: 860 }, locale: 'en-US' });
 const bad = [];
 for (const path of paths) {
   const p = await c.newPage();
   const miss = [];
   p.on('response', (r) => { if (r.status() >= 400) miss.push(r.status() + ' ' + r.url().replace('http://127.0.0.1:' + PORT, '')); });
   p.on('pageerror', (e) => miss.push('JS ' + e.message));
-  p.on('console', (m) => { if (m.type() === 'error' && !/TUNNEL|net::ERR/.test(m.text())) miss.push('CONSOLE ' + m.text()); });
+  p.on('console', (m) => { if (m.type() === 'error' && !/TUNNEL|net::ERR|adsbygoogle|adBreak/i.test(m.text())) miss.push('CONSOLE ' + m.text()); });
   await p.goto('http://127.0.0.1:' + PORT + path, { waitUntil: 'load' });
-  await p.waitForTimeout(1500);
+  await p.waitForTimeout(2000);
+  /* 遊べる所まで立ち上がったか */
+  const ready = await p.evaluate(() => !!document.querySelector('#startBtn, #stage, canvas'));
+  if (!ready) miss.push('開始できる形になっていない');
   if (miss.length) bad.push(path + ': ' + [...new Set(miss)].join(' | '));
   await p.close();
 }
@@ -93,4 +69,4 @@ if (bad.length) {
   bad.forEach((x) => console.error('  ' + x));
   process.exit(1);
 }
-console.log(`\n${paths.length} 頁、写した先でも欠けなし。`);
+console.log(`\n${paths.length} 通り、写した先でも欠けなし。`);

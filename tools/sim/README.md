@@ -39,7 +39,7 @@
 | いちばん長い連鎖 | 10 |
 
 寸法を触ったら、ここをもう一度まわして書き換えること。
-サイト側（`site/data/works.json` の `stats`、`site/notes/anago/`）が
+サイト側（koshin-studio の `data/works.json` の `stats`、`notes/anago/`）が
 この値を載せている。
 
 ### 番付の当たり方（別の 120 戦）
