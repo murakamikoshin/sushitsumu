@@ -8,10 +8,16 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
-/* 公開先。独自ドメインを繋いだら、ここだけ書き換える */
-const SITE = process.env.SITE_URL || 'https://koshin-studio.pages.dev';
-
 const here = import.meta.dirname;
+
+/* 公開先。独自ドメインを繋いだら data/site.json の url を書き換える。
+   canonical・og・sitemap・feed・構造化データが全部ここを見ているので、
+   直すのはその一箇所でよい。一度だけ試したい時は SITE_URL= で上書きできる */
+const SITE = (process.env.SITE_URL
+  || (existsSync(here + '/data/site.json')
+      ? (JSON.parse(readFileSync(here + '/data/site.json', 'utf8')).url || '')
+      : '')
+  || 'https://koshin-studio.pages.dev').replace(/\/+$/, '');
 
 /* ゲーム本体（sushitsumu）の在り処。
    site/ が sushitsumu の中にあっても、別のリポジトリとして

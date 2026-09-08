@@ -36,7 +36,7 @@ Cloudflare Pages に置く静的サイト。枠組み（Next.js など）は使�
 | SNS を足す | `data/site.json` の `social` |
 | 連絡先を出す | `data/site.json` の `contact` |
 | 広告を出す | `data/site.json` の `ads` |
-| 公開先の URL | `build.mjs` の `SITE`（または環境変数 `SITE_URL`） |
+| 公開先の URL | `data/site.json` の `url`（独自ドメインを繋いだ時） |
 
 どれも触ったあとは `node build.mjs`。
 

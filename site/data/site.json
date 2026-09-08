@@ -1,5 +1,7 @@
 {
   "name": "Koshin Studio",
+  "url": "https://koshin-studio.pages.dev",
+  "urlNote": "独自ドメインを繋いだらここを書き換える（末尾のスラッシュは不要）。canonical・og・sitemap・feed・構造化データが全部ここを見る。",
   "tagline": "ゲーム、アプリ、サイト、3D。ひとりで、ぜんぶ。",
   "social": [
     {
