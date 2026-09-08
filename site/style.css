@@ -325,20 +325,10 @@ h2.sec span{font-family:var(--gothic);font-size:11px;letter-spacing:.24em;
 @media(max-width:460px){.kinds.big{grid-template-columns:1fr}
   .kinds.big .kind{min-height:0;flex-direction:row;align-items:center;flex-wrap:wrap}}
 
-/* ---- 代表作 ---- */
-.feat{padding-top:0;overflow:hidden}
-/* 出す絵は、宣伝用の絵ではなく実際に遊んでいる画面。
-   宣伝用の絵には題字が焼き込んであって、すぐ下の見出しと重なって見える。
-   下に向かって地に溶かすので、字が乗るあたりは絵を残さない */
-.feat-media{position:relative;margin:0 0 8px;transform-origin:center top}
-.feat-media img{width:100%;max-height:46vh;object-fit:cover;object-position:center bottom;
-  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 12% 74%,transparent 100%);
-  mask-image:linear-gradient(180deg,transparent 0,#000 12% 74%,transparent 100%)}
-@media(max-width:760px){.feat-media img{height:240px;max-height:none}}
-.feat-body{position:relative;z-index:2}
+/* ---- 小見出しの前置き ---- */
 .eyebrow{font-size:11px;letter-spacing:.28em;color:var(--gold);margin:0 0 12px}
-.feat-body h2{font-family:var(--mincho);font-size:clamp(30px,6vw,52px);
-  letter-spacing:.1em;margin:0 0 18px;border:0;padding:0;display:block}
+
+/* ---- 数字を並べる所（作品ページ） ---- */
 .stats{display:flex;flex-wrap:wrap;gap:34px;margin:32px 0 0}
 .stats div{display:flex;flex-direction:column;gap:2px}
 .stats b{font-family:Georgia,serif;font-size:clamp(30px,5.4vw,44px);color:var(--text);
@@ -428,7 +418,6 @@ h2.sec span{font-family:var(--gothic);font-size:11px;letter-spacing:.24em;
 /* はみ出し防止の総当り */
 pre,code,table,.scroll{max-width:100%}
 pre{white-space:pre-wrap;word-break:break-word}
-.feat-media{max-width:100vw;overflow:hidden}
 #orbit{overflow:visible}
 .hero,.stage{max-width:100%}
 

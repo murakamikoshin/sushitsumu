@@ -16,10 +16,6 @@
     "featured": true,
     "coverW": 720,
     "coverH": 720,
-    "hero": "/assets/shots/hero",
-    "heroW": 1600,
-    "heroH": 499,
-    "heroAlt": "すし積むをパソコンで遊んでいるところ。すし桶に寿司が積み上がっている",
     "stats": [
       {
         "n": 11,

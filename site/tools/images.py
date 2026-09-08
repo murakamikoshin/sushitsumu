@@ -86,21 +86,6 @@ if os.path.isdir(raw):
                optimize=True, progressive=True)
         print(f'  shots/{name}: {w}x{h}')
 
-# 表紙の帯に敷く一枚。横に長い場所なので、桶とネタの山が入る帯だけを切る。
-# 遊んでいる画面をそのまま入れると、空の桶ばかりが写る
-hero_src = os.path.join(raw, 'desktop.png') if os.path.isdir(raw) else None
-if hero_src and os.path.exists(hero_src):
-    im = Image.open(hero_src).convert('RGB')
-    im = trim(im, 'x')
-    top = int(im.height * 0.55)
-    im = im.crop((0, top, im.width, im.height))
-    w = 1600
-    h = round(im.height * w / im.width)
-    r = im.resize((w, h), Image.LANCZOS)
-    r.save(os.path.join(shots, 'hero.webp'), 'WEBP', quality=80, method=6)
-    r.save(os.path.join(shots, 'hero.jpg'), 'JPEG', quality=84, optimize=True, progressive=True)
-    print(f'  shots/hero: {w}x{h}')
-
 total = sum(os.path.getsize(os.path.join(out, f)) for f in os.listdir(out)
             if f.endswith(('.webp', '.jpg')))
 total += sum(os.path.getsize(os.path.join(shots, f)) for f in os.listdir(shots)

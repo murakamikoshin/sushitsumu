@@ -276,30 +276,10 @@ const kindHtml = kindKeys.map((k, i) => {
       </a>`;
 }).join('\n');
 
-/* 代表作 */
-const f = works.find((w) => w.featured) || works[0];
-/* 出す絵と数字は works.json から取る。作品が入れ替わっても書き換えずに済む */
-const featImg = base((f && f.hero) || (f && f.cover) || '');
-const featHtml = f ? `    <div class="feat-media rv">
-      <picture>
-        <source srcset="${featImg}.webp" type="image/webp">
-        <img src="${featImg}.jpg" alt="${esc(f.heroAlt || f.title)}"
-             width="${f.heroW || f.coverW || 1200}" height="${f.heroH || f.coverH || 831}"
-             loading="lazy" decoding="async">
-      </picture>
-    </div>
-    <div class="wrap feat-body">
-      <p class="eyebrow rv">代表作 / ${kinds[f.kind].ja}</p>
-      <h2 class="rv" data-delay="60">${esc(f.title)}</h2>
-      <p class="rv" data-delay="100" style="max-width:32em;color:var(--muted)">${esc(f.blurb)}</p>
-      <div class="stats rv" data-delay="140">${(f.stats || []).map((x) =>
-        `\n        <div><b data-count="${x.n}">0</b><span>${esc(x.label)}</span></div>`).join('')}
-      </div>
-      <p class="rv" data-delay="180" style="margin-top:30px">
-        <a class="btn" href="/works/sushitsumu/play/">遊 ぶ</a>
-        <a class="btn ghost" href="${f.url}">くわしく</a>
-      </p>
-    </div>` : '';
+/* 表紙に出す作ったもの。/works/ と同じ札をそのまま使うので、
+   作品が増えたら表紙もそのまま育つ。一つの作品を大写しにすると、
+   その一つのための場所に見えてしまう */
+const worksTeaser = works.slice(0, 3).map(workCard).join('\n');
 
 /* 記録の抜粋 */
 const noteTeaser = notes.slice(0, 2).map(noteRow).join('\n');
@@ -317,7 +297,7 @@ const logoSvg = existsSync(here + '/assets/logotype.svg')
 put('logo', logoSvg);
 put('orbit', orbitHtml);
 put('kinds', kindHtml);
-put('featured', featHtml);
+put('works', worksTeaser);
 put('notes', noteTeaser);
 writeFileSync(here + '/index.html', home);
 
