@@ -2078,8 +2078,10 @@ function addScore(v) {
   score += v;
   scoreEl.textContent = fmt(score);
   if (score > hiScore) {
+    // 記録そのものはその場で更新して控える（途中で閉じても残るように）。
+    // ただし画面の数字は動かさない。動かすと「追いかけている記録」が
+    // 消えて、スコアと同じ数字が並ぶだけになってしまう
     hiScore = score;
-    hiEl.textContent = fmt(hiScore);
     saveHi(hiScore);
   }
   if (state === 'over' || state === 'title') return;
@@ -4088,6 +4090,7 @@ function gameOver() {
   showResult();
   document.getElementById('finalScore').textContent = fmt(score);
   document.getElementById('finalHi').textContent = fmt(hiScore);
+  hiEl.textContent = fmt(hiScore);      // ここで初めて数字が新しくなる
   document.getElementById('overModal').hidden = false;
   seOver();
   bgmStop(0.8);
@@ -4120,6 +4123,7 @@ function resetGame() {
   floats.length = 0;
   score = 0; scoreEl.textContent = '0';
   rankShown = 0; startHi = hiScore; hiBeaten = false;
+  hiEl.textContent = fmt(startHi);      // 一戦のあいだ、これを追いかける
   deadTimer = 0;
   previewX = W / 2; previewY = DROP_Y;
   pointerDown = false; dropLock = false;
