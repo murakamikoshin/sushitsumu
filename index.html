@@ -4938,8 +4938,12 @@ document.getElementById('closePrivacy').addEventListener('click', function () {
    単体の index.html でもアーティファクトでも今まで通り動く。
    載せる先が決まったら <head> に SDK の script を一行足すだけでよい。
    ============================================================ */
-var AD_EVERY = 5;        // 何プレイごとに一本挟むか
-var AD_SKIP  = 1;        // 最初の何プレイは出さないか（第一印象を損ねない）
+/* 何プレイごと、では合わない。一戦が三十分にもなるので、
+   五プレイに一本だと二時間半に一本になってしまう。
+   逆に何度も早死にしたときは、数分で何本も出ることになる。
+   数えるのは回数ではなく、前の広告からの時間。 */
+var AD_GAP_MS = 7 * 60 * 1000;   // 前の広告からこれだけ経っていたら、次の区切りで一本
+var AD_SKIP   = 1;               // 最初の何プレイは出さないか（第一印象を損ねない）
 var adHost = null, adReady = false, adBusy = false;
 
 /* 置き場所を見て裏側を選ぶ。増やす時はここに一つ足すだけ */
@@ -5027,16 +5031,23 @@ function playCount() { return parseInt(lsGet('sushitsumu.plays') || '0', 10) || 
 function countPlay() { lsSet('sushitsumu.plays', String(playCount() + 1)); }
 
 /* 一区切りついた時に呼ぶ。出し終える（あるいは出さないと決める）まで待てる */
+function lastAdAt() { return parseInt(lsGet('sushitsumu.adAt') || '0', 10) || 0; }
+function markAd() { lsSet('sushitsumu.adAt', String(Date.now())); }
+
 function adBreakPoint() {
   var n = playCount();
   if (!adHost || !adReady || adBusy) return Promise.resolve(false);
-  if (n <= AD_SKIP || n % AD_EVERY !== 0) return Promise.resolve(false);
+  if (n <= AD_SKIP) return Promise.resolve(false);
+  /* 初めての人は、最初の区切りで一本。以降は前の広告から時間が経った時だけ */
+  var last = lastAdAt();
+  if (last && Date.now() - last < AD_GAP_MS) return Promise.resolve(false);
   adBusy = true;
   adGameStop();
   adMute(true);
   adCurtain(true);
   return Promise.resolve(adHost.show())['catch'](function () { return 'error'; })
     .then(function () {
+      markAd();
       adCurtain(false);
       adMute(false);
       adBusy = false;
