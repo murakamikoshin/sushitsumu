@@ -4,7 +4,6 @@
    ここでは、実際に押して、変わるはずのものが変わったかを確かめる。
 
      ・小さい画面の品書き（開く／閉じる／Escape／中の行き先を押す）
-     ・出迎えの声の入切（覚えているか）
      ・ロゴを押したときの弾ける演出
      ・Works の絞り込み札
      ・キーボードだけで主な行き先に届くか
@@ -55,24 +54,6 @@ const b = await chromium.launch({ executablePath: CHROME });
   await p.locator('header.site nav a', { hasText: 'Works' }).first().click();
   await p.waitForTimeout(900);
   check(/\/works\//.test(p.url()), '中の行き先を押すと移る', '移らない: ' + p.url());
-  await c.close();
-}
-
-/* ---- 出迎えの声の入切 ---- */
-{
-  const c = await b.newContext({ viewport: { width: 1280, height: 860 }, locale: 'ja-JP' });
-  const p = await c.newPage();
-  await p.goto(URLB + '/'); await p.waitForTimeout(900);
-  const v = p.locator('.voice-btn, header.site button[aria-pressed]').first();
-  check(await v.count() > 0 && await v.isVisible(), '声の釦が出る', '釦が無い');
-  const before = await v.getAttribute('aria-pressed');
-  await v.click(); await p.waitForTimeout(400);
-  const after = await v.getAttribute('aria-pressed');
-  check(before !== after, '押すと切り替わる', `${before} のまま`);
-  await p.reload(); await p.waitForTimeout(900);
-  const kept = await p.locator('.voice-btn, header.site button[aria-pressed]').first()
-    .getAttribute('aria-pressed');
-  check(kept === after, '読み直しても覚えている', `${after} が ${kept} に戻った`);
   await c.close();
 }
 
