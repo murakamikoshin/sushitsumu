@@ -54,6 +54,22 @@ function why() {
 /* サイトに埋める写しが、最初に出す言葉 */
 const PLAY_LANG = process.env.PLAY_LANG || 'ja';
 
+/* 写しに入れる広告の script。
+   ゲーム本体は CrazyGames / Poki / Google H5 Games Ads を自分で見分けて、
+   SDK があればそれを使う。こちらでは script を一行渡すだけでよい。
+   data/site.json の ads を埋めるまでは何も入らない。
+   遊びの区切り（何プレイかに一本）にだけ出るので、画面には枠を置かない */
+const playAds = () => {
+  /* conf はこの後ろで組み立てるので、ここでは直に読む */
+  const f = here + '/data/site.json';
+  const a = (existsSync(f) ? (JSON.parse(readFileSync(f, 'utf8')).ads || {}) : {});
+  if (!a.enabled || !a.client) return '';
+  const hint = a.gameHint || '60s';
+  return `<script async data-ad-frequency-hint="${hint}"`
+    + ` src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${a.client}"`
+    + ` crossorigin="anonymous"></script>\n`;
+};
+
 /* ---- ゲーム本体と絵を、配る形に並べる ---- */
 if (root) {
   mkdirSync(here + '/works/sushitsumu/play', { recursive: true });
@@ -71,6 +87,7 @@ if (root) {
       '<meta name="robots" content="noindex,follow">\n'
       + '<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n'
       + `<script>window.__lang0=${JSON.stringify(PLAY_LANG)}</script>\n`
+      + playAds()
       + '<meta name="viewport"'));  for (const [from, to] of [
     ['cover-square-800x800.png', 'sushitsumu-square.png'],
     ['cover-portrait-800x1200.png', 'sushitsumu-portrait.png'],

@@ -15,7 +15,8 @@
       "article": "",
       "footer": ""
     },
-    "note": "AdSense に通ったら enabled を true にして client と slots を埋める。枠の場所は build.mjs が入れる。読み込む script も build.mjs が一緒に入れる。"
+    "gameHint": "60s",
+    "note": "AdSense に通ったら enabled を true にして client を埋める。client だけで、遊ぶ頁の区切り広告（H5 Games Ads）が入る。記事の枠を出すには slots も埋める。gameHint は広告の間隔の目安。"
   },
   "contact": {
     "email": "",
