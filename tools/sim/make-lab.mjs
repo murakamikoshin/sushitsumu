@@ -63,6 +63,11 @@ const sizeHook = `if (window.__SIZES) {
 let out = src.replace('function orderMade(level) {\n  if (level > maxLevelMade) maxLevelMade = level;',
   'function orderMade(level) {\n  if (level > maxLevelMade) maxLevelMade = level;\n  if (window.__made) window.__made[level] = (window.__made[level] || 0) + 1;');
 {
+  const a3 = 'var DEAD_Y = BARREL_TOP + 6;';
+  if (out.indexOf(a3) < 0) throw new Error('桶の縁を差し込む場所が見つかりません');
+  out = out.replace(a3, 'if (window.__BTOP) BARREL_TOP = window.__BTOP;\n' + a3);
+}
+{
   const a2 = "  return { level: Math.floor(rnd() * 3) };";
   if (out.indexOf(a2) < 0) throw new Error('ネタの割り振りを差し込む場所が見つかりません');
   out = out.replace(a2, rollHook + a2);

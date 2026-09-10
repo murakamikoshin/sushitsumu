@@ -16,6 +16,7 @@ await c.addInitScript('window.__SCALE = ' + (process.env.SCALE || 1));
 /* 段ごとの倍率。SIZES="1.25,1.2,1.15,..." の形で渡す */
 if (process.env.SIZES) await c.addInitScript('window.__SIZES = ' + JSON.stringify(process.env.SIZES.split(',').map(Number)));
 if (process.env.SPAWNW) await c.addInitScript('window.__SPAWNW = ' + JSON.stringify(process.env.SPAWNW.split(',').map(Number)));
+if (process.env.BTOP) await c.addInitScript('window.__BTOP = ' + Number(process.env.BTOP));
 const p = await c.newPage();
 p.on('pageerror', e => console.log('PAGEERROR', '' + e));
 await p.goto('file://' + import.meta.dirname + '/' + (process.env.LAB || 'lab') + '.html');

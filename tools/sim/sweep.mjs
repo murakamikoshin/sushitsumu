@@ -11,6 +11,7 @@ for (const cd of CANDS) {
   const env = { ...process.env };
   if (cd.sizes) env.SIZES = cd.sizes.join(',');
   if (cd.spawn) env.SPAWNW = cd.spawn.join(',');
+  if (cd.btop) env.BTOP = String(cd.btop);
   const out = '/tmp/sweep-' + cd.name + '.json';
   const r = spawnSync(process.execPath, ['sim.mjs', String(N), 'normal', out],
                       { env, cwd: import.meta.dirname, encoding: 'utf8' });
@@ -19,6 +20,7 @@ for (const cd of CANDS) {
   const row = {
     name: cd.name,
     投下: med(g.map(x => x.drops)),
+    最大投下: Math.max(...g.map(x => x.drops)),
     秒: Math.round(med(g.map(x => x.sec))),
     点: med(g.map(x => x.score)),
     穴子以上: g.filter(x => x.maxLv >= 8).length + '/' + g.length,
