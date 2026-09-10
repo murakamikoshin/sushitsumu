@@ -24,6 +24,8 @@ for (const cd of CANDS) {
     穴子以上: g.filter(x => x.maxLv >= 8).length + '/' + g.length,
     伊勢海老: g.filter(x => x.maxLv >= 9).length + '/' + g.length,
     金の桶: g.filter(x => x.maxLv >= 10).length + '/' + g.length,
+    W金の桶: g.filter(x => (x.made && x.made[10] || 0) >= 2).length + '/' + g.length,
+    桶の数: g.reduce((a, x) => a + (x.made && x.made[10] || 0), 0),
     打切: g.filter(x => x.timeout).length,
   };
   rows.push(row);
