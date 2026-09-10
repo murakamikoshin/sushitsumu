@@ -43,14 +43,7 @@ window.__dbg = {
    段ごとの倍率を window.__SIZES で渡すと、その通りに組み直す。
    配布物は触らず、写しの中だけで効く */
 /* 出てくるネタの割り振りも振れるようにする */
-const rollHook = `  if (window.__SPAWNW) {
-    var __w = window.__SPAWNW, __t = 0, __k, __r;
-    for (__k = 0; __k < __w.length; __k++) __t += __w[__k];
-    __r = rnd() * __t;
-    for (__k = 0; __k < __w.length; __k++) { __r -= __w[__k]; if (__r < 0) return { level: __k }; }
-    return { level: 0 };
-  }
-`;
+const rollHook = 'if (window.__SPAWNW) ROLL_W = window.__SPAWNW;\n';
 const sizeHook = `if (window.__SIZES) {
   for (var __i = 0; __i < SUSHI.length && __i < window.__SIZES.length; __i++) {
     var __s = window.__SIZES[__i], __d = SUSHI[__i];
@@ -68,7 +61,7 @@ let out = src.replace('function orderMade(level) {\n  if (level > maxLevelMade) 
   out = out.replace(a3, 'if (window.__BTOP) BARREL_TOP = window.__BTOP;\n' + a3);
 }
 {
-  const a2 = "  return { level: Math.floor(rnd() * 3) };";
+  const a2 = 'var ROLL_T = ROLL_W.reduce(';
   if (out.indexOf(a2) < 0) throw new Error('ネタの割り振りを差し込む場所が見つかりません');
   out = out.replace(a2, rollHook + a2);
 }
