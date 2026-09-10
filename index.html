@@ -3798,21 +3798,48 @@ function drawBarrelTo(c) {
   c.fillStyle = bsh;
   c.fillRect(0, BARREL_TOP - 30, W, 30);
 
-  // ---- すし桶の中（和紙）----
+  // ---- すし桶の中（白木）----
+  /* 前は #fefdfa から始めていた。ほとんど白で、木目も底の 78px に
+     しか無かったので、始めた直後は「白い紙が貼ってある」ようにしか
+     見えなかった。桶を深くしてその面積がさらに増えたので、
+     ・地の色を白から白木に寄せる（白い シャリ が背景に溶けてもいた）
+     ・板の継ぎ目を上まで通す（壁の羽目板と目地を揃える）
+     ・縁の落とす影を濃く深く、四隅を締める
+     の三つで、板張りの箱の中に見えるようにする */
+  var innerH = FLOOR - BARREL_TOP;
   var inner = c.createLinearGradient(0, BARREL_TOP, 0, FLOOR);
-  inner.addColorStop(0, '#fefdfa');
-  inner.addColorStop(0.5, '#f7f1e3');
-  inner.addColorStop(1, '#e7dcc2');
+  inner.addColorStop(0, '#e4d5b4');      // 縁のすぐ下。いちばん陰になる
+  inner.addColorStop(0.16, '#eee4cb');
+  inner.addColorStop(0.62, '#f2ead6');
+  inner.addColorStop(1, '#ddcdaa');      // 底。物が接する所は落ちる
   c.fillStyle = inner;
-  c.fillRect(WALL, BARREL_TOP, W - WALL * 2, FLOOR - BARREL_TOP);
+  c.fillRect(WALL, BARREL_TOP, W - WALL * 2, innerH);
 
   c.save();
   c.beginPath();
-  c.rect(WALL, BARREL_TOP, W - WALL * 2, FLOOR - BARREL_TOP);
+  c.rect(WALL, BARREL_TOP, W - WALL * 2, innerH);
   c.clip();
 
+  // 奥の羽目板。壁と同じ目地で通すと、桶が壁からくり抜かれて見える
+  var ipitch = W / 8;
+  for (var iv = ipitch; iv < W; iv += ipitch) {
+    var ix = Math.round(iv) + 0.5;
+    c.strokeStyle = 'rgba(120,88,44,.09)';
+    c.lineWidth = 1;
+    c.beginPath(); c.moveTo(ix, BARREL_TOP); c.lineTo(ix, FLOOR); c.stroke();
+    c.strokeStyle = 'rgba(255,250,236,.30)';
+    c.beginPath(); c.moveTo(ix + 1.5, BARREL_TOP); c.lineTo(ix + 1.5, FLOOR); c.stroke();
+  }
+
+  // 和紙の地合い。壁と同じものを敷いて、continuity を保つ
+  c.save();
+  c.setTransform(1, 0, 0, 1, 0, 0);
+  c.fillStyle = buildWashiPattern(c);
+  c.fillRect(0, 0, c.canvas.width, c.canvas.height);
+  c.restore();
+
   // 桶の底の簀（すのこ）
-  c.strokeStyle = 'rgba(150,115,65,.13)';
+  c.strokeStyle = 'rgba(150,115,65,.15)';
   c.lineWidth = 1;
   for (var i = 0; i < 6; i++) {
     var sy = FLOOR - 7 - i * 13;
@@ -3829,10 +3856,20 @@ function drawBarrelTo(c) {
     c.fillStyle = g;
     c.fillRect(x0 < x1 ? x0 : x1, y0 < y1 ? y0 : y1, w2, h2);
   }
-  shade(0, BARREL_TOP, 0, BARREL_TOP + 54, W, 54, .2);
-  shade(0, FLOOR, 0, FLOOR - 70, W, 70, .17);
-  shade(WALL, 0, WALL + 24, 0, 24, H, .14);
-  shade(W - WALL, 0, W - WALL - 24, 0, 24, H, .14);
+  /* 縁の影は、桶の深さに合わせて伸ばす。長さを決め打ちにすると、
+     深くしたときに上の一帯だけ影が切れて段が出る */
+  shade(0, BARREL_TOP, 0, BARREL_TOP + innerH * 0.42, W, innerH * 0.42, .40);
+  shade(0, FLOOR, 0, FLOOR - innerH * 0.24, W, innerH * 0.24, .24);
+  shade(WALL, 0, WALL + 34, 0, 34, H, .22);
+  shade(W - WALL, 0, W - WALL - 34, 0, 34, H, .22);
+
+  /* 四隅を締める。真ん中だけが明るいと、箱の中に見える */
+  var vig = c.createRadialGradient(W / 2, BARREL_TOP + innerH * 0.52, innerH * 0.20,
+                                   W / 2, BARREL_TOP + innerH * 0.52, innerH * 0.78);
+  vig.addColorStop(0, 'rgba(96,68,28,0)');
+  vig.addColorStop(1, 'rgba(96,68,28,.30)');
+  c.fillStyle = vig;
+  c.fillRect(WALL, BARREL_TOP, W - WALL * 2, innerH);
 
   // 落款
   var seal = document.createElement('canvas');
