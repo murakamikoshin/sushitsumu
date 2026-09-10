@@ -182,6 +182,26 @@ body.titling .hud { opacity: 0; pointer-events: none; }
 .kbd b { color: rgba(230,205,166,.72); font-weight: 400; font-family: var(--gothic); }
 @media (pointer: coarse) { .kbd { display: none !important; } }
 
+/* 段の並び。狭い画面には場所が無いので、広い時だけ下の @media で出す */
+.ladder { display: none; }
+.lrows { list-style: none; margin: 7px 0 0; }
+.lrows li {
+  display: flex; align-items: center; gap: 7px;
+  padding: 1px 0; opacity: .58;
+  transition: opacity .45s ease;
+}
+.lrows li.got { opacity: 1; }
+.lrows canvas { flex: 0 0 auto; width: 34px; height: 26px; }
+.lrows .ln {
+  flex: 1 1 auto; min-width: 0;
+  font-size: 10px; letter-spacing: .06em; line-height: 1.2;
+  color: rgba(250,246,236,.72);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.lrows li.got .ln { color: rgba(250,246,236,.9); }
+/* 一番上まで行った段だけ、金で印を付ける */
+.lrows li.tip .ln { color: var(--kin); }
+
 /* 右の柱は広い画面でだけ立てる */
 .deskPad { display: none; }
 #sidePanel { width: 192px; align-self: stretch; }
@@ -276,9 +296,15 @@ body:not(.has-rank) #sidePanel .sideList { display: none; }
   #nextCv { width: 50px; height: 50px; }
   .kbd { display: block; font-size: 10px; }
   .deskPad { display: block; }
+  /* 段の並びは背が要る。入らない画面では出さない（下の @media で足す） */
   /* 壁が地続きになったので、桶だけ影を落とすと板が浮いて見える。
      縁を締める細い線だけ残す */
   #game { box-shadow: 0 0 0 1px rgba(0,0,0,.28), 0 18px 60px rgba(0,0,0,.34); }
+}
+
+/* 段の並びは十一段ぶんの背が要る。足りない画面では出さない */
+@media (min-width: 860px) and (min-height: 800px) {
+  .ladder { display: block; width: 100%; }
 }
 
 /* ---- 中央ポップアップ（へい大将！など） ---- */
@@ -645,6 +671,12 @@ body.lat .rankNote { font-size: 10.5px; }
       <div class="lbl" data-t="lblNext">&#x3064;&#x304e;</div>
       <div class="tray"><canvas id="nextCv" width="132" height="132"></canvas></div>
       <div class="kbd" id="kbdHint"></div>
+    </div>
+    <!-- 段の並び。何が何に育つのかは、この手の遊びで最初に探されるもの。
+         図鑑の中にしまうと見つけてもらえないので、広い画面では脇に出す -->
+    <div class="ladder" id="ladder">
+      <div class="lbl" data-t="dexTitle">&#x5bff;&#x53f8;&#x56f3;&#x9451;</div>
+      <ol class="lrows" id="lrows"></ol>
     </div>
   </header>
 
@@ -3537,12 +3569,20 @@ function buildBackdrop(cssH, cssTop) {
   c.fillRect(0, 0, backCv.width, backCv.height);
   c.restore();
 
-  // 壁の下、床にあたる帯
-  var floor = c.createLinearGradient(0, BARREL_TOP, 0, H);
-  floor.addColorStop(0, '#5d4a30');
+  // 壁の下、床にあたる帯。
+  // 桶の外では、この境目が画面の端から端まで一本の直線になって出る。
+  // 桶の中は縁が隠してくれるが、外は隠す物が無いので、
+  // 明るい壁から暗い床へ一気に変わると黒い板を貼ったように見える。
+  // 少し上から薄く始めて、境目そのものを溶かす
+  var SEAM = 46;
+  var floor = c.createLinearGradient(0, BARREL_TOP - SEAM, 0, H);
+  var seamAt = SEAM / (H - BARREL_TOP + SEAM);
+  floor.addColorStop(0, 'rgba(93,74,48,0)');
+  floor.addColorStop(seamAt * 0.55, 'rgba(93,74,48,.55)');
+  floor.addColorStop(seamAt, 'rgba(93,74,48,1)');
   floor.addColorStop(1, '#20303f');
   c.fillStyle = floor;
-  c.fillRect(0, BARREL_TOP, lw, H - BARREL_TOP);
+  c.fillRect(0, BARREL_TOP - SEAM, lw, H - BARREL_TOP + SEAM);
 
   // ---- 暖簾（屋号は入れない。字は桶の canvas の側だけに出す）----
   var NOREN_H = 150, ROD_Y = 12;
@@ -3590,21 +3630,34 @@ function buildBackdrop(cssH, cssTop) {
   // 店先が暗がりに溶けていくように見える。
   // 明るいままの帯は桶より少し広く取る。桶の縁で明るさが変わると、
   // そこに段が出て「板が貼ってある」ように見えてしまう
+  // 消し切るのが遅すぎると、画面の端にまだ暖簾の縞が残る。
+  // 桶の幅ぶんで消え切るくらいが、店先が暗がりに引っ込んで見える
   var cx = lw / 2;
-  var keep = Math.min(W / 2 + 52, Math.max(40, lw / 2 - 24));
-  var fade = Math.min(300, Math.max(60, lw / 2 - keep));
+  var keep = Math.min(W / 2 + 40, Math.max(40, lw / 2 - 24));
+  var fade = Math.min(W * 1.15, Math.max(80, lw / 2 - keep - 8));
+  // 直線で薄くしていくと、真ん中と端のちょうど半分の所で半分だけ残る。
+  // 画面が広いほどその「半分残った暖簾」の帯が長くなって、
+  // 繰り返しの継ぎ目が数えられてしまう。
+  // 離れ始めで一気に落として、あとを長く引くと、奥に引っ込んで見える
   c.globalCompositeOperation = 'destination-out';
   var vg = c.createLinearGradient(0, 0, lw, 0);
-  var stops = [
-    [0, 1],
-    [Math.max(0, (cx - keep - fade) / lw), 1],
-    [(cx - keep) / lw, 0],
-    [(cx + keep) / lw, 0],
-    [Math.min(1, (cx + keep + fade) / lw), 1],
-    [1, 1]
-  ];
+  var stops = [[0, 1]];
+  var STEPS = 12;
+  for (var s = STEPS; s >= 0; s--) {
+    var t = s / STEPS;                        // 1 = 完全に消える所
+    stops.push([(cx - keep - fade * t) / lw, Math.pow(t, 0.32)]);
+  }
+  for (var s2 = 0; s2 <= STEPS; s2++) {
+    var t2 = s2 / STEPS;
+    stops.push([(cx + keep + fade * t2) / lw, Math.pow(t2, 0.32)]);
+  }
+  stops.push([1, 1]);
+  var last = -1;
   stops.forEach(function (st) {
-    vg.addColorStop(Math.max(0, Math.min(1, st[0])), 'rgba(0,0,0,' + st[1] + ')');
+    var at = Math.max(0, Math.min(1, st[0]));
+    if (at < last) return;                    // 画面が狭いと順が崩れる
+    last = at;
+    vg.addColorStop(at, 'rgba(0,0,0,' + st[1] + ')');
   });
   c.fillStyle = vg;
   c.fillRect(0, 0, lw, H);
@@ -4850,17 +4903,39 @@ function markSeen(ix) {
   if (ix < 0 || ix >= DEX_N || seen[ix]) return;
   seen[ix] = true;
   lsSet('sushitsumu.dex', seen.map(function (v) { return v ? '1' : '0'; }).join(''));
+  buildLadder();
+}
+
+/* 脇に立てる段の並び。何が何に育つのかを、しまい込まずに出しておく。
+   まだ出していない段は影のまま置く。埋まっていく所まで含めて誘いになる */
+function buildLadder() {
+  var box = document.getElementById('lrows');
+  if (!box || !sprites.length) return;
+  box.innerHTML = '';
+  var tip = -1, i;
+  for (i = 0; i < SUSHI.length; i++) if (seen[i]) tip = i;
+  for (i = 0; i < SUSHI.length; i++) {
+    var li = document.createElement('li');
+    li.className = (seen[i] ? 'got' : '') + (i === tip ? ' tip' : '');
+    var cv = document.createElement('canvas');
+    var nm = document.createElement('span');
+    nm.className = 'ln';
+    nm.textContent = seen[i] ? netaName(i) : t('dexUnknown');
+    li.appendChild(cv); li.appendChild(nm);
+    box.appendChild(li);
+    drawDexCell(cv, i, 34, 26, 'rgba(240,226,198,.62)');
+  }
 }
 function dexName(ix) { return ix === GARI_IX ? t('gariName') : netaName(ix); }
 function dexSprite(ix) { return ix === GARI_IX ? gariSprite : sprites[ix]; }
 
 /* 影は絵の形そのものから起こす（source-in で抜く） */
-function drawDexCell(cv, ix) {
+function drawDexCell(cv, ix, cwIn, chIn, shadeFill) {
   var sp = dexSprite(ix);
   if (!sp) return;
   var c = cv.getContext('2d');
   var dpr = Math.min(window.devicePixelRatio || 1, 2);
-  var cw = 56, ch = 40;
+  var cw = cwIn || 56, ch = chIn || 40;
   cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
   c.setTransform(dpr, 0, 0, dpr, 0, 0);
   c.clearRect(0, 0, cw, ch);
@@ -4884,7 +4959,7 @@ function drawDexCell(cv, ix) {
   paintSprite(x, sp);
   x.setTransform(1, 0, 0, 1, 0, 0);
   x.globalCompositeOperation = 'source-in';
-  x.fillStyle = 'rgba(74,50,18,.26)';
+  x.fillStyle = shadeFill || 'rgba(74,50,18,.26)';   // 暗い所に置くときは明るい影を渡す
   x.fillRect(0, 0, tmp.width, tmp.height);
   c.setTransform(1, 0, 0, 1, 0, 0);
   c.drawImage(tmp, 0, 0);
@@ -5113,6 +5188,7 @@ function applyLang() {
   var g = document.getElementById('langGrid');
   var on = g.querySelectorAll('button');
   for (i = 0; i < on.length; i++) on[i].classList.toggle('is-on', on[i].dataset.lang === lang);
+  buildLadder();
 }
 function setLang(c) {
   if (!TXT[c] || c === lang) return;
@@ -5158,6 +5234,7 @@ document.getElementById('sndBtn').addEventListener('click', function (e) {
 initRanking();
 initAds();
 buildSprites();
+buildLadder();
 buildBarrel();
 applyLang();
 resize();
